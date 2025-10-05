@@ -68,12 +68,12 @@
 
 ## Лицензия
 
-[MIT License](./LICENSE) (или другая опенсорс лицензия)
+[MIT License](./LICENSE)
 
 ## Контакты
 
-- **Issues:** [GitHub Issues](https://github.com/[your-repo]/issues)
-- **Discussions:** [GitHub Discussions](https://github.com/[your-repo]/discussions)
+- **Issues:** [GitHub Issues](https://github.com/webdotG/AIM/issues)
+- **Discussions:** [GitHub Discussions](https://github.com/webdotG/AIM/discussions)
 
 ---
 
