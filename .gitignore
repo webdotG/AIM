@@ -1,0 +1,14 @@
+node_modules/
+mam/*/−/
+mam/*/-/
+**/-/web.js
+**/-/web.css
+**/-/web.deps.json
+**/-/node.js
+**/-/*.js.map
+.vscode/
+.vscodium/
+*.swp
+*.log
+.DS_Store
+.env
