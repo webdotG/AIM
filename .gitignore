@@ -12,3 +12,4 @@ mam/*/-/
 *.log
 .DS_Store
 .env
+PROGRAMMING_PARADIGMS.md
