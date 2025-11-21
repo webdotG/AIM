@@ -1,0 +1,9 @@
+node_modules/
+mam/*/−/
+.vscode/
+.vscodium/
+*.swp
+*.log
+.DS_Store
+.env
+PROGRAMMING_PARADIGMS.md
