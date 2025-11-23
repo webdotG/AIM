@@ -8,3 +8,8 @@ mam/*/−/
 .env
 PROGRAMMING_PARADIGMS.md
 .gitignore
+
+TESTWEBEXPLOIT
+TESTWEBEXPLOIT/
+sanitizer.js
+sanitizerExploit.js
