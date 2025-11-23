@@ -7,3 +7,4 @@ mam/*/−/
 .DS_Store
 .env
 PROGRAMMING_PARADIGMS.md
+.gitignore

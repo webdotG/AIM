@@ -3,7 +3,6 @@
 **Версия:** 0x0002  
 **Дата:** November 21, 2025  
 **Статус:** ПРИНЯТО  
-**Связано с:** DECISION_0x0002_database.md, DECISION_0x0002_frontend.md  
 
 ---
 
