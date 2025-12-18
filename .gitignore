@@ -6,10 +6,9 @@ mam/*/−/
 *.log
 .DS_Store
 .env
-PROGRAMMING_PARADIGMS.md
 .gitignore
 
-TESTWEBEXPLOIT
-TESTWEBEXPLOIT/
 sanitizer.js
 sanitizerExploit.js
+.DECISION
+.exploit

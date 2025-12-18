@@ -39,7 +39,7 @@
 
 - [PROJECT.md](./PROJECT.md) - идеи и архитектура  
 - [EMOTIONS.md](./EMOTIONS.md) - классификация эмоций  
-- [DATABASE.md](./DATABASE.md) - базы данных и связей  
+- [DATABASE.md](./DATABASEV2.html) - базы данных и связей  
 - [PRIVACY.md](./PRIVACY.md) - анонимность и приватность  
 - (Ноябрь 12 2025 правка) - сети ? из другого конспекта -> [NETWORK.md](./NETWORK.md)
 ## .

@@ -1,7 +1,0 @@
-DECISION_0x0002_backend.md
-
-DECISION_0x0002_database.md
-
-DECISION_0x0002_frontend.md
-
-DECISION_0x0002_security.md
