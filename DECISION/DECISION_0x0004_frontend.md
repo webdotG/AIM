@@ -1,5 +1,5 @@
 ОТЧЁТ
-Дата: 21 декабря 2024
+Дата: 21 декабря 2025
 Проект: AIM Frontend 
 Архитектура: Clean Architecture + MobX
 Статус:  Все слои реализованы и готовы к интеграции
@@ -169,87 +169,7 @@ store/
     ├── SkillsStore.js       
     └── UIStore.js           
 
-Преимущества архитектуры
-1. Независимость от источника данных
-javascript// Можно легко заменить API на LocalStorage
-class EntriesLocalStorageClient extends EntriesRepository {
-  async getAll() {
-    const data = localStorage.getItem('entries');
-    return JSON.parse(data);
-  }
-}
-
-// В Store просто меняем:
-repository = new EntriesLocalStorageClient(); // Вместо API
-2. Лёгкое тестирование
-javascript// Mock Repository
-class MockEntriesRepository extends EntriesRepository {
-  async getAll() {
-    return [new Entry({ id: '1', content: 'Test' })];
-  }
-}
-
-// В тестах
-const store = new EntriesStore();
-store.repository = new MockEntriesRepository();
-3. Чистый код
-javascript// Компонент не знает об API
-const EntriesList = observer(() => {
-  const { entriesStore } = useStores();
-  
-  useEffect(() => {
-    entriesStore.fetchEntries({ type: 'dream' });
-  }, []);
-
-  return (
-    <div>
-      {entriesStore.entries.map(entry => (
-        <div key={entry.id}>
-          {entry.getTypeIcon()} {entry.content}
-        </div>
-      ))}
-    </div>
-  );
-});
-4. Бизнес-логика в Entities
-javascript// Вместо if (entry.entry_type === 'plan' && !entry.is_completed...)
-// Пишем:
-if (entry.isOverdue()) { ... }
-
-// Вместо сложных вычислений в компонентах:
-const dominant = entry.getDominantEmotion();
-const status = bodyState.getHealthStatus();
-const canLevel = skill.canLevelUp();
-
-Обновить main.jsx
-jsximport { StoreProvider } from './store';
-
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <StoreProvider>
-    <App />
-  </StoreProvider>
-);
-5. Пример использования
-jsximport { observer } from 'mobx-react-lite';
-import { useStores } from './store';
-
-const Dashboard = observer(() => {
-  const { entriesStore, skillsStore, authStore } = useStores();
-
-  useEffect(() => {
-    entriesStore.fetchEntries();
-    skillsStore.fetchSkills();
-  }, []);
-
-  return (
-    <div>
-      <h1>Welcome, {authStore.user?.login}</h1>
-      <p>Entries: {entriesStore.entries.length}</p>
-      <p>Skills: {skillsStore.skills.length}</p>
-    </div>
-  );
-});
 
 Статус: READY FOR INTEGRATION
 
-Создано: 21 декабря 2024
+Создано: 21 декабря 2025
