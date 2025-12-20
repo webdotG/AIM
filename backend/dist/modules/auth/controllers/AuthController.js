@@ -10,23 +10,17 @@ const auth_schema_1 = require("../validation/auth.schema");
 const logger_1 = __importDefault(require("../../../shared/utils/logger"));
 class AuthController {
     constructor() {
-        /**
-         * Регистрация
-         */
         this.register = async (req, res) => {
             try {
-                // Валидация входных данных
                 const input = auth_schema_1.registerSchema.parse(req.body);
-                // Регистрация
                 const result = await this.authService.register(input);
-                // Успешный ответ
                 res.status(201).json({
                     success: true,
                     data: {
                         user: result.user,
                         token: result.token,
                         backupCode: result.backupCode,
-                        message: '⚠️ SAVE THIS BACKUP CODE! You will need it to recover your password.',
+                        message: 'SAVE THIS BACKUP CODE! You will need it to recover your password.',
                     },
                 });
             }
@@ -46,16 +40,10 @@ class AuthController {
                 });
             }
         };
-        /**
-         * Вход
-         */
         this.login = async (req, res) => {
             try {
-                // Валидация входных данных
                 const input = auth_schema_1.loginSchema.parse(req.body);
-                // Аутентификация
                 const result = await this.authService.login(input);
-                // Успешный ответ
                 res.status(200).json({
                     success: true,
                     data: {
@@ -80,16 +68,10 @@ class AuthController {
                 });
             }
         };
-        /**
-         * Смена пароля через backup-код
-         */
         this.updatePassword = async (req, res) => {
             try {
-                // Валидация входных данных
                 const input = auth_schema_1.updatePasswordSchema.parse(req.body);
-                // Смена пароля
                 const result = await this.authService.updatePassword(input);
-                // Успешный ответ
                 res.status(200).json({
                     success: true,
                     data: {
@@ -116,9 +98,6 @@ class AuthController {
                 });
             }
         };
-        /**
-         * Проверка токена
-         */
         this.verify = async (req, res) => {
             try {
                 const token = req.headers.authorization?.replace('Bearer ', '');
@@ -157,8 +136,7 @@ class AuthController {
         };
         this.recover = async (req, res, next) => {
             try {
-                const { backup_code, new_password } = req.body; // Убираем login
-                // Используем существующий метод updatePassword
+                const { backup_code, new_password } = req.body;
                 const result = await this.authService.updatePassword({
                     backupCode: backup_code,
                     newPassword: new_password

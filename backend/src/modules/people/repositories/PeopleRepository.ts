@@ -13,9 +13,9 @@ interface PersonData {
 }
 
 export class PeopleRepository extends BaseRepository {
-  constructor(pool: Pool) {
-    super('people', pool);
-  }
+constructor(pool: Pool) {
+  super(pool);
+}
 
   async findByUserId(userId: number, filters: any = {}) {
     let query = `

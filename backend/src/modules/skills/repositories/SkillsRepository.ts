@@ -22,9 +22,9 @@ interface ProgressData {
 }
 
 export class SkillsRepository extends BaseRepository {
-  constructor(pool: Pool) {
-    super('skills', pool);
-  }
+constructor(pool: Pool) {
+  super(pool);
+}
 
   async findByUserId(userId: number, filters: any = {}) {
     let query = `SELECT * FROM skills WHERE user_id = $1`;

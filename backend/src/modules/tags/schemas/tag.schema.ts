@@ -14,7 +14,7 @@ export const updateTagSchema = z.object({
 
 export const tagIdSchema = z.object({
   params: z.object({
-    id: z.string().regex(/^\d+$/).transform(Number)
+    id: z.string().regex(/^\d+$/).transform(val => parseInt(val, 10))
   })
 });
 
@@ -34,7 +34,13 @@ export const getTagsSchema = z.object({
   query: z.object({
     search: z.string().optional(),
     sort: z.enum(['name', 'usage', 'created_at']).optional().default('name'),
-    page: z.string().regex(/^\d+$/).transform(Number).optional(),
-    limit: z.string().regex(/^\d+$/).transform(Number).optional()
+    page: z.string()
+      .regex(/^\d+$/)
+      .transform(val => val ? parseInt(val, 10) : undefined)
+      .optional(),
+    limit: z.string()
+      .regex(/^\d+$/)
+      .transform(val => val ? parseInt(val, 10) : undefined)
+      .optional()
   })
 });

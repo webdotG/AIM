@@ -1,5 +1,5 @@
 import { Pool } from 'pg';
-import { BaseRepository } from '../../../shared/repositories/BaseRepository';
+import { BaseRepository } from '../../..//shared/repositories/BaseRepository';
 
 interface CircumstanceData {
   user_id: number;
@@ -12,9 +12,9 @@ interface CircumstanceData {
 }
 
 export class CircumstancesRepository extends BaseRepository {
-  constructor(pool: Pool) {
-    super('circumstances', pool);
-  }
+constructor(pool: Pool) {
+  super(pool);
+}
 
   async findByUserId(userId: number, filters: any = {}) {
     let query = `

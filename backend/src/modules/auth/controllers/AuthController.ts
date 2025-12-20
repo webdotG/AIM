@@ -1,4 +1,3 @@
-// src/modules/auth/controllers/AuthController.ts
 import { Request, Response, NextFunction } from 'express';
 import { AuthService } from '../services/AuthService';
 import { UserRepository } from '../repositories/UserRepository';
@@ -20,25 +19,20 @@ export class AuthController {
     this.authService = new AuthService(userRepository);
   }
 
-  /**
-   * Регистрация
-   */
   register = async (req: Request, res: Response): Promise<void> => {
     try {
-      // Валидация входных данных
+
       const input: RegisterInput = registerSchema.parse(req.body);
 
-      // Регистрация
       const result = await this.authService.register(input);
 
-      // Успешный ответ
       res.status(201).json({
         success: true,
         data: {
           user: result.user,
           token: result.token,
           backupCode: result.backupCode,
-          message: '⚠️ SAVE THIS BACKUP CODE! You will need it to recover your password.',
+          message: 'SAVE THIS BACKUP CODE! You will need it to recover your password.',
         },
       });
     } catch (error: any) {
@@ -48,7 +42,7 @@ export class AuthController {
         res.status(400).json({
           success: false,
           error: 'Validation error',
-          details: error.errors,
+          details: error.issues,
         });
         return;
       }
@@ -60,18 +54,13 @@ export class AuthController {
     }
   };
 
-  /**
-   * Вход
-   */
   login = async (req: Request, res: Response): Promise<void> => {
     try {
-      // Валидация входных данных
+
       const input: LoginInput = loginSchema.parse(req.body);
 
-      // Аутентификация
       const result = await this.authService.login(input);
 
-      // Успешный ответ
       res.status(200).json({
         success: true,
         data: {
@@ -86,7 +75,7 @@ export class AuthController {
         res.status(400).json({
           success: false,
           error: 'Validation error',
-          details: error.errors,
+          details: error.issues,
         });
         return;
       }
@@ -98,18 +87,12 @@ export class AuthController {
     }
   };
 
-  /**
-   * Смена пароля через backup-код
-   */
   updatePassword = async (req: Request, res: Response): Promise<void> => {
     try {
-      // Валидация входных данных
       const input: UpdatePasswordInput = updatePasswordSchema.parse(req.body);
 
-      // Смена пароля
       const result = await this.authService.updatePassword(input);
 
-      // Успешный ответ
       res.status(200).json({
         success: true,
         data: {
@@ -126,7 +109,7 @@ export class AuthController {
         res.status(400).json({
           success: false,
           error: 'Validation error',
-          details: error.errors,
+          details: error.issues,
         });
         return;
       }
@@ -138,9 +121,6 @@ export class AuthController {
     }
   };
 
-  /**
-   * Проверка токена
-   */
   verify = async (req: Request, res: Response): Promise<void> => {
     try {
       const token = req.headers.authorization?.replace('Bearer ', '');
@@ -184,9 +164,8 @@ export class AuthController {
 
   recover = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { backup_code, new_password } = req.body; // Убираем login
+      const { backup_code, new_password } = req.body; 
       
-      // Используем существующий метод updatePassword
       const result = await this.authService.updatePassword({
         backupCode: backup_code,
         newPassword: new_password
@@ -207,7 +186,7 @@ export class AuthController {
         res.status(400).json({
           success: false,
           error: 'Validation error',
-          details: error.errors,
+          details: error.issues,
         });
         return;
       }

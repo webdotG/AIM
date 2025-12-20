@@ -15,7 +15,10 @@ class EntriesController {
                     limit: parseInt(req.query.limit) || 50,
                     search: req.query.search,
                     from_date: req.query.from,
-                    to_date: req.query.to
+                    to_date: req.query.to,
+                    body_state_id: req.query.body_state_id ? parseInt(req.query.body_state_id) : undefined,
+                    circumstance_id: req.query.circumstance_id ? parseInt(req.query.circumstance_id) : undefined,
+                    offset: ((parseInt(req.query.page) || 1) - 1) * (parseInt(req.query.limit) || 50)
                 };
                 const result = await this.entryService.getAllEntries(userId, filters);
                 res.status(200).json({

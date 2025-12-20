@@ -6,7 +6,12 @@ export const createPersonSchema = z.object({
     category: z.enum(['family', 'friends', 'acquaintances', 'strangers']),
     relationship: z.string().max(100).optional().nullable(),
     bio: z.string().optional().nullable(),
-    birth_date: z.string().date().optional().nullable(),
+    birth_date: z.string()
+      .refine(val => !val || !isNaN(Date.parse(val)), {
+        message: 'Invalid date format'
+      })
+      .optional()
+      .nullable(),
     notes: z.string().optional().nullable()
   })
 });
@@ -17,14 +22,19 @@ export const updatePersonSchema = z.object({
     category: z.enum(['family', 'friends', 'acquaintances', 'strangers']).optional(),
     relationship: z.string().max(100).optional().nullable(),
     bio: z.string().optional().nullable(),
-    birth_date: z.string().date().optional().nullable(),
+    birth_date: z.string()
+      .refine(val => !val || !isNaN(Date.parse(val)), {
+        message: 'Invalid date format'
+      })
+      .optional()
+      .nullable(),
     notes: z.string().optional().nullable()
   })
 });
 
 export const personIdSchema = z.object({
   params: z.object({
-    id: z.string().regex(/^\d+$/).transform(Number)
+    id: z.string().regex(/^\d+$/).transform(val => parseInt(val, 10))
   })
 });
 
@@ -33,7 +43,13 @@ export const getPeopleSchema = z.object({
     category: z.enum(['family', 'friends', 'acquaintances', 'strangers']).optional(),
     search: z.string().optional(),
     sort: z.enum(['name', 'mentions', 'created_at']).optional().default('name'),
-    page: z.string().regex(/^\d+$/).transform(Number).optional(),
-    limit: z.string().regex(/^\d+$/).transform(Number).optional()
+    page: z.string()
+      .regex(/^\d+$/)
+      .transform(val => val ? parseInt(val, 10) : undefined)
+      .optional(),
+    limit: z.string()
+      .regex(/^\d+$/)
+      .transform(val => val ? parseInt(val, 10) : undefined)
+      .optional()
   })
 });

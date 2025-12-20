@@ -9,10 +9,9 @@ interface EmotionAttachment {
 }
 
 export class EmotionsRepository extends BaseRepository {
-  constructor(pool: Pool) {
-    super('emotions', pool);
-  }
-
+constructor(pool: Pool) {
+  super(pool);
+}
   // Получить все 27 эмоций из справочника
   async findAll() {
     const result = await this.pool.query(

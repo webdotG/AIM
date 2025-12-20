@@ -9,9 +9,9 @@ interface RelationData {
 }
 
 export class RelationsRepository extends BaseRepository {
-  constructor(pool: Pool) {
-    super('entry_relations', pool);
-  }
+constructor(pool: Pool) {
+  super(pool);
+}
 
   async findById(id: number) {
     const result = await this.pool.query(

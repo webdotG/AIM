@@ -14,7 +14,7 @@ export const createRelationSchema = z.object({
 
 export const relationIdSchema = z.object({
   params: z.object({
-    id: z.string().regex(/^\d+$/).transform(Number)
+    id: z.string().regex(/^\d+$/).transform(val => parseInt(val, 10))
   })
 });
 
@@ -29,7 +29,11 @@ export const getChainSchema = z.object({
     entryId: z.string().uuid('Invalid entry ID format')
   }),
   query: z.object({
-    depth: z.string().regex(/^\d+$/).transform(Number).optional().default('10'),
+    depth: z.string()
+      .regex(/^\d+$/)
+      .transform(val => parseInt(val, 10))
+      .optional()
+      .default(10),  // '10' на 10 (число)
     direction: z.enum(['forward', 'backward', 'both']).optional().default('both')
   })
 });

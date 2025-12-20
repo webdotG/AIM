@@ -7,9 +7,9 @@ interface TagData {
 }
 
 export class TagsRepository extends BaseRepository {
-  constructor(pool: Pool) {
-    super('tags', pool);
-  }
+constructor(pool: Pool) {
+  super(pool);
+}
 
   // Получить все теги пользователя
   async findByUserId(userId: number, filters: any = {}) {

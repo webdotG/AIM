@@ -1,8 +1,7 @@
-// src/shared/middleware/validator.middleware.ts
 import { Request, Response, NextFunction } from 'express';
-import { AnyZodObject } from 'zod';
+import { ZodType, ZodError } from 'zod';
 
-export const validate = (schema: AnyZodObject) => 
+export const validate = (schema: ZodType) => 
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       await schema.parseAsync({
@@ -11,11 +10,15 @@ export const validate = (schema: AnyZodObject) =>
         params: req.params
       });
       next();
-    } catch (error: any) {
-      return res.status(400).json({
-        success: false,
-        error: 'Validation error',
-        details: error.errors
-      });
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json({
+          success: false,
+          error: 'Validation error',
+          details: error.issues // Zod 4
+        });
+      }
+      
+      next(error);
     }
   };

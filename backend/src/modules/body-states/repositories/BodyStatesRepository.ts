@@ -1,6 +1,3 @@
-// ============================================
-// src/modules/body-states/repositories/BodyStatesRepository.ts
-// ============================================
 import { Pool } from 'pg';
 import { BaseRepository } from '../../../shared/repositories/BaseRepository';
 
@@ -17,9 +14,9 @@ interface BodyStateData {
 }
 
 export class BodyStatesRepository extends BaseRepository {
-  constructor(pool: Pool) {
-    super('body_states', pool);
-  }
+constructor(pool: Pool) {
+  super(pool);
+}
 
   async findByUserId(userId: number, filters: any = {}) {
     let query = `

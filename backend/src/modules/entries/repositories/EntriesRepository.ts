@@ -1,6 +1,3 @@
-// ============================================
-// src/modules/entries/repositories/EntriesRepository.ts
-// ============================================
 import { Pool } from 'pg';
 import { BaseRepository } from '../../../shared/repositories/BaseRepository';
 
@@ -15,9 +12,9 @@ interface EntryData {
 }
 
 export class EntriesRepository extends BaseRepository {
-  constructor(pool: Pool) {
-    super('entries', pool);
-  }
+constructor(pool: Pool) {
+  super(pool);
+}
 
   async findByUserId(userId: number, filters: any = {}) {
     let query = `SELECT * FROM entries WHERE user_id = $1`;

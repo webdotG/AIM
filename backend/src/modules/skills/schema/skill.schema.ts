@@ -24,15 +24,15 @@ export const updateSkillSchema = z.object({
 
 export const skillIdSchema = z.object({
   params: z.object({
-    id: z.string().regex(/^\d+$/).transform(Number)
+    id: z.string().regex(/^\d+$/).transform(val => parseInt(val, 10))
   })
 });
 
 export const getSkillsSchema = z.object({
   query: z.object({
     category: z.string().optional(),
-    page: z.string().regex(/^\d+$/).transform(Number).optional(),
-    limit: z.string().regex(/^\d+$/).transform(Number).optional(),
+    page: z.string().regex(/^\d+$/).transform(val => val ? parseInt(val, 10) : undefined).optional(),
+    limit: z.string().regex(/^\d+$/).transform(val => val ? parseInt(val, 10) : undefined).optional(),
     sort: z.enum(['level', 'experience', 'name', 'created_at']).optional()
   })
 });
