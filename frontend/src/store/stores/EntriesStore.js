@@ -61,25 +61,43 @@ export class EntriesStore {
     }
   }
 
+  // async createEntry(entryData) {
+  //   this.isLoading = true;
+  //   this.error = null;
+    
+  //   try {
+  //     const entry = await this.repository.create(entryData);
+      
+  //     runInAction(() => {
+  //       this.entries.unshift(entry); // Добавляем в начало
+  //       this.isLoading = false;
+  //     });
+      
+  //     return entry;
+  //   } catch (error) {
+  //     runInAction(() => {
+  //       this.error = error.error || 'Failed to create entry';
+  //       this.isLoading = false;
+  //     });
+  //     throw error;
+  //   }
+  // }
+  // ИЩИ ЭТУ ФУНКЦИЮ:
   async createEntry(entryData) {
-    this.isLoading = true;
-    this.error = null;
+    console.log('=== EntriesStore.createEntry ВЫЗВАН ===');
+    console.log('Полученные данные:', entryData);
     
     try {
-      const entry = await this.repository.create(entryData);
-      
-      runInAction(() => {
-        this.entries.unshift(entry); // Добавляем в начало
-        this.isLoading = false;
-      });
-      
-      return entry;
+      this.setLoading(true);
+      // Здесь должен быть вызов репозитория
+      const createdEntry = await EntriesRepository.createEntry(entryData);
+      console.log('Ответ от репозитория:', createdEntry);
+      return createdEntry;
     } catch (error) {
-      runInAction(() => {
-        this.error = error.error || 'Failed to create entry';
-        this.isLoading = false;
-      });
+      console.error('Ошибка в EntriesStore:', error);
       throw error;
+    } finally {
+      this.setLoading(false);
     }
   }
 

@@ -1,162 +1,164 @@
-import React from 'react';
-import { useNavigation } from '@/layers/platform/PlatformNavigator';
+import React, { useEffect, useState } from 'react';
+import { observer } from 'mobx-react-lite';
+import { usePlatform } from '@/layers/platform';
+import { useLanguage } from '@/layers/language';
+import './TelegramLayout.css';
 
-const TelegramLayout = ({ children, currentScreen, canGoBack, onBack, platformConfig }) => {
-  const { navigate } = useNavigation();
+/**
+ * TelegramLayout - Layout специально для Telegram Mini App
+ * НЕ использует react-router компоненты
+ */
+const TelegramLayout = observer(({ children, navigate, currentRoute }) => {
+  const { utils, telegramUser } = usePlatform();
+  const { t } = useLanguage();
+  const [showMenu, setShowMenu] = useState(false);
 
-  const getTitle = () => {
-    switch(currentScreen) {
-      case 'timeline': return 'Лента';
-      case 'create-entry': return 'Новая запись';
-      case 'entry-detail': return 'Запись';
-      case 'analytics': return 'Аналитика';
-      case 'settings': return 'Настройки';
-      default: return 'AI Journal';
+  useEffect(() => {
+    // Настройка главной кнопки Telegram
+    if (window.Telegram?.WebApp?.MainButton) {
+      const mainButton = window.Telegram.WebApp.MainButton;
+      
+      // Показываем кнопку на определенных экранах
+      if (currentRoute === 'home') {
+        mainButton.setText(t('entries.form.submit') || 'Создать запись');
+        mainButton.show();
+        mainButton.onClick(() => {
+          // Логика создания записи
+          console.log('Create entry clicked');
+        });
+      } else {
+        mainButton.hide();
+      }
     }
+
+    // BackButton для Telegram
+    if (window.Telegram?.WebApp?.BackButton) {
+      const backButton = window.Telegram.WebApp.BackButton;
+      
+      if (currentRoute !== 'home') {
+        backButton.show();
+        backButton.onClick(() => navigate('home'));
+      } else {
+        backButton.hide();
+      }
+    }
+  }, [currentRoute, navigate, t]);
+
+  const handleMenuToggle = () => {
+    setShowMenu(!showMenu);
+    utils.hapticFeedback('light');
   };
 
-  const handleNavClick = (screen) => {
-    if (screen !== currentScreen) {
-      navigate(screen);
-    }
-  };
-
-  // Inline стили для Telegram
-  const styles = {
-    layout: {
-      minHeight: '100vh',
-      background: platformConfig.styles.backgroundColor || '#ffffff',
-      color: platformConfig.styles.textColor || '#000000',
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-      padding: 0,
-      margin: 0
-    },
-    header: {
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      zIndex: 1000,
-      background: platformConfig.styles.backgroundColor || '#ffffff',
-      borderBottom: '1px solid var(--tg-theme-secondary-bg-color, #f0f0f0)',
-      padding: '12px 16px',
-      display: 'flex',
-      alignItems: 'center',
-      minHeight: '56px',
-      boxSizing: 'border-box'
-    },
-    backButton: {
-      background: 'none',
-      border: 'none',
-      color: platformConfig.styles.buttonColor || '#2481cc',
-      fontSize: '16px',
-      padding: '8px',
-      marginRight: '12px',
-      cursor: 'pointer',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '4px'
-    },
-    title: {
-      fontSize: '17px',
-      fontWeight: 600,
-      flex: 1,
-      textAlign: 'center',
-      color: platformConfig.styles.textColor || '#000000'
-    },
-    content: {
-      padding: '72px 16px 80px',
-      minHeight: 'calc(100vh - 152px)',
-      overflowY: 'auto',
-      boxSizing: 'border-box'
-    },
-    navbar: {
-      position: 'fixed',
-      bottom: 0,
-      left: 0,
-      right: 0,
-      background: platformConfig.styles.backgroundColor || '#ffffff',
-      borderTop: '1px solid var(--tg-theme-secondary-bg-color, #f0f0f0)',
-      display: 'flex',
-      justifyContent: 'space-around',
-      padding: '8px 0',
-      zIndex: 1000
-    },
-    navButton: {
-      background: 'none',
-      border: 'none',
-      padding: '12px 16px',
-      color: 'var(--tg-theme-hint-color, #999999)',
-      fontSize: '14px',
-      cursor: 'pointer',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      gap: '4px',
-      flex: 1,
-      transition: 'color 0.2s'
-    },
-    navButtonActive: {
-      color: platformConfig.styles.buttonColor || '#2481cc'
-    }
+  const handleNavigate = (route) => {
+    navigate(route);
+    setShowMenu(false);
+    utils.hapticFeedback('light');
   };
 
   return (
-    <div style={styles.layout}>
+    <div className="telegram-layout">
       {/* Header */}
-      <header style={styles.header}>
-        {canGoBack && (
+      <header className="tg-header">
+        <div className="tg-header-content">
           <button 
-            style={styles.backButton} 
-            onClick={onBack}
-            disabled={!canGoBack}
+            className="tg-menu-button"
+            onClick={handleMenuToggle}
+            aria-label="Menu"
           >
-            ← Назад
+            ☰
           </button>
-        )}
-        <h1 style={styles.title}>{getTitle()}</h1>
+          
+          <h1 className="tg-title">AIM Journal</h1>
+          
+          {telegramUser && (
+            <div className="tg-user-badge">
+              {telegramUser.firstName}
+            </div>
+          )}
+        </div>
       </header>
 
-      {/* Main content */}
-      <main style={styles.content}>
+      {/* Side Menu */}
+      {showMenu && (
+        <>
+          <div 
+            className="tg-overlay" 
+            onClick={() => setShowMenu(false)}
+          />
+          <nav className="tg-menu">
+            <div className="tg-menu-header">
+              <h2>{t('common.menu') || 'Меню'}</h2>
+              <button 
+                className="tg-menu-close"
+                onClick={() => setShowMenu(false)}
+                aria-label="Close menu"
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div className="tg-menu-items">
+              <button 
+                className={`tg-menu-item ${currentRoute === 'home' ? 'active' : ''}`}
+                onClick={() => handleNavigate('home')}
+              >
+                <span className="tg-menu-icon">📝</span>
+                <span>{t('navigation.entries') || 'Создать запись'}</span>
+              </button>
+              
+              <button 
+                className={`tg-menu-item ${currentRoute === 'analytics' ? 'active' : ''}`}
+                onClick={() => handleNavigate('analytics')}
+              >
+                <span className="tg-menu-icon">📊</span>
+                <span>{t('navigation.analytics') || 'Аналитика'}</span>
+              </button>
+              
+              <button 
+                className={`tg-menu-item ${currentRoute === 'settings' ? 'active' : ''}`}
+                onClick={() => handleNavigate('settings')}
+              >
+                <span className="tg-menu-icon">⚙️</span>
+                <span>{t('navigation.settings') || 'Настройки'}</span>
+              </button>
+            </div>
+          </nav>
+        </>
+      )}
+
+      {/* Main Content */}
+      <main className="tg-content">
         {children}
       </main>
 
       {/* Bottom Navigation */}
-      <nav style={styles.navbar}>
+      <nav className="tg-bottom-nav">
         <button 
-          style={{
-            ...styles.navButton,
-            ...(currentScreen === 'timeline' ? styles.navButtonActive : {})
-          }}
-          onClick={() => handleNavClick('timeline')}
+          className={`tg-nav-item ${currentRoute === 'home' ? 'active' : ''}`}
+          onClick={() => handleNavigate('home')}
         >
-          <span style={{ fontSize: '20px' }}>📝</span>
-          <span style={{ fontSize: '12px' }}>Лента</span>
+          <span className="tg-nav-icon">📝</span>
+          <span className="tg-nav-label">{t('navigation.entries') || 'Записи'}</span>
         </button>
+        
         <button 
-          style={{
-            ...styles.navButton,
-            ...(currentScreen === 'analytics' ? styles.navButtonActive : {})
-          }}
-          onClick={() => handleNavClick('analytics')}
+          className={`tg-nav-item ${currentRoute === 'analytics' ? 'active' : ''}`}
+          onClick={() => handleNavigate('analytics')}
         >
-          <span style={{ fontSize: '20px' }}>📊</span>
-          <span style={{ fontSize: '12px' }}>Аналитика</span>
+          <span className="tg-nav-icon">📊</span>
+          <span className="tg-nav-label">{t('navigation.analytics') || 'Аналитика'}</span>
         </button>
+        
         <button 
-          style={{
-            ...styles.navButton,
-            ...(currentScreen === 'settings' ? styles.navButtonActive : {})
-          }}
-          onClick={() => handleNavClick('settings')}
+          className={`tg-nav-item ${currentRoute === 'settings' ? 'active' : ''}`}
+          onClick={() => handleNavigate('settings')}
         >
-          <span style={{ fontSize: '20px' }}>⚙️</span>
-          <span style={{ fontSize: '12px' }}>Настройки</span>
+          <span className="tg-nav-icon">⚙️</span>
+          <span className="tg-nav-label">{t('navigation.settings') || 'Настройки'}</span>
         </button>
       </nav>
     </div>
   );
-};
+});
 
 export default TelegramLayout;

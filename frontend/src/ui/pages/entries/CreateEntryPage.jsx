@@ -1,19 +1,20 @@
 
-import EntryCard from '../../components/entries/EntryCard/EntryCard';
-import EntryList from '../../components/entries/EntryList/EntryList';
-import EntryForm from '../../components/entries/EntryForm/EntryForm';
+import EntryForm from '../../components/entries/EntryForm/EntryForm'
 import Header from '../../components/layout/Header';
 
+import './CreateEntryPage.css';
 
-export default function EntryPage({ navigate }) {
-
-
+const CreateEntryPage = () => {
+  console.log('CreateEntryPage рендерится');
+  
   return (
-    <div>
-      <h1>Timeline</h1>
-      <Header />
-         <EntryForm />
+    <div className="create-entry-page">
+      <h2>Создать запись</h2>
 
+          <Header />
+                <EntryForm />
     </div>
   );
-}
+};
+
+export default CreateEntryPage;

@@ -90,6 +90,13 @@ const ru = {
   reload: 'Перезагрузить',
   goHome: 'На главную',
   entriesCount: 'Записей: {count}', 
+      menu: 'Меню',
+    statistics: 'Статистика',
+    requiredContent: 'Введите текст записи',
+    requiredDeadline: 'Укажите дедлайн для плана',
+    entryCreated: 'Запись создана успешно',
+    saving: 'Сохранение',
+    planDeadlineRequired: 'Для плана необходимо указать дедлайн'
   },
 
   // Navigation
@@ -100,7 +107,8 @@ const ru = {
     entries: 'Записи',
     createEntry: 'Создать запись',
     dashboard: 'Панель управления',
-    profile: 'Профиль'
+    profile: 'Профиль',
+    home: 'Главная'
   },
 
   // Auth

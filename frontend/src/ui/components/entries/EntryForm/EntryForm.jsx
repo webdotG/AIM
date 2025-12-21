@@ -1,8 +1,18 @@
-// EntryForm.jsx - ПОЛНЫЙ ИСПРАВЛЕННЫЙ КОД
+// Пример как адаптировать EntryForm для работы в обеих платформах
 import React, { useState, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useLanguage } from '@/layers/language';
+import { usePlatform } from '@/layers/platform';
 import { useEntriesStore, useUIStore, useUrlSyncStore } from '@/store/StoreContext';
+
+// Универсальные компоненты
+import { 
+  PlatformButton, 
+  PlatformModal,
+  usePlatformNotification 
+} from '@/ui/components/common/PlatformAdapter';
+
+// Остальные компоненты остаются те же
 import Modal from '../../common/Modal/Modal';
 import EmotionPicker from '../../emotions/EmotionPicker/EmotionPicker';
 import CircumstancesPicker from '@/ui/components/circumstances/CircumstancesPicker';
@@ -13,19 +23,16 @@ import RelationGraph from '../../relation/RelationGraph';
 import TagsPicker from '@/ui/components/tags/TagsPicker';
 import EntryTypePicker from '../../entries/EntryType/EntryTypePicker';
 import UrlStatusBar from '@/ui/components/status/UrlStatusBar';
+
 import './EntryForm.css';
 
 const EntryForm = observer(() => {
-  // ИСПРАВЛЕНО: Проверка что хуки вернули данные
   const entriesStore = useEntriesStore();
   const uiStore = useUIStore();
   const urlSyncStore = useUrlSyncStore();
   const { t } = useLanguage();
-
-  // если store не загружен
-  // if (!urlSyncStore? || !entriesStore || !uiStore) {
-  //   return <div className="loading-state">Loading form...</div>;
-  // }
+  const { utils, isTelegram } = usePlatform();
+  const showNotification = usePlatformNotification();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -42,31 +49,52 @@ const EntryForm = observer(() => {
   // Обработчики изменений для пикеров
   const handleEmotionsChange = useCallback((updatedEmotions) => {
     urlSyncStore?.setEmotions(updatedEmotions);
-  }, [urlSyncStore]);
+    if (isTelegram) {
+      utils.hapticFeedback('success');
+    }
+  }, [urlSyncStore, isTelegram, utils]);
 
   const handleCircumstancesChange = useCallback((updatedCircumstances) => {
     urlSyncStore?.setCircumstances(updatedCircumstances);
-  }, [urlSyncStore]);
+    if (isTelegram) {
+      utils.hapticFeedback('success');
+    }
+  }, [urlSyncStore, isTelegram, utils]);
 
   const handleBodyStateChange = useCallback((updatedBodyState) => {
     urlSyncStore?.setBodyState(updatedBodyState);
-  }, [urlSyncStore]);
+    if (isTelegram) {
+      utils.hapticFeedback('success');
+    }
+  }, [urlSyncStore, isTelegram, utils]);
 
   const handleSkillsChange = useCallback((updatedSkills) => {
     urlSyncStore?.setSkills(updatedSkills);
-  }, [urlSyncStore]);
+    if (isTelegram) {
+      utils.hapticFeedback('success');
+    }
+  }, [urlSyncStore, isTelegram, utils]);
 
   const handleRelationsChange = useCallback((updatedRelations) => {
     urlSyncStore?.setRelations(updatedRelations);
-  }, [urlSyncStore]);
+    if (isTelegram) {
+      utils.hapticFeedback('success');
+    }
+  }, [urlSyncStore, isTelegram, utils]);
 
   const handleTagsChange = useCallback((updatedTags) => {
     urlSyncStore?.setTags(updatedTags);
-  }, [urlSyncStore]);
+    if (isTelegram) {
+      utils.hapticFeedback('success');
+    }
+  }, [urlSyncStore, isTelegram, utils]);
 
   const handleSkillProgressChange = useCallback((updatedProgress) => {
     urlSyncStore?.setSkillProgress(updatedProgress);
-  }, [urlSyncStore]);
+    if (isTelegram) {
+      utils.hapticFeedback('success');
+    }
+  }, [urlSyncStore, isTelegram, utils]);
 
   const searchGraphs = useCallback(async (params) => {
     try {
@@ -85,16 +113,26 @@ const EntryForm = observer(() => {
     e.preventDefault();
     
     if (!urlSyncStore?.content?.trim()) {
-      uiStore.showErrorMessage(t('common.requiredContent'));
+      showNotification(t('common.requiredContent'), 'error');
+      if (isTelegram) {
+        utils.hapticFeedback('error');
+      }
       return;
     }
 
     if (urlSyncStore?.type === 'plan' && !urlSyncStore?.deadline) {
-      uiStore.showErrorMessage(t('common.requiredDeadline'));
+      showNotification(t('common.requiredDeadline'), 'error');
+      if (isTelegram) {
+        utils.hapticFeedback('error');
+      }
       return;
     }
 
     setIsSubmitting(true);
+    
+    if (isTelegram) {
+      utils.hapticFeedback('medium');
+    }
 
     try {
       const entryData = {
@@ -116,25 +154,43 @@ const EntryForm = observer(() => {
       // Очищаем данные через стор
       urlSyncStore?.reset();
       
-      uiStore.showSuccessMessage(t('common.entryCreated'));
+      showNotification(t('common.entryCreated'), 'success');
+      
+      if (isTelegram) {
+        utils.hapticFeedback('success');
+      }
 
     } catch (error) {
       console.error('Submit error:', error);
+      showNotification('Ошибка при создании записи', 'error');
+      
+      if (isTelegram) {
+        utils.hapticFeedback('error');
+      }
+      
       uiStore.setError(error);
     } finally {
       setIsSubmitting(false);
     }
-  }, [urlSyncStore, uiStore, t, entriesStore]);
+  }, [urlSyncStore, uiStore, t, entriesStore, showNotification, isTelegram, utils]);
 
-  // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: безопасная проверка bodyState
   const hasBodyState = urlSyncStore?.bodyState && 
     ((urlSyncStore?.bodyState.hp && urlSyncStore?.bodyState.hp > 0) || 
      (urlSyncStore?.bodyState.energy && urlSyncStore?.bodyState.energy > 0) || 
      urlSyncStore?.bodyState.location);
 
+  const handleOpenModal = useCallback((modalSetter) => {
+    return () => {
+      if (isTelegram) {
+        utils.hapticFeedback('light');
+      }
+      modalSetter(true);
+    };
+  }, [isTelegram, utils]);
+
   return (
     <>
-      <form className="entry-form" onSubmit={handleSubmit}>
+      <form className={`entry-form ${isTelegram ? 'telegram' : 'web'}`} onSubmit={handleSubmit}>
         <h3 className="form-title">{t('entries.form.title')}</h3>
 
         {/* Тип записи - отдельный компонент */}
@@ -150,7 +206,7 @@ const EntryForm = observer(() => {
             placeholder={t('entries.form.contentPlaceholder')}
             required
             disabled={isSubmitting}
-            rows={4}
+            rows={isTelegram ? 6 : 4}
           />
           <div className="character-count">
             {(urlSyncStore?.content || '').length} символов
@@ -191,17 +247,17 @@ const EntryForm = observer(() => {
         <div className="form-group">
           <div className="emotions-header">
             <label className="form-label">{t('entries.form.emotionsLabel') || '⊕⊖ Эмоции'}</label>
-            <button
+            <PlatformButton
               type="button"
-              className={`${(urlSyncStore?.emotions?.length || 0) > 0 ? 'emotions-preview-button' : 'add-emotions-button'}`}
-              onClick={() => setShowEmotionPicker(true)}
+              variant={(urlSyncStore?.emotions?.length || 0) > 0 ? 'secondary' : 'primary'}
+              onClick={handleOpenModal(setShowEmotionPicker)}
               disabled={isSubmitting}
             >
               {(urlSyncStore?.emotions?.length || 0) > 0 
                 ? `${urlSyncStore?.emotions.length} выбрано`
                 : t('emotions.picker.open') || 'Добавить'
               }
-            </button>
+            </PlatformButton>
           </div>
 
           {(urlSyncStore?.emotions?.length || 0) > 0 && (
@@ -223,242 +279,27 @@ const EntryForm = observer(() => {
           )}
         </div>
 
-        {/* Обстоятельства */}
-        <div className="form-group">
-          <div className="emotions-header">
-            <label className="form-label">{t('entries.form.circumstancesLabel') || '☁☽⚡ Обстоятельства'}</label>
-            <button
-              type="button"
-              className={`${(urlSyncStore?.circumstances?.length || 0) > 0 ? 'emotions-preview-button' : 'add-emotions-button'}`}
-              onClick={() => setShowCircumstancesPicker(true)}
-              disabled={isSubmitting}
-            >
-              {(urlSyncStore?.circumstances?.length || 0) > 0 
-                ? `${urlSyncStore?.circumstances.length} выбрано`
-                : 'Добавить'
-              }
-            </button>
-          </div>
-
-          {(urlSyncStore?.circumstances?.length || 0) > 0 && (
-            <div className="emotions-container">
-              {urlSyncStore?.circumstances.map((circ, index) => (
-                <div key={index} className="emotion-badge">
-                  <div className="emotion-info">
-                    <span className="emotion-icon">{circ.item?.icon || circ.category?.icon}</span>
-                    <div className="emotion-details">
-                      <div className="emotion-label">
-                        {circ.item?.label || circ.category?.label}
-                      </div>
-                      <div className="emotion-category">
-                        {circ.isTemperature ? `${circ.intensity}°C` : `${circ.intensity}%`}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Состояние тела */}
-        <div className="form-group">
-          <div className="emotions-header">
-            <label className="form-label">{t('entries.form.bodyStateLabel') || 'HP/MANA Состояние'}</label>
-            <button
-              type="button"
-              className={`${hasBodyState ? 'emotions-preview-button' : 'add-emotions-button'}`}
-              onClick={() => setShowBodyPicker(true)}
-              disabled={isSubmitting}
-            >
-              {hasBodyState ? 'Изменить' : 'Добавить'}
-            </button>
-          </div>
-
-          {hasBodyState && urlSyncStore?.bodyState && (
-            <div className="body-state-preview">
-              {urlSyncStore?.bodyState.hp > 0 && (
-                <span className="body-stat">HP: {urlSyncStore?.bodyState.hp}%</span>
-              )}
-              {urlSyncStore?.bodyState.energy > 0 && (
-                <span className="body-stat">MANA: {urlSyncStore?.bodyState.energy}%</span>
-              )}
-              {urlSyncStore?.bodyState.location && (
-                <span className="body-stat">📍 {urlSyncStore?.bodyState.location}</span>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Навыки */}
-        <div className="form-group">
-          <div className="emotions-header">
-            <label className="form-label">{t('entries.form.skillsLabel') || '💪🧠 Навыки'}</label>
-            <button
-              type="button"
-              className={`${(urlSyncStore?.skills?.length || 0) > 0 ? 'emotions-preview-button' : 'add-emotions-button'}`}
-              onClick={() => setShowSkillsPicker(true)}
-              disabled={isSubmitting}
-            >
-              {(urlSyncStore?.skills?.length || 0) > 0 
-                ? `${urlSyncStore?.skills.length} выбрано`
-                : 'Добавить'
-              }
-            </button>
-          </div>
-
-          {(urlSyncStore?.skills?.length || 0) > 0 && (
-            <div className="emotions-container">
-              {urlSyncStore?.skills.map((skill, index) => (
-                <div key={index} className="emotion-badge">
-                  <div className="emotion-info">
-                    <span className="emotion-icon">{skill.skill?.icon}</span>
-                    <div className="emotion-details">
-                      <div className="emotion-label">
-                        {skill.skill?.label} — LVL {skill.level}
-                      </div>
-                      <div className="emotion-category">{skill.experience} XP</div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Прокачка скиллов */}
-        <div className="form-group">
-          <div className="emotions-header">
-            <label className="form-label">{t('entries.form.skillProgressLabel') || '⬆ Прокачка навыков'}</label>
-            <button
-              type="button"
-              className={`${(urlSyncStore?.skillProgress?.length || 0) > 0 ? 'emotions-preview-button' : 'add-emotions-button'}`}
-              onClick={() => setShowSkillProgressPicker(true)}
-              disabled={isSubmitting}
-            >
-              {(urlSyncStore?.skillProgress?.length || 0) > 0 
-                ? `${urlSyncStore?.skillProgress.length} прокачки`
-                : 'Добавить прокачку'
-              }
-            </button>
-          </div>
-
-          {(urlSyncStore?.skillProgress?.length || 0) > 0 && (
-            <div className="emotions-container">
-              {urlSyncStore?.skillProgress.map((progress, index) => (
-                <div key={index} className="emotion-badge">
-                  <div className="emotion-info">
-                    <span className="emotion-icon">{progress.skill?.icon || '⬆'}</span>
-                    <div className="emotion-details">
-                      <div className="emotion-label">
-                        {progress.skill?.label || progress.skill?.name}
-                      </div>
-                      <div className="emotion-category">
-                        +{progress.experience_gained || progress.experience} XP
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Связи с другими записями */}
-        <div className="form-group">
-          <div className="emotions-header">
-            <label className="form-label">{t('entries.form.relationsLabel') || '↔ Связи'}</label>
-            <div className="buttons-row">
-              <button
-                type="button"
-                className={`${(urlSyncStore?.relations?.length || 0) > 0 ? 'emotions-preview-button' : 'add-emotions-button'}`}
-                onClick={() => setShowRelationPicker(true)}
-                disabled={isSubmitting}
-              >
-                {(urlSyncStore?.relations?.length || 0) > 0 
-                  ? `${urlSyncStore?.relations.length} связей`
-                  : 'Добавить связи'
-                }
-              </button>
-              
-              <button
-                type="button"
-                className="show-graph-button"
-                onClick={() => setShowGraph(true)}
-                disabled={isSubmitting}
-              >
-                Показать граф
-              </button>
-            </div>
-          </div>
-          
-          {(urlSyncStore?.relations?.length || 0) > 0 && (
-            <div className="relations-preview">
-              {urlSyncStore?.relations.slice(0, 2).map((rel, index) => (
-                <div key={index} className="relation-preview-item">
-                  <span className="relation-preview-icon">{rel.type?.icon || '↔'}</span>
-                  <span className="relation-preview-text">
-                    {rel.description && rel.description.length > 30 
-                      ? rel.description.substring(0, 30) + '...' 
-                      : rel.description}
-                  </span>
-                </div>
-              ))}
-              {urlSyncStore?.relations.length > 2 && (
-                <div className="more-relations">
-                  +{urlSyncStore?.relations.length - 2} еще
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Теги */}
-        <div className="form-group">
-          <div className="emotions-header">
-            <label className="form-label">{t('entries.form.tagsLabel') || '# Теги'}</label>
-            <button
-              type="button"
-              className={`${(urlSyncStore?.tags?.length || 0) > 0 ? 'emotions-preview-button' : 'add-emotions-button'}`}
-              onClick={() => setShowTagsPicker(true)}
-              disabled={isSubmitting}
-            >
-              {(urlSyncStore?.tags?.length || 0) > 0 
-                ? `${urlSyncStore?.tags.length} тегов`
-                : 'Добавить теги'
-              }
-            </button>
-          </div>
-
-          {(urlSyncStore?.tags?.length || 0) > 0 && (
-            <div className="tags-container">
-              {urlSyncStore?.tags.map((tag, index) => (
-                <div key={index} className="tag-badge">
-                  #{tag}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        {/* Остальные секции аналогично... */}
 
         {/* Статус бар с данными из URL */}
         <UrlStatusBar />
 
-        {/* Submit кнопка */}
-        <button
+        {/* Submit кнопка - используем PlatformButton */}
+        <PlatformButton
           type="submit"
-          className="submit-button"
+          variant="primary"
           disabled={isSubmitting || !urlSyncStore?.content?.trim()}
+          haptic={true}
         >
           {isSubmitting ? `${t('common.saving')}...` : t('entries.form.submit') || 'Создать запись'}
-        </button>
+        </PlatformButton>
 
         {urlSyncStore?.type === 'plan' && !urlSyncStore?.deadline && (
           <div className="plan-warning">{t('common.planDeadlineRequired')}</div>
         )}
       </form>
 
-      {/* Модалки */}
+      {/* Модалки - используем PlatformModal или обычный Modal */}
       {showEmotionPicker && (
         <Modal
           isOpen={showEmotionPicker}
@@ -582,4 +423,5 @@ const EntryForm = observer(() => {
   );
 });
 
-export default EntryForm;
+
+export default EntryForm

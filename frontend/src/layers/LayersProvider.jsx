@@ -1,24 +1,16 @@
-import LanguageProvider from './language/LanguageProvider';
-import ThemeProvider from './theme/ThemeProvider';
+
 import PlatformProvider from './platform/PlatformProvider';
+import ThemeProvider from './theme/ThemeProvider';
+import LanguageProvider from './language/LanguageProvider';
 
-function LayersProvider({ children }) {
-  const getPlatform = () => {
-    if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
-      return 'telegram';
-    }
-    return 'web';
-  };
-
+export const LayersProvider = ({ children }) => {
   return (
-    <PlatformProvider platform={getPlatform()}>
-      <ThemeProvider defaultTheme="light">
-        <LanguageProvider defaultLanguage="ru">
+    <PlatformProvider>
+      <LanguageProvider>
+        <ThemeProvider>
           {children}
-        </LanguageProvider>
-      </ThemeProvider>
+        </ThemeProvider>
+      </LanguageProvider>
     </PlatformProvider>
   );
-}
-
-export default LayersProvider;
+};

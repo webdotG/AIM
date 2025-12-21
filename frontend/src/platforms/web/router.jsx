@@ -9,6 +9,7 @@ import CreateEntryPage from '@/ui/pages/entries/CreateEntryPage';
 import EntryDetailPage from '@/ui/pages/entries/detail/EntryDetailPage';
 import AnalyticsPage from '@/ui/pages/analytics/AnalyticsPage';
 import SettingsPage from '@/ui/pages/settings/SettingsPage';
+import MainLayout from '@/ui/layouts/MainLayout';
 
 // const ProtectedRoute = observer(({ children }) => {
 //   const { authStore } = useStores();
@@ -22,24 +23,40 @@ import SettingsPage from '@/ui/pages/settings/SettingsPage';
 
 export default function WebRouter() {
   return (
-    <BrowserRouter>
+        <BrowserRouter>
       <Routes>
         <Route path="/login" element={<AuthPage />} />
         
-        {/* <Route path="/" element={
-          <ProtectedRoute>
-            <WebLayout />
-          </ProtectedRoute>
-        }> */}
+        <Route path="/" element={<MainLayout />}>
           <Route index element={<TimelinePage />} />
           <Route path="entries/create" element={<CreateEntryPage />} />
           <Route path="entries/:id" element={<EntryDetailPage />} />
           <Route path="analytics" element={<AnalyticsPage />} />
           <Route path="settings" element={<SettingsPage />} />
-        {/* </Route> */}
+        </Route>
         
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
+    // <BrowserRouter>
+    //   <Routes>
+    //     <Route path="/login" element={<AuthPage />} />
+        
+    //     {/* <Route path="/" element={
+    //       <ProtectedRoute>
+    //         <WebLayout />
+    //       </ProtectedRoute>
+    //     }> */}
+    //     <Route path="/" element={<MainLayout />}></Route>
+    //       <Route index element={<TimelinePage />} />
+    //       <Route path="entries/create" element={<CreateEntryPage />} />
+    //       <Route path="entries/:id" element={<EntryDetailPage />} />
+    //       <Route path="analytics" element={<AnalyticsPage />} />
+    //       <Route path="settings" element={<SettingsPage />} />
+    //     {/* </Route> */}
+        
+    //     <Route path="*" element={<Navigate to="/" replace />} />
+    //   </Routes>
+    // </BrowserRouter>
   );
 }

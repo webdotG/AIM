@@ -1,8 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { useStores } from '@/store/StoreContext';
-import { NavigationProvider, useNavigation } from '@/layers/platform/PlatformNavigator';
-import PlatformLayout from '@/ui/layouts/PlatformLayout';
+import { useStores } from '@/store/StoreContext'
+import  TelegramLayout from '../../ui/layouts/TelegramLayout';
 import AuthPage from '@/ui/pages/auth/AuthPage';
 import TimelinePage from '../../\/ui/pages/analytics/AnalyticsTimelinePage';
 import CreateEntryPage from '@/ui/pages/entries/CreateEntryPage';
@@ -11,7 +10,7 @@ import AnalyticsPage from '@/ui/pages/analytics/AnalyticsPage';
 import SettingsPage from '@/ui/pages/settings/SettingsPage';
 
 const RouterContent = observer(() => {
-  const { currentRoute } = useNavigation();
+    const [currentRoute, setCurrentRoute] = useState('home');
 
   switch(currentRoute.screen) {
     case 'timeline':
@@ -37,11 +36,10 @@ const TelegramRouter = observer(() => {
   }
 
   return (
-    <NavigationProvider>
-      <PlatformLayout>
+    <TelegramLayout >
+ 
         <RouterContent />
-      </PlatformLayout>
-    </NavigationProvider>
+    </TelegramLayout>
   );
 });
 
