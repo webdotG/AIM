@@ -43,6 +43,7 @@ export default function PasswordInput({
   const [showPassword, setShowPassword] = useState(false);
 
   // для проверки пароля (500ms задержка)
+  
   const debouncedPassword = useDebounce(value, 500);
 
   // Проверка силы пароля
