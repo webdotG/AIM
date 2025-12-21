@@ -1,7 +1,10 @@
 import React from 'react';
-import  RootStore  from './RootStore';
+import RootStore from './RootStore';
 
-export const StoreContext = React.createContext(RootStore);
+// Создаем единственный экземпляр RootStore
+const rootStoreInstance = new RootStore();
+
+export const StoreContext = React.createContext(rootStoreInstance);
 
 // Основной хук для доступа ко всем сторам
 export const useStores = () => {
@@ -36,11 +39,16 @@ export const useSkillsStore = () => {
 export const useUIStore = () => {
   return useStores().uiStore;
 };
-export const useUrlSyncStore = () => useStores().urlSyncStor         
 
+// ИСПРАВЛЕНО: добавлена буква 'e' в конце
+export const useUrlSyncStore = () => {
+  return useStores().urlSyncStore;
+};
+
+// ИСПРАВЛЕНО: передаем экземпляр, а не класс
 export const StoreProvider = ({ children }) => {
   return (
-    <StoreContext.Provider value={RootStore}>
+    <StoreContext.Provider value={rootStoreInstance}>
       {children}
     </StoreContext.Provider>
   );

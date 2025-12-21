@@ -1,18 +1,42 @@
-import { makeAutoObservable, autorun } from 'mobx';
+import { makeAutoObservable, reaction } from 'mobx';
 
 class UrlSyncStore {
   constructor() {
     makeAutoObservable(this);
     
-    // Автоматически синхронизируем стор с URL
-    autorun(() => {
-      this.syncToUrl();
-    });
+    // Флаг для предотвращения циклов
+    this._isReading = false;
+    this._isSyncing = false;
     
     // Читаем из URL при инициализации
     this.readFromUrl();
     
-    // Слушаем изменения URL
+    // ИСПРАВЛЕНО: Используем reaction вместо autorun
+    // Синхронизируем только когда данные меняются через сеттеры
+    reaction(
+      () => ({
+        type: this.type,
+        content: this.content,
+        eventDate: this.eventDate,
+        deadline: this.deadline,
+        emotions: this.emotions.slice(),
+        circumstances: this.circumstances.slice(),
+        bodyState: this.bodyState ? {...this.bodyState} : null,
+        skills: this.skills.slice(),
+        relations: this.relations.slice(),
+        tags: this.tags.slice(),
+        skillProgress: this.skillProgress.slice()
+      }),
+      () => {
+        // Не синхронизируем если мы сейчас читаем из URL
+        if (!this._isReading) {
+          this.syncToUrl();
+        }
+      },
+      { delay: 100 } // Небольшая задержка для группировки изменений
+    );
+    
+    // Слушаем изменения URL (кнопка назад/вперед)
     window.addEventListener('popstate', () => {
       this.readFromUrl();
     });
@@ -78,6 +102,8 @@ class UrlSyncStore {
 
   // Сброс всех данных
   reset() {
+    this._isReading = true; // Блокируем синхронизацию
+    
     this.type = 'thought';
     this.content = '';
     this.eventDate = '';
@@ -92,33 +118,41 @@ class UrlSyncStore {
     
     // Очищаем URL
     window.history.replaceState({}, '', window.location.pathname);
+    
+    this._isReading = false;
   }
 
   // Чтение данных из URL
   readFromUrl() {
-    const params = new URLSearchParams(window.location.search);
+    this._isReading = true; // Блокируем синхронизацию обратно в URL
     
-    // Основные поля
-    this.type = params.get('type') || 'thought';
-    this.content = decodeURIComponent(params.get('content') || '');
-    this.eventDate = params.get('date') || '';
-    this.deadline = params.get('deadline') || '';
-    
-    // Парсим данные пикеров
-    this.emotions = this.parseEmotionsFromUrl(params.get('emo'));
-    this.circumstances = this.parseCircumstancesFromUrl(params.get('circ'));
-    this.bodyState = this.parseBodyStateFromUrl(params.get('body'));
-    this.skills = this.parseSkillsFromUrl(params.get('skills'));
-    this.relations = this.parseRelationsFromUrl(params.get('rel'));
-    this.tags = this.parseTagsFromUrl(params.get('tags'));
-    this.skillProgress = this.parseSkillProgressFromUrl(params.get('skill_progress'));
+    try {
+      const params = new URLSearchParams(window.location.search);
+      
+      // Основные поля
+      this.type = params.get('type') || 'thought';
+      this.content = params.get('content') ? decodeURIComponent(params.get('content')) : '';
+      this.eventDate = params.get('date') || '';
+      this.deadline = params.get('deadline') || '';
+      
+      // Парсим данные пикеров
+      this.emotions = this.parseEmotionsFromUrl(params.get('emo'));
+      this.circumstances = this.parseCircumstancesFromUrl(params.get('circ'));
+      this.bodyState = this.parseBodyStateFromUrl(params.get('body'));
+      this.skills = this.parseSkillsFromUrl(params.get('skills'));
+      this.relations = this.parseRelationsFromUrl(params.get('rel'));
+      this.tags = this.parseTagsFromUrl(params.get('tags'));
+      this.skillProgress = this.parseSkillProgressFromUrl(params.get('skill_progress'));
+    } finally {
+      this._isReading = false;
+    }
   }
 
   // Парсинг данных пикеров из URL
   parseEmotionsFromUrl(emoParam) {
     if (!emoParam) return [];
     
-    try {
+    try { // ИСПРАВЛЕНО: убрали опечатку "Й"
       return emoParam.split(';').map(part => {
         const catCode = part[0];
         const emotionCode = part.substring(1, 3);
@@ -270,43 +304,54 @@ class UrlSyncStore {
 
   // Синхронизация данных в URL
   syncToUrl() {
-    const url = new URL(window.location);
+    if (this._isSyncing) return; // Предотвращаем повторный вызов
     
-    // Основные поля
-    if (this.type && this.type !== 'thought') {
-      url.searchParams.set('type', this.type);
-    } else {
-      url.searchParams.delete('type');
+    this._isSyncing = true;
+    
+    try {
+      const url = new URL(window.location);
+      
+      // Основные поля
+      if (this.type && this.type !== 'thought') {
+        url.searchParams.set('type', this.type);
+      } else {
+        url.searchParams.delete('type');
+      }
+      
+      if (this.content.trim()) {
+        url.searchParams.set('content', encodeURIComponent(this.content));
+      } else {
+        url.searchParams.delete('content');
+      }
+      
+      if (this.eventDate) {
+        url.searchParams.set('date', this.eventDate);
+      } else {
+        url.searchParams.delete('date');
+      }
+      
+      if (this.deadline) {
+        url.searchParams.set('deadline', this.deadline);
+      } else {
+        url.searchParams.delete('deadline');
+      }
+      
+      // Пикеры
+      this.syncEmotionsToUrl(url);
+      this.syncCircumstancesToUrl(url);
+      this.syncBodyStateToUrl(url);
+      this.syncSkillsToUrl(url);
+      this.syncRelationsToUrl(url);
+      this.syncTagsToUrl(url);
+      this.syncSkillProgressToUrl(url);
+      
+      // ИСПРАВЛЕНО: Проверяем что URL действительно изменился
+      if (url.toString() !== window.location.toString()) {
+        window.history.replaceState({}, '', url);
+      }
+    } finally {
+      this._isSyncing = false;
     }
-    
-    if (this.content.trim()) {
-      url.searchParams.set('content', encodeURIComponent(this.content));
-    } else {
-      url.searchParams.delete('content');
-    }
-    
-    if (this.eventDate) {
-      url.searchParams.set('date', this.eventDate);
-    } else {
-      url.searchParams.delete('date');
-    }
-    
-    if (this.deadline) {
-      url.searchParams.set('deadline', this.deadline);
-    } else {
-      url.searchParams.delete('deadline');
-    }
-    
-    // Пикеры
-    this.syncEmotionsToUrl(url);
-    this.syncCircumstancesToUrl(url);
-    this.syncBodyStateToUrl(url);
-    this.syncSkillsToUrl(url);
-    this.syncRelationsToUrl(url);
-    this.syncTagsToUrl(url);
-    this.syncSkillProgressToUrl(url);
-    
-    window.history.replaceState({}, '', url);
   }
 
   // Синхронизация каждого пикера
