@@ -97,6 +97,18 @@ const en = {
     dashboard: 'Dashboard',
     profile: 'Profile'
   },
+  search: {
+    all: 'All',
+    entries: 'Entries',
+    skills: 'Skills',
+    people: 'People',
+    tags: 'Tags',
+    categories: 'Search categories',
+    placeholder: 'Search entries, skills...',
+    search: 'Search',
+    results: 'Search results',
+    noResults: 'No results found'
+  },
 
   // Auth
 auth: {

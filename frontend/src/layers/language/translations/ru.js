@@ -458,6 +458,18 @@ auth: {
       activityHeatmap: 'Карта активности'
     }
   },
+  search: {
+    all: 'Все',
+    entries: 'Записи',
+    skills: 'Навыки',
+    people: 'Люди',
+    tags: 'Теги',
+    categories: 'Категории поиска',
+    placeholder: 'Поиск записей, навыков...',
+    search: 'Найти',
+    results: 'Результаты поиска',
+    noResults: 'Ничего не найдено'
+  },
 
   // Settings
   settings: { 
