@@ -12,8 +12,6 @@ export default function EntryPage({ navigate }) {
     <div>
       <h1>Timeline</h1>
       <Header />
-         <EntryList />
-         <EntryCard />
          <EntryForm />
 
     </div>

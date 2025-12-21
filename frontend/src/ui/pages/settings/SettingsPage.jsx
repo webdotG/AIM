@@ -6,6 +6,7 @@ import { useTheme } from '@/layers/theme';
 import Header from '@/ui/components/layout/Header';
 
 import './SettingsPage.css';
+import EmotionPicker from '../../components/emotions/EmotionPicker/EmotionPicker';
 
 export default function SettingsPage() {
   const { t } = useLanguage();
@@ -16,7 +17,7 @@ export default function SettingsPage() {
   return (
     <div className="settings-page" data-theme={currentTheme.name}>
       <Header/>
-      
+
     </div>
   );
 }

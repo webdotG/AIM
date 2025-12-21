@@ -4,6 +4,7 @@ import { BodyStatesStore } from './stores/BodyStatesStore';
 import { CircumstancesStore } from './stores/CircumstancesStore';
 import { SkillsStore } from './stores/SkillsStore';
 import { UIStore } from './stores/UIStore';
+import UrlSyncStore  from './UrlSyncStore';
 
 export class RootStore {
   constructor() {
@@ -13,6 +14,7 @@ export class RootStore {
     this.circumstancesStore = new CircumstancesStore();
     this.skillsStore = new SkillsStore();
     this.uiStore = new UIStore();
+    this.UrlSyncStore = new UrlSyncStore();
   }
 }
 

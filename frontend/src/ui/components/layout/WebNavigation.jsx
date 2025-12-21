@@ -1,4 +1,3 @@
-import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useLanguage } from '@/layers/language';
 import { useTheme } from '@/layers/theme';
@@ -36,7 +35,7 @@ const WebNavigation = () => {
     }
   ];
 
-  // Проверяем активный путь
+  // активный путь
   const isActive = (path, exact) => {
     if (exact) {
       return location.pathname === path;
@@ -44,19 +43,11 @@ const WebNavigation = () => {
     return location.pathname.startsWith(path);
   };
 
-  // Получаем заголовок текущей страницы
-  const getPageTitle = () => {
-    const currentItem = navItems.find(item => isActive(item.path, item.exact));
-    return currentItem ? currentItem.label : t('navigation.dashboard');
-  };
+
 
   return (
     <nav className="web-navigation">
-      {/* Логотип и заголовок */}
-        
-        {/* <div className="current-page">
-          <h2 className="page-title">{getPageTitle()}</h2>
-        </div> */}
+    
 
       {/* Основная навигация */}
       <div className="nav-main">

@@ -4,6 +4,10 @@ import { useLanguage } from '@/layers/language';
 import { useEntriesStore, useUIStore } from '@/store/StoreContext'; 
 import Modal from '../../common/Modal/Modal';
 import EmotionPicker from '../../emotions/EmotionPicker/EmotionPicker';
+import CircumstancesPicker from '../../circumstances/CircumstancesPicker';
+import BodyStatePicker from '../../bodyState/BodyStatePicker';
+import SkillsPicker from '../../skills/SkillsPicker';
+import RelationPicker from '../../relation/RelationPicker';
 import './EntryCard.css';
 
 const EntryCard = observer(({ 
@@ -14,7 +18,12 @@ const EntryCard = observer(({
   const { t, language } = useLanguage();
   const entriesStore = useEntriesStore();
   const uiStore = useUIStore();
+  
   const [showEmotionPicker, setShowEmotionPicker] = useState(false);
+  const [showCircumstancesPicker, setShowCircumstancesPicker] = useState(false);
+  const [showBodyPicker, setShowBodyPicker] = useState(false);
+  const [showSkillsPicker, setShowSkillsPicker] = useState(false);
+  const [showRelationPicker, setShowRelationPicker] = useState(false);
 
   const entry = entriesStore.entries.find(e => e.id === entryId);
   
@@ -32,6 +41,9 @@ const EntryCard = observer(({
     content,
     createdAt,
     emotions = [],
+    circumstances = [],
+    bodyState = null,
+    skills = [],
     people = [],
     tags = [],
     relations = {},
@@ -130,6 +142,7 @@ const EntryCard = observer(({
     }
   };
 
+  // Обработчики для пикеров
   const handleEmotionsUpdate = async (updatedEmotions) => {
     try {
       await entriesStore.updateEntry(id, { emotions: updatedEmotions });
@@ -139,9 +152,66 @@ const EntryCard = observer(({
     }
   };
 
+  const handleCircumstancesUpdate = async (updatedCircumstances) => {
+    try {
+      await entriesStore.updateEntry(id, { circumstances: updatedCircumstances });
+      uiStore.showSuccessMessage(t('notifications.circumstancesUpdated'));
+    } catch (error) {
+      uiStore.setError(error);
+    }
+  };
+
+  const handleBodyStateUpdate = async (updatedBodyState) => {
+    try {
+      await entriesStore.updateEntry(id, { bodyState: updatedBodyState });
+      uiStore.showSuccessMessage(t('notifications.bodyStateUpdated'));
+    } catch (error) {
+      uiStore.setError(error);
+    }
+  };
+
+  const handleSkillsUpdate = async (updatedSkills) => {
+    try {
+      await entriesStore.updateEntry(id, { skills: updatedSkills });
+      uiStore.showSuccessMessage(t('notifications.skillsUpdated'));
+    } catch (error) {
+      uiStore.setError(error);
+    }
+  };
+
+  const handleRelationsUpdate = async (updatedRelations) => {
+    try {
+      await entriesStore.updateEntry(id, { relations: updatedRelations });
+      uiStore.showSuccessMessage(t('notifications.relationsUpdated'));
+    } catch (error) {
+      uiStore.setError(error);
+    }
+  };
+
+  // Клики по бейджам
   const handleEmotionsClick = (e) => {
     e.stopPropagation();
     setShowEmotionPicker(true);
+  };
+
+  const handleCircumstancesClick = (e) => {
+    e.stopPropagation();
+    setShowCircumstancesPicker(true);
+  };
+
+  const handleBodyClick = (e) => {
+    e.stopPropagation();
+    setShowBodyPicker(true);
+  };
+
+  const handleSkillsClick = (e) => {
+    e.stopPropagation();
+    setShowSkillsPicker(true);
+  };
+
+  const handleRelationsClick = (e) => {
+    e.stopPropagation();
+    setShowRelationPicker(true);
   };
 
   const cardClasses = [
@@ -151,6 +221,8 @@ const EntryCard = observer(({
     isOverdue ? 'overdue' : '',
     config.colorClass
   ].filter(Boolean).join(' ');
+
+  const hasBodyState = bodyState && (bodyState.hp > 0 || bodyState.energy > 0 || bodyState.location);
 
   return (
     <>
@@ -182,43 +254,116 @@ const EntryCard = observer(({
 
         <div className="entry-footer">
           <div className="entry-meta">
-            {/* Бейдж эмоций - кликабельный */}
+            {/* Эмоции */}
             {emotions.length > 0 ? (
               <span 
-                className="emotions-badge"
+                className="meta-badge emotions-badge"
                 onClick={handleEmotionsClick}
-                title={t('entries.detail.clickToEditEmotions')}
+                title={t('entries.detail.clickToEdit')}
               >
-                {t('entries.detail.emotions')} {emotions.length}
+                ⊕⊖ {emotions.length}
               </span>
             ) : (
               <button
-                className="add-emotions-button"
+                className="add-badge-button"
                 onClick={handleEmotionsClick}
                 title={t('entries.detail.addEmotions')}
               >
-                {t('entries.detail.addEmotions')}
+                +⊕⊖
+              </button>
+            )}
+
+            {/* Обстоятельства */}
+            {circumstances.length > 0 ? (
+              <span 
+                className="meta-badge circumstances-badge"
+                onClick={handleCircumstancesClick}
+                title={t('entries.detail.clickToEdit')}
+              >
+                ☁☽⚡ {circumstances.length}
+              </span>
+            ) : (
+              <button
+                className="add-badge-button"
+                onClick={handleCircumstancesClick}
+                title={t('entries.detail.addCircumstances')}
+              >
+                +☁☽
+              </button>
+            )}
+
+            {/* Состояние тела */}
+            {hasBodyState ? (
+              <span 
+                className="meta-badge body-badge"
+                onClick={handleBodyClick}
+                title={t('entries.detail.clickToEdit')}
+              >
+                HP/M
+              </span>
+            ) : (
+              <button
+                className="add-badge-button"
+                onClick={handleBodyClick}
+                title={t('entries.detail.addBodyState')}
+              >
+                +HP/M
+              </button>
+            )}
+
+            {/* Навыки */}
+            {skills.length > 0 ? (
+              <span 
+                className="meta-badge skills-badge"
+                onClick={handleSkillsClick}
+                title={t('entries.detail.clickToEdit')}
+              >
+                💪🧠 {skills.length}
+              </span>
+            ) : (
+              <button
+                className="add-badge-button"
+                onClick={handleSkillsClick}
+                title={t('entries.detail.addSkills')}
+              >
+                +💪
               </button>
             )}
             
+            {/* Люди */}
             {people.length > 0 && (
               <span className="meta-badge">
-                {t('entries.detail.people')} {people.length}
+                👥 {people.length}
               </span>
             )}
             
+            {/* Теги */}
             {tags.length > 0 && (
               <span className="meta-badge">
-                {t('entries.detail.tags')} {tags.length}
+                # {tags.length}
               </span>
             )}
             
-            {relationsCount > 0 && (
-              <span className="meta-badge">
-                {t('entries.detail.relations')} {relationsCount}
+            {/* Связи */}
+            {relationsCount > 0 ? (
+              <span 
+                className="meta-badge relations-badge"
+                onClick={handleRelationsClick}
+                title={t('entries.detail.clickToEdit')}
+              >
+                ↔ {relationsCount}
               </span>
+            ) : (
+              <button
+                className="add-badge-button"
+                onClick={handleRelationsClick}
+                title={t('entries.detail.addRelations')}
+              >
+                +↔
+              </button>
             )}
 
+            {/* Дедлайн для планов */}
             {type === 'plan' && deadline && (
               <span className={`deadline-badge ${isOverdue ? 'overdue' : ''}`}>
                 {formatDate(deadline)}
@@ -254,32 +399,102 @@ const EntryCard = observer(({
                 onClick={handleDelete}
                 title={t('common.delete')}
               >
-                delete
+                ×
               </button>
             </div>
           )}
         </div>
       </div>
 
-      {/* Модалка для выбора эмоций */}
+      {/* Модалка эмоций */}
       <Modal
         isOpen={showEmotionPicker}
         onClose={() => setShowEmotionPicker(false)}
-        title={t('emotions.picker.title')}
+        title={t('emotions.picker.title') || 'Эмоции'}
         size="lg"
-        footer={null}
       >
         <EmotionPicker
           selectedEmotions={emotions}
           onChange={handleEmotionsUpdate}
           maxEmotions={5}
         />
-        
-        <div className="emotion-picker-footer">
-          <button
-            className="close-button"
-            onClick={() => setShowEmotionPicker(false)}
-          >
+        <div className="picker-footer">
+          <button className="close-button" onClick={() => setShowEmotionPicker(false)}>
+            {t('common.close')}
+          </button>
+        </div>
+      </Modal>
+
+      {/* Модалка обстоятельств */}
+      <Modal
+        isOpen={showCircumstancesPicker}
+        onClose={() => setShowCircumstancesPicker(false)}
+        title={t('circumstances.picker.title') || 'Обстоятельства'}
+        size="lg"
+      >
+        <CircumstancesPicker
+          selectedCircumstances={circumstances}
+          onChange={handleCircumstancesUpdate}
+          maxCircumstances={5}
+        />
+        <div className="picker-footer">
+          <button className="close-button" onClick={() => setShowCircumstancesPicker(false)}>
+            {t('common.close')}
+          </button>
+        </div>
+      </Modal>
+
+      {/* Модалка состояния тела */}
+      <Modal
+        isOpen={showBodyPicker}
+        onClose={() => setShowBodyPicker(false)}
+        title={t('body.picker.title') || 'Состояние тела'}
+        size="lg"
+      >
+        <BodyStatePicker
+          bodyState={bodyState}
+          onChange={handleBodyStateUpdate}
+        />
+        <div className="picker-footer">
+          <button className="close-button" onClick={() => setShowBodyPicker(false)}>
+            {t('common.close')}
+          </button>
+        </div>
+      </Modal>
+
+      {/* Модалка навыков */}
+      <Modal
+        isOpen={showSkillsPicker}
+        onClose={() => setShowSkillsPicker(false)}
+        title={t('skills.picker.title') || 'Навыки'}
+        size="lg"
+      >
+        <SkillsPicker
+          selectedSkills={skills}
+          onChange={handleSkillsUpdate}
+          maxSkills={10}
+        />
+        <div className="picker-footer">
+          <button className="close-button" onClick={() => setShowSkillsPicker(false)}>
+            {t('common.close')}
+          </button>
+        </div>
+      </Modal>
+
+      {/* Модалка связей */}
+      <Modal
+        isOpen={showRelationPicker}
+        onClose={() => setShowRelationPicker(false)}
+        title={t('relations.picker.title') || 'Связи'}
+        size="lg"
+      >
+        <RelationPicker
+          selectedRelations={relations.outgoing || []}
+          onChange={handleRelationsUpdate}
+          maxRelations={5}
+        />
+        <div className="picker-footer">
+          <button className="close-button" onClick={() => setShowRelationPicker(false)}>
             {t('common.close')}
           </button>
         </div>

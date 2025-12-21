@@ -24,25 +24,12 @@ const TimelinePage = observer(() => {
       {/* Заголовок */}
       <div className="timeline-header">
         <Header />
-        <h1 className="timeline-title">{t('entries.list.title')}</h1>
-        <p className="timeline-subtitle">
+        {/* <h1 className="timeline-title">{t('entries.list.title')}</h1> */}
+        <p style={{textAlign:"center"}}className="timeline-subtitle">
           {totalEntries === 0 
             ? t('entries.list.emptyState')
             : t('common.entriesCount', { count: totalEntries })}
         </p>
-      </div>
-
-      {/* Основная сетка: форма и список */}
-      <div className="timeline-grid">
-        {/* Левая колонка - форма */}
-        <div className="timeline-column">
-          <EntryForm />
-        </div>
-        
-        {/* Правая колонка - список */}
-        <div className="timeline-column">
-          <EntryList />
-        </div>
       </div>
 
       {/* Статистика */}
@@ -81,6 +68,16 @@ const TimelinePage = observer(() => {
           </div>
         </div>
       </div>
+
+
+      {/* Основная сетка: форма и список */}
+      <div className="timeline-grid">
+        <div className="timeline-column">
+          <EntryList />
+        </div>
+      </div>
+
+
     </div>
   );
 });
