@@ -17,9 +17,17 @@ export class AuthRepository extends BaseRepository {
     throw new Error('Not implemented');
   }
 
-  isAuthenticated() {
-    // throw new Error('Not implemented'); 
-    //  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    return true
+
+  async checkPasswordStrength(password) {
+    throw new Error('Not implemented');
+  }
+
+  async generatePasswordRecommendation() {
+    throw new Error('Not implemented');
+  }
+
+  //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    isAuthenticated() {
+    return true; // для тестов
   }
 }

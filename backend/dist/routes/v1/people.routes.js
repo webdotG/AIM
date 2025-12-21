@@ -8,7 +8,7 @@ const person_schema_1 = require("../../modules/people/schemas/person.schema");
 const router = (0, express_1.Router)();
 router.use(auth_middleware_1.authenticate);
 router.get('/', (0, validator_middleware_1.validate)(person_schema_1.getPeopleSchema), PeopleController_1.peopleController.getAll);
-router.get('/most-mentioned', PeopleController_1.peopleController.getMostMentioned);
+router.get('/most-mentioned', (0, validator_middleware_1.validate)(person_schema_1.mostMentionedSchema), PeopleController_1.peopleController.getMostMentioned);
 router.get('/:id', (0, validator_middleware_1.validate)(person_schema_1.personIdSchema), PeopleController_1.peopleController.getById);
 router.post('/', (0, validator_middleware_1.validate)(person_schema_1.createPersonSchema), PeopleController_1.peopleController.create);
 router.put('/:id', (0, validator_middleware_1.validate)(person_schema_1.personIdSchema), (0, validator_middleware_1.validate)(person_schema_1.updatePersonSchema), PeopleController_1.peopleController.update);

@@ -17,7 +17,7 @@ const errorHandler = (error, req, res, next) => {
         res.status(400).json({
             success: false,
             error: 'Validation error',
-            details: error.errors,
+            details: error.issues,
         });
         return;
     }

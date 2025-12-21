@@ -50,3 +50,45 @@ export const addProgressSchema = z.object({
     { message: 'Either entry_id or body_state_id must be provided' }
   )
 });
+
+export const topSkillsSchema = z.object({
+  query: z.object({
+    limit: z.string()
+      .regex(/^\d+$/)
+      .transform(val => val ? parseInt(val, 10) : 10)
+      .optional()
+      .default(10),
+    category: z.string().optional(),
+    min_level: z.string()
+      .regex(/^\d+$/)
+      .transform(val => val ? parseInt(val, 10) : 1)
+      .optional()
+      .default(1)
+  })
+});
+
+export const progressHistorySchema = z.object({
+  query: z.object({
+    page: z.string()
+      .regex(/^\d+$/)
+      .transform(val => val ? parseInt(val, 10) : undefined)
+      .optional(),
+    limit: z.string()
+      .regex(/^\d+$/)
+      .transform(val => val ? parseInt(val, 10) : undefined)
+      .optional(),
+    progress_type: z.enum(['practice', 'achievement', 'lesson', 'milestone', 'all'])
+      .optional()
+      .default('all'),
+    start_date: z.string()
+      .refine(val => !val || !isNaN(Date.parse(val)), {
+        message: 'Invalid date format'
+      })
+      .optional(),
+    end_date: z.string()
+      .refine(val => !val || !isNaN(Date.parse(val)), {
+        message: 'Invalid date format'
+      })
+      .optional()
+  })
+});

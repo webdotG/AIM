@@ -1,15 +1,15 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import dotenv from 'dotenv';
 
 import routes from './routes';
 
 import { errorHandler } from './shared/middleware/errorHandler';
 import { requestLogger } from './shared/middleware/requestLogger';
 import { generalLimiter } from './shared/middleware/rateLimiter.middleware';
-
-dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3003;
@@ -42,7 +42,11 @@ app.use(errorHandler);
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
   console.log(`API: http://localhost:${PORT}/api/v1`);
-  console.log(`Health: http://localhost:${PORT}/health`);
+  console.log(`Environment loaded:`, {
+    port: PORT,
+    nodeEnv: process.env.NODE_ENV,
+    pepperLength: process.env.PASSWORD_PEPPER?.length || 0
+  });
 });
 
 export default app;

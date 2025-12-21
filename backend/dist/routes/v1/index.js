@@ -3,7 +3,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-// src/routes/v1/index.ts
 const express_1 = require("express");
 const auth_routes_1 = __importDefault(require("./auth.routes"));
 const entries_routes_1 = __importDefault(require("./entries.routes"));

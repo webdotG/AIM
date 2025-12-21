@@ -10,6 +10,7 @@ import {
   UpdatePasswordInput,
 } from '../validation/auth.schema';
 import logger from '../../../shared/utils/logger';
+import { passwordHasher } from '../services/PasswordHasher';
 
 export class AuthController {
   private authService: AuthService;
@@ -197,6 +198,59 @@ export class AuthController {
       });
     }
   };
+    // силы пароля
+  checkPasswordStrength = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { password } = req.body;
+
+      if (!password || typeof password !== 'string') {
+        res.status(400).json({
+          success: false,
+          error: 'Password is required',
+        });
+        return;
+      }
+
+      const strength = passwordHasher.checkStrength(password);
+
+      res.status(200).json({
+        success: true,
+        data: {
+          isStrong: strength.isStrong,
+          score: strength.score,
+          reasons: strength.reasons,
+          suggestions: strength.suggestions,
+        },
+      });
+    } catch (error: any) {
+      logger.error('Password strength check error:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to check password strength',
+      });
+    }
+  };
+
+  // рекомендации пароля
+  generatePasswordRecommendation = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const recommendation = passwordHasher.generatePasswordRecommendation();
+
+      res.status(200).json({
+        success: true,
+        data: {
+          password: recommendation,
+        },
+      });
+    } catch (error: any) {
+      logger.error('Password generation error:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to generate password',
+      });
+    }
+  };
+
 
 }
 

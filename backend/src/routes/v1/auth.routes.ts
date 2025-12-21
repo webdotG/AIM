@@ -10,28 +10,13 @@ import {
 
 const router = Router();
 
-// POST /api/v1/auth/register
-router.post(
-  '/register', 
-  // authLimiter,
-  validate(registerSchema), 
-  authController.register
-);
+router.post('/register', authController.register);
+router.post('/login', authController.login);
+router.post('/recover', authController.recover);
+router.get('/verify', authController.verify);
 
-// POST /api/v1/auth/login
-router.post(
-  '/login', 
-  // authLimiter,
-  validate(loginSchema), 
-  authController.login
-);
-
-// POST /api/v1/auth/recover
-router.post(
-  '/recover', 
-  // authLimiter,
-  validate(recoverSchema), 
-  authController.recover
-);
+// НОВЫЕ ROUTES для проверки пароля
+router.post('/check-password-strength', authController.checkPasswordStrength);
+router.get('/generate-password', authController.generatePasswordRecommendation);
 
 export default router;

@@ -33,7 +33,36 @@ export const getChainSchema = z.object({
       .regex(/^\d+$/)
       .transform(val => parseInt(val, 10))
       .optional()
-      .default(10),  // '10' на 10 (число)
+      .default(10),  
     direction: z.enum(['forward', 'backward', 'both']).optional().default('both')
+  })
+});
+
+export const mostConnectedSchema = z.object({
+  query: z.object({
+    limit: z.string()
+      .regex(/^\d+$/)
+      .transform(val => val ? parseInt(val, 10) : 10)
+      .optional()
+      .default(10),
+    min_connections: z.string()
+      .regex(/^\d+$/)
+      .transform(val => val ? parseInt(val, 10) : 1)
+      .optional()
+      .default(1)
+  })
+});
+
+export const graphSchema = z.object({
+  query: z.object({
+    max_depth: z.string()
+      .regex(/^\d+$/)
+      .transform(val => val ? parseInt(val, 10) : 3)
+      .optional()
+      .default(3),
+    entry_id: z.string().uuid('Invalid entry ID format').optional(),
+    relation_type: z.enum(['led_to', 'reminded_of', 'inspired_by', 'caused_by', 'related_to', 'resulted_in', 'all'])
+      .optional()
+      .default('all')
   })
 });

@@ -11,7 +11,6 @@ import {
 
 const router = Router();
 
-// Все routes требуют аутентификации
 router.use(authenticate);
 
 // GET /api/v1/circumstances - получить все обстоятельства

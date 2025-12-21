@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updatePasswordSchema = exports.loginSchema = exports.registerSchema = void 0;
+exports.checkPasswordStrengthSchema = exports.updatePasswordSchema = exports.loginSchema = exports.registerSchema = void 0;
 // src/modules/auth/validation/auth.schema.ts
 const zod_1 = require("zod");
 exports.registerSchema = zod_1.z.object({
@@ -20,5 +20,10 @@ exports.updatePasswordSchema = zod_1.z.object({
     backupCode: zod_1.z.string(),
     newPassword: zod_1.z.string()
         .min(8, 'Password must be at least 8 characters')
+        .max(128, 'Password is too long'),
+});
+exports.checkPasswordStrengthSchema = zod_1.z.object({
+    password: zod_1.z.string()
+        .min(1, 'Password is required')
         .max(128, 'Password is too long'),
 });

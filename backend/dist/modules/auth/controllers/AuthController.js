@@ -8,6 +8,7 @@ const AuthService_1 = require("../services/AuthService");
 const UserRepository_1 = require("../repositories/UserRepository");
 const auth_schema_1 = require("../validation/auth.schema");
 const logger_1 = __importDefault(require("../../../shared/utils/logger"));
+const PasswordHasher_1 = require("../services/PasswordHasher");
 class AuthController {
     constructor() {
         this.register = async (req, res) => {
@@ -30,7 +31,7 @@ class AuthController {
                     res.status(400).json({
                         success: false,
                         error: 'Validation error',
-                        details: error.errors,
+                        details: error.issues,
                     });
                     return;
                 }
@@ -58,7 +59,7 @@ class AuthController {
                     res.status(400).json({
                         success: false,
                         error: 'Validation error',
-                        details: error.errors,
+                        details: error.issues,
                     });
                     return;
                 }
@@ -88,7 +89,7 @@ class AuthController {
                     res.status(400).json({
                         success: false,
                         error: 'Validation error',
-                        details: error.errors,
+                        details: error.issues,
                     });
                     return;
                 }
@@ -156,13 +157,62 @@ class AuthController {
                     res.status(400).json({
                         success: false,
                         error: 'Validation error',
-                        details: error.errors,
+                        details: error.issues,
                     });
                     return;
                 }
                 res.status(400).json({
                     success: false,
                     error: error.message || 'Failed to recover password',
+                });
+            }
+        };
+        // силы пароля
+        this.checkPasswordStrength = async (req, res) => {
+            try {
+                const { password } = req.body;
+                if (!password || typeof password !== 'string') {
+                    res.status(400).json({
+                        success: false,
+                        error: 'Password is required',
+                    });
+                    return;
+                }
+                const strength = PasswordHasher_1.passwordHasher.checkStrength(password);
+                res.status(200).json({
+                    success: true,
+                    data: {
+                        isStrong: strength.isStrong,
+                        score: strength.score,
+                        reasons: strength.reasons,
+                        suggestions: strength.suggestions,
+                    },
+                });
+            }
+            catch (error) {
+                logger_1.default.error('Password strength check error:', error);
+                res.status(500).json({
+                    success: false,
+                    error: 'Failed to check password strength',
+                });
+            }
+        };
+        // рекомендации пароля
+        this.generatePasswordRecommendation = async (req, res) => {
+            try {
+                const recommendation = PasswordHasher_1.passwordHasher.generatePasswordRecommendation();
+                res.status(200).json({
+                    success: true,
+                    data: {
+                        password: recommendation,
+                    },
+                });
+            }
+            catch (error) {
+                logger_1.default.error('Password generation error:', error);
+                res.status(500).json({
+                    success: false,
+                    error: 'Failed to generate password',
                 });
             }
         };

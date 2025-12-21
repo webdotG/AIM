@@ -8,22 +8,25 @@ import {
   tagIdSchema,
   attachTagsSchema,
   entryIdParamSchema,
-  getTagsSchema
+  getTagsSchema,
+  mostUsedSchema,
+  unusedSchema,
+  entriesByTagSchema,
+  similarTagsSchema
 } from '../../modules/tags/schemas/tag.schema';
 
 const router = Router();
 
-// Все routes требуют аутентификации
 router.use(authenticate);
 
 // GET /api/v1/tags - все теги
 router.get('/', validate(getTagsSchema), tagsController.getAll);
 
 // GET /api/v1/tags/most-used - самые используемые
-router.get('/most-used', tagsController.getMostUsed);
+router.get('/most-used', validate(mostUsedSchema), tagsController.getMostUsed);
 
 // GET /api/v1/tags/unused - неиспользуемые
-router.get('/unused', tagsController.getUnused);
+router.get('/unused', validate(unusedSchema), tagsController.getUnused);
 
 // POST /api/v1/tags/find-or-create - создать или найти
 router.post('/find-or-create', validate(createTagSchema), tagsController.findOrCreate);
@@ -41,10 +44,10 @@ router.put('/:id', validate(tagIdSchema), validate(updateTagSchema), tagsControl
 router.delete('/:id', validate(tagIdSchema), tagsController.delete);
 
 // GET /api/v1/tags/:id/entries - записи по тегу
-router.get('/:id/entries', validate(tagIdSchema), tagsController.getEntriesByTag);
+router.get('/:id/entries', validate(tagIdSchema), validate(entriesByTagSchema), tagsController.getEntriesByTag);
 
 // GET /api/v1/tags/:id/similar - похожие теги
-router.get('/:id/similar', validate(tagIdSchema), tagsController.getSimilar);
+router.get('/:id/similar', validate(tagIdSchema), validate(similarTagsSchema), tagsController.getSimilar);
 
 // GET /api/v1/tags/entry/:entryId - теги для записи
 router.get('/entry/:entryId', validate(entryIdParamSchema), tagsController.getForEntry);

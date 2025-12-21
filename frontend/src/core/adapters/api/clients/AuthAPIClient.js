@@ -66,4 +66,14 @@ export class AuthAPIClient extends AuthRepository {
     await apiClient.post('/auth/verify-email', { token });
     return true;
   }
+    async checkPasswordStrength(password) {
+    const response = await apiClient.post('/auth/check-password-strength', { password });
+    return response.data;
+  }
+
+  async generatePasswordRecommendation() {
+    const response = await apiClient.get('/auth/generate-password');
+    return response.data.password;
+  }
+
 }

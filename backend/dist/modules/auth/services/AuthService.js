@@ -8,12 +8,19 @@ class AuthService {
     constructor(userRepository) {
         this.userRepository = userRepository;
     }
+    // В AuthService.ts обновим метод register:
     async register(input) {
         const { login, password } = input;
-        // Проверка силы пароля
-        const strength = PasswordHasher_1.passwordHasher.checkStrength(password);
-        if (!strength.isStrong) {
-            throw new Error('Password is too weak');
+        // Профессиональная проверка пароля
+        const strengthCheck = PasswordHasher_1.passwordHasher.checkStrength(password);
+        if (!strengthCheck.isStrong) {
+            const errorDetails = [
+                `Password strength score: ${strengthCheck.score}/100`,
+                ...strengthCheck.reasons.map(r => `• ${r}`),
+                ...(strengthCheck.suggestions.length > 0 ?
+                    ['Suggestions:', ...strengthCheck.suggestions.map(s => `• ${s}`)] : [])
+            ].join('\n');
+            throw new Error(`Password security requirements not met:\n${errorDetails}`);
         }
         // Проверка уникальности логина
         const exists = await this.userRepository.existsByLogin(login);

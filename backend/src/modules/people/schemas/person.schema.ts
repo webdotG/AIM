@@ -53,3 +53,23 @@ export const getPeopleSchema = z.object({
       .optional()
   })
 });
+
+export const mostMentionedSchema = z.object({
+  query: z.object({
+    limit: z.string()
+      .regex(/^\d+$/)
+      .transform(val => val ? parseInt(val, 10) : 10)
+      .optional()
+      .default(10),
+    start_date: z.string()
+      .refine(val => !val || !isNaN(Date.parse(val)), {
+        message: 'Invalid date format'
+      })
+      .optional(),
+    end_date: z.string()
+      .refine(val => !val || !isNaN(Date.parse(val)), {
+        message: 'Invalid date format'
+      })
+      .optional()
+  })
+});

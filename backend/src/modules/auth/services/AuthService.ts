@@ -17,56 +17,66 @@ export class AuthService {
     private userRepository: UserRepository,
   ) {}
 
-  async register(input: RegisterInput): Promise<{
-    user: { id: number; login: string };
-    token: string;
-    backupCode: string;
-  }> {
-    const { login, password } = input;
+ // В AuthService.ts обновим метод register:
+async register(input: RegisterInput): Promise<{
+  user: { id: number; login: string };
+  token: string;
+  backupCode: string;
+}> {
+  const { login, password } = input;
 
-    // Проверка силы пароля
-    const strength = passwordHasher.checkStrength(password);
-    if (!strength.isStrong) {
-      throw new Error('Password is too weak');
-    }
-
-    // Проверка уникальности логина
-    const exists = await this.userRepository.existsByLogin(login);
-    if (exists) {
-      throw new Error('Login already taken');
-    }
-
-    // Хеширование пароля
-    const passwordHash = await passwordHasher.hash(password);
-
-    // Генерация backup-кода
-    const backupCode = passwordHasher.generateBackupCode();
-    const backupCodeHash = await passwordHasher.hashBackupCode(backupCode);
-
-    // Создание пользователя
-    const user = await this.userRepository.create({
-      login,
-      password_hash: passwordHash,
-      backup_code_hash: backupCodeHash,
-    });
-
-    // Генерация токена
-    const token = jwtService.sign({
-      userId: user.id,
-      login: user.login,
-    });
-
-    console.log(`User registered: ${user.login} (ID: ${user.id})`);
-
-    return {
-      user: {
-        id: user.id,
-        login: user.login,
-      },
-      token,
-      backupCode,
-    };
+  // Профессиональная проверка пароля
+  const strengthCheck = passwordHasher.checkStrength(password);
+  
+  if (!strengthCheck.isStrong) {
+    const errorDetails = [
+      `Password strength score: ${strengthCheck.score}/100`,
+      ...strengthCheck.reasons.map(r => `• ${r}`),
+      ...(strengthCheck.suggestions.length > 0 ? 
+        ['Suggestions:', ...strengthCheck.suggestions.map(s => `• ${s}`)] : [])
+    ].join('\n');
+    
+    throw new Error(`Password security requirements not met:\n${errorDetails}`);
   }
+
+  // Проверка уникальности логина
+  const exists = await this.userRepository.existsByLogin(login);
+  if (exists) {
+    throw new Error('Login already taken');
+  }
+
+  // Хеширование пароля
+  const passwordHash = await passwordHasher.hash(password);
+
+  // Генерация backup-кода
+  const backupCode = passwordHasher.generateBackupCode();
+  const backupCodeHash = await passwordHasher.hashBackupCode(backupCode);
+
+  // Создание пользователя
+  const user = await this.userRepository.create({
+    login,
+    password_hash: passwordHash,
+    backup_code_hash: backupCodeHash,
+  });
+
+  // Генерация токена
+  const token = jwtService.sign({
+    userId: user.id,
+    login: user.login,
+  });
+
+  console.log(`User registered: ${user.login} (ID: ${user.id})`);
+
+  return {
+    user: {
+      id: user.id,
+      login: user.login,
+    },
+    token,
+    backupCode,
+  };
+}
+  
 
   async login(input: LoginInput): Promise<{
     user: { id: number; login: string };

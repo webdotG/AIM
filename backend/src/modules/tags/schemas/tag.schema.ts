@@ -44,3 +44,59 @@ export const getTagsSchema = z.object({
       .optional()
   })
 });
+
+export const mostUsedSchema = z.object({
+  query: z.object({
+    limit: z.string()
+      .regex(/^\d+$/)
+      .transform(val => val ? parseInt(val, 10) : 10)
+      .optional()
+      .default(10),
+    min_usage: z.string()
+      .regex(/^\d+$/)
+      .transform(val => val ? parseInt(val, 10) : 1)
+      .optional()
+      .default(1)
+  })
+});
+
+export const unusedSchema = z.object({
+  query: z.object({
+    older_than_days: z.string()
+      .regex(/^\d+$/)
+      .transform(val => val ? parseInt(val, 10) : 30)
+      .optional()
+      .default(30)
+  })
+});
+
+export const entriesByTagSchema = z.object({
+  query: z.object({
+    page: z.string()
+      .regex(/^\d+$/)
+      .transform(val => val ? parseInt(val, 10) : undefined)
+      .optional(),
+    limit: z.string()
+      .regex(/^\d+$/)
+      .transform(val => val ? parseInt(val, 10) : undefined)
+      .optional(),
+    entry_type: z.enum(['dream', 'memory', 'thought', 'plan', 'all'])
+      .optional()
+      .default('all')
+  })
+});
+
+export const similarTagsSchema = z.object({
+  query: z.object({
+    limit: z.string()
+      .regex(/^\d+$/)
+      .transform(val => val ? parseInt(val, 10) : 5)
+      .optional()
+      .default(5),
+    min_similarity: z.string()
+      .regex(/^\d+$/)
+      .transform(val => val ? parseInt(val, 10) : 1)
+      .optional()
+      .default(1)
+  })
+});

@@ -23,6 +23,13 @@ export const updatePasswordSchema = z.object({
     .max(128, 'Password is too long'),
 });
 
+export const checkPasswordStrengthSchema = z.object({
+  password: z.string()
+    .min(1, 'Password is required')
+    .max(128, 'Password is too long'),
+});
+
+export type CheckPasswordStrengthInput = z.infer<typeof checkPasswordStrengthSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type UpdatePasswordInput = z.infer<typeof updatePasswordSchema>;

@@ -1,6 +1,3 @@
-// ============================================
-// src/routes/v1/body-states.routes.ts
-// ============================================
 import { Router } from 'express';
 import { bodyStatesController } from '../../modules/body-states/controllers/BodyStatesController';
 import { authenticate } from '../../shared/middleware/auth.middleware';
@@ -14,7 +11,6 @@ import {
 
 const router = Router();
 
-// Все routes требуют аутентификации
 router.use(authenticate);
 
 // GET /api/v1/body-states - получить все состояния тела

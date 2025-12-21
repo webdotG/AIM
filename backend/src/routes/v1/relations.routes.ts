@@ -6,22 +6,23 @@ import {
   createRelationSchema,
   relationIdSchema,
   entryIdSchema,
-  getChainSchema
+  getChainSchema,
+  mostConnectedSchema,
+  graphSchema
 } from '../../modules/relations/schemas/relation.schema';
 
 const router = Router();
 
-// Все routes требуют аутентификации
 router.use(authenticate);
 
 // GET /api/v1/relations/types - типы связей (справочник)
 router.get('/types', relationsController.getTypes);
 
 // GET /api/v1/relations/most-connected - самые связанные записи
-router.get('/most-connected', relationsController.getMostConnected);
+router.get('/most-connected', validate(mostConnectedSchema), relationsController.getMostConnected);
 
 // GET /api/v1/relations/graph - граф для визуализации
-router.get('/graph', relationsController.getGraph);
+router.get('/graph', validate(graphSchema), relationsController.getGraph);
 
 // GET /api/v1/relations/entry/:entryId - связи для записи
 router.get('/entry/:entryId', validate(entryIdSchema), relationsController.getForEntry);

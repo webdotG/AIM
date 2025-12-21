@@ -6,14 +6,13 @@ const auth_middleware_1 = require("../../shared/middleware/auth.middleware");
 const validator_middleware_1 = require("../../shared/middleware/validator.middleware");
 const relation_schema_1 = require("../../modules/relations/schemas/relation.schema");
 const router = (0, express_1.Router)();
-// Все routes требуют аутентификации
 router.use(auth_middleware_1.authenticate);
 // GET /api/v1/relations/types - типы связей (справочник)
 router.get('/types', RelationsController_1.relationsController.getTypes);
 // GET /api/v1/relations/most-connected - самые связанные записи
-router.get('/most-connected', RelationsController_1.relationsController.getMostConnected);
+router.get('/most-connected', (0, validator_middleware_1.validate)(relation_schema_1.mostConnectedSchema), RelationsController_1.relationsController.getMostConnected);
 // GET /api/v1/relations/graph - граф для визуализации
-router.get('/graph', RelationsController_1.relationsController.getGraph);
+router.get('/graph', (0, validator_middleware_1.validate)(relation_schema_1.graphSchema), RelationsController_1.relationsController.getGraph);
 // GET /api/v1/relations/entry/:entryId - связи для записи
 router.get('/entry/:entryId', (0, validator_middleware_1.validate)(relation_schema_1.entryIdSchema), RelationsController_1.relationsController.getForEntry);
 // GET /api/v1/relations/chain/:entryId - цепочка связей
