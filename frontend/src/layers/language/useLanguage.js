@@ -9,13 +9,13 @@ function useLanguage() {
   }
   
   // Добавьте для дебага
-  if (process.env.NODE_ENV === 'development') {
-    console.log('useLanguage context:', {
-      language: context.language,
-      hasT: !!context.t,
-      translationKeys: Object.keys(context.translations || {})
-    });
-  }
+  // if (process.env.NODE_ENV === 'development') {
+  //   console.log('useLanguage context:', {
+  //     language: context.language,
+  //     hasT: !!context.t,
+  //     translationKeys: Object.keys(context.translations || {})
+  //   });
+  // }
   
   return context;
 }

@@ -10,13 +10,13 @@ function LanguageProvider({ children, defaultLanguage = 'ru' }) {
   
   // Инициализация при монтировании
   useEffect(() => {
-    console.log('LanguageProvider mounted, language:', language);
+    // console.log('LanguageProvider mounted, language:', language);
     document.documentElement.setAttribute('lang', language);
   }, []); // Только при монтировании
   
   const setLanguage = useCallback((newLanguage) => {
     if (translations[newLanguage]) {
-      console.log('Setting language to:', newLanguage);
+      // console.log('Setting language to:', newLanguage);
       setLanguageState(newLanguage);
       localStorage.setItem('app_language', newLanguage);
       document.documentElement.setAttribute('lang', newLanguage);
@@ -26,7 +26,7 @@ function LanguageProvider({ children, defaultLanguage = 'ru' }) {
   }, []);
 
   const t = useCallback((key, params = {}) => {
-  console.log(`t() called with key: "${key}", language: ${language}`);
+  // console.log(`t() called with key: "${key}", language: ${language}`);
   
   // Ищем перевод в текущем языке
   const currentTranslations = translations[language] || translations.ru;

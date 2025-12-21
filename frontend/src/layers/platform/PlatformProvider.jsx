@@ -3,7 +3,7 @@ import PlatformContext from './PlatformContext';
 import { NavigationProvider } from './PlatformNavigator';
 
 const PlatformProvider = ({ children, platform }) => {
-  // Определяем стили и конфигурацию для каждой платформы
+  // стили и конфигурацию для каждой платформы
   const platformConfig = {
     web: {
       layout: 'MainLayout',
@@ -27,7 +27,7 @@ const PlatformProvider = ({ children, platform }) => {
   };
 
   const config = platformConfig[platform] || platformConfig.web;
-
+// console.log('platformConfig[platform] to:', config);
   return (
     <PlatformContext.Provider value={{ platform, config }}>
       <NavigationProvider>

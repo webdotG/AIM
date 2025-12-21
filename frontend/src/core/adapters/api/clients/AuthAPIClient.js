@@ -3,8 +3,30 @@ import { AuthRepository } from '../../../repositories/AuthRepository';
 import { UserMapper } from '../mappers/UserMapper';
 
 export class AuthAPIClient extends AuthRepository {
+
+  prepareCaptchaData(captchaToken) {
+    if (isDevelopment()) {
+      // В режиме разработки используем специальный токен
+      return {
+        hcaptchaToken: 'dev-mode-bypass-token',
+      };
+    // return {
+    //   hcaptchaToken: captchaToken,
+    //   devMode: true,
+    // };
+    }
+    // production требуем реальный токен
+    return { hcaptchaToken: captchaToken };
+  }
+
   async login(credentials) {
-    const response = await apiClient.post('/auth/login', credentials);
+    const captchaData = this.prepareCaptchaData(credentials.hcaptchaToken);
+    const response = await apiClient.post('/auth/login', {
+      login: credentials.login,
+      password: credentials.password,
+      ...captchaData,
+    });
+    
     
     if (response.token) {
       localStorage.setItem('auth_token', response.token);
@@ -18,7 +40,14 @@ export class AuthAPIClient extends AuthRepository {
   }
 
   async register(userData) {
-    const response = await apiClient.post('/auth/register', userData);
+
+    const captchaData = this.prepareCaptchaData(userData.hcaptchaToken);
+    
+    const response = await apiClient.post('/auth/register', {
+      login: userData.login,
+      password: userData.password,
+      ...captchaData,
+    });
     
     if (response.token) {
       localStorage.setItem('auth_token', response.token);

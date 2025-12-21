@@ -4,10 +4,14 @@ import { useTheme } from '@/layers/theme';
 import { useLanguage } from '@/layers/language';
 import Input from '@/ui/components/common/Input/Input';
 import PasswordInput from '@/ui/components/auth/PasswordInput/PasswordInput';
+import HCaptcha from '@/ui/components/auth/HCaptcha/HCaptcha';
 import Button from '@/ui/components/common/Button/Button';
 import Loader from '@/ui/components/common/Loader/Loader';
 import Header from '../../components/layout/Header';
+import { AuthAPIClient } from '@/core/adapters/api/clients/AuthAPIClient';
 import './AuthPage.css';
+
+const authClient = new AuthAPIClient();
 
 export default function AuthPage() {
   const [mode, setMode] = useState('login');
@@ -15,34 +19,44 @@ export default function AuthPage() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [backupCode, setBackupCode] = useState('');
+  const [hcaptchaToken, setHcaptchaToken] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [passwordStrength, setPasswordStrength] = useState(null);
   
-  const { t, language } = useLanguage();
   const { currentTheme } = useTheme();
   const navigate = useNavigate();
-  
-  const handleLoginChange = (value) => {
-    setLogin(value);
+
+  // Обработчик hCaptcha
+  const handleCaptchaVerify = (token) => {
+    console.log('hCaptcha verified:', token);
+    setHcaptchaToken(token);
+    setError(''); // Очищаем ошибки
   };
-  
-  const handlePasswordChange = (value) => {
-    setPassword(value);
+
+  const handleCaptchaError = (error) => {
+    console.error('hCaptcha error:', error);
+    setHcaptchaToken('');
+    setError('Ошибка проверки hCaptcha. Попробуйте обновить страницу.');
   };
-  
-  const handleConfirmPasswordChange = (value) => {
-    setConfirmPassword(value);
-  };
-  
-  const handleBackupCodeChange = (value) => {
-    setBackupCode(value);
+
+  const handleCaptchaExpire = () => {
+    console.warn('hCaptcha expired');
+    setHcaptchaToken('');
+    setError('hCaptcha истекла. Пожалуйста, пройдите проверку заново.');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+
+    // Проверка hCaptcha токена
+    if (!hcaptchaToken) {
+      setError('Пожалуйста, пройдите проверку hCaptcha');
+      setLoading(false);
+      return;
+    }
     
     try {
       if (mode === 'login') {
@@ -52,32 +66,37 @@ export default function AuthPage() {
           return;
         }
         
-        // TODO: Реальная логика входа через authStore
-        setTimeout(() => {
-          navigate('/timeline');
-        }, 1000);
+        const result = await authClient.login({
+          login,
+          password,
+          hcaptchaToken,
+        });
+
+        console.log('Login successful:', result);
+        navigate('/timeline');
         
       } else if (mode === 'register') {
-        // Проверка совпадения паролей
         if (password !== confirmPassword) {
           setError('Пароли не совпадают');
           setLoading(false);
           return;
         }
         
-        // Проверка силы пароля (если есть индикатор)
         if (passwordStrength && !passwordStrength.isStrong) {
           setError('Пароль недостаточно надёжный. Исправьте замечания выше.');
           setLoading(false);
           return;
         }
         
-        // TODO: Реальная логика регистрации через authStore
-        setTimeout(() => {
-          alert(`Регистрация успешна!\n\nВАЖНО: Сохраните ваш backup-код:\n\n123456789ABC\n\nОн понадобится для восстановления доступа!`);
-          setMode('login');
-          setLoading(false);
-        }, 1000);
+        const result = await authClient.register({
+          login,
+          password,
+          hcaptchaToken,
+        });
+
+        alert(`Регистрация успешна!\n\n⚠️ ВАЖНО: Сохраните ваш backup-код:\n\n${result.backupCode}\n\nОн понадобится для восстановления доступа!`);
+        setMode('login');
+        setLoading(false);
         
       } else if (mode === 'recover') {
         if (!backupCode.trim() || !password.trim()) {
@@ -86,17 +105,22 @@ export default function AuthPage() {
           return;
         }
         
-        // TODO: Реальная логика восстановления через authStore
-        setTimeout(() => {
-          alert('Пароль успешно восстановлен!');
-          setMode('login');
-          setLoading(false);
-        }, 1000);
+        const result = await authClient.recover({
+          backupCode,
+          newPassword: password,
+          hcaptchaToken,
+        });
+
+        alert(`Пароль восстановлен!\n\nНовый backup-код:\n${result.backupCode}`);
+        setMode('login');
+        setLoading(false);
       }
     } catch (err) {
       console.error('Auth error:', err);
-      setError(err.message || 'Произошла ошибка');
+      setError(err.response?.data?.error || err.message || 'Произошла ошибка');
       setLoading(false);
+      // Сбрасываем hCaptcha при ошибке
+      setHcaptchaToken('');
     }
   };
   
@@ -130,24 +154,22 @@ export default function AuthPage() {
             </div>
           )}
           
-          {/* Логин (для всех режимов кроме recover в текущей версии) */}
           {mode !== 'recover' && (
             <Input
               label="Логин"
               type="text"
               value={login}
-              onChange={handleLoginChange}
+              onChange={setLogin}
               placeholder="Введите логин"
               required
               autoFocus={mode === 'login'}
             />
           )}
           
-          {/* Пароль с индикатором силы для регистрации */}
           {mode === 'register' ? (
             <PasswordInput
               value={password}
-              onChange={handlePasswordChange}
+              onChange={setPassword}
               label="Пароль"
               placeholder="Придумайте надёжный пароль"
               showStrengthIndicator={true}
@@ -158,7 +180,7 @@ export default function AuthPage() {
           ) : mode === 'recover' ? (
             <PasswordInput
               value={password}
-              onChange={handlePasswordChange}
+              onChange={setPassword}
               label="Новый пароль"
               placeholder="Придумайте новый пароль"
               showStrengthIndicator={true}
@@ -167,22 +189,20 @@ export default function AuthPage() {
               required
             />
           ) : (
-            // Для логина - обычный password input без проверки
             <Input
               label="Пароль"
               type="password"
               value={password}
-              onChange={handlePasswordChange}
+              onChange={setPassword}
               placeholder="Введите пароль"
               required
             />
           )}
           
-          {/* Подтверждение пароля при регистрации */}
           {mode === 'register' && (
             <PasswordInput
               value={confirmPassword}
-              onChange={handleConfirmPasswordChange}
+              onChange={setConfirmPassword}
               label="Повторите пароль"
               placeholder="Введите пароль ещё раз"
               showStrengthIndicator={false}
@@ -191,28 +211,38 @@ export default function AuthPage() {
             />
           )}
           
-          {/* Backup-код для восстановления */}
           {mode === 'recover' && (
             <Input
               label="Backup-код"
               type="text"
               value={backupCode}
-              onChange={handleBackupCodeChange}
+              onChange={setBackupCode}
               placeholder="Введите ваш backup-код"
               required
               autoFocus
               maxLength={32}
             />
           )}
+
+          {/* hCaptcha для всех режимов */}
+          <HCaptcha
+            onVerify={handleCaptchaVerify}
+            onError={handleCaptchaError}
+            onExpire={handleCaptchaExpire}
+            theme={currentTheme.name === 'dark' ? 'dark' : 'light'}
+          />
           
-          {/* Кнопка отправки */}
-          <Button type="submit" variant="primary" fullWidth>
-            {mode === 'login' && ' Войти'}
-            {mode === 'register' && ' Зарегистрироваться'}
-            {mode === 'recover' && ' Восстановить пароль'}
+          <Button 
+            type="submit" 
+            variant="primary" 
+            fullWidth
+            disabled={!hcaptchaToken || loading}
+          >
+            {mode === 'login' && 'Войти'}
+            {mode === 'register' && 'Зарегистрироваться'}
+            {mode === 'recover' && 'Восстановить пароль'}
           </Button>
           
-          {/* Подсказки */}
           {mode === 'register' && (
             <div className="auth-hint">
               <span className="hint-icon"></span>
@@ -224,7 +254,7 @@ export default function AuthPage() {
           
           {mode === 'recover' && (
             <div className="auth-hint">
-              <span className="hint-icon">ℹ</span>
+              <span className="hint-icon"></span>
               <span className="hint-text">
                 Backup-код был выдан при регистрации. Если вы его потеряли, обратитесь к администратору.
               </span>
@@ -232,7 +262,6 @@ export default function AuthPage() {
           )}
         </form>
         
-        {/* Переключение режимов */}
         <div className="auth-footer">
           {mode === 'login' && (
             <>
@@ -242,6 +271,7 @@ export default function AuthPage() {
                 onClick={() => {
                   setMode('register');
                   setError('');
+                  setHcaptchaToken('');
                 }}
               >
                 Нет аккаунта? <strong>Зарегистрироваться</strong>
@@ -252,6 +282,7 @@ export default function AuthPage() {
                 onClick={() => {
                   setMode('recover');
                   setError('');
+                  setHcaptchaToken('');
                 }}
               >
                 Забыли пароль? <strong>Восстановить</strong>
@@ -269,6 +300,7 @@ export default function AuthPage() {
                 setPassword('');
                 setConfirmPassword('');
                 setBackupCode('');
+                setHcaptchaToken('');
               }}
             >
               ← Вернуться к входу

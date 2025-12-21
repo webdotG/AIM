@@ -23,8 +23,9 @@ export class AuthController {
   register = async (req: Request, res: Response): Promise<void> => {
     try {
 
-      const input: RegisterInput = registerSchema.parse(req.body);
+      const { hcaptchaToken, ...userData } = req.body;
 
+      const input: RegisterInput = registerSchema.parse(userData);
       const result = await this.authService.register(input);
 
       res.status(201).json({

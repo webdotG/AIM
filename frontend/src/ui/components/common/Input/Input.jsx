@@ -83,17 +83,16 @@ function Input({
     if (onBlur) onBlur(e);
   };
 
-  // ИСПРАВЛЯЕМ: onChange должен передавать value, а не событие
+  // onChange value, а не событие
   const handleChange = (e) => {
-    console.log('Input handleChange:', {
-      value: e.target.value,
-      event: e.type,
-      shouldCallOnChange: !!onChange,
-      onChangeType: typeof onChange
-    });
+    // console.log('Input handleChange:', {
+    //   value: e.target.value,
+    //   event: e.type,
+    //   shouldCallOnChange: !!onChange,
+    //   onChangeType: typeof onChange
+    // });
     
     if (onChange && typeof onChange === 'function') {
-      // Передаем значение, а не событие
       onChange(e.target.value);
     }
   };

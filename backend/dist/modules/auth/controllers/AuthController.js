@@ -13,7 +13,8 @@ class AuthController {
     constructor() {
         this.register = async (req, res) => {
             try {
-                const input = auth_schema_1.registerSchema.parse(req.body);
+                const { hcaptchaToken, ...userData } = req.body;
+                const input = auth_schema_1.registerSchema.parse(userData);
                 const result = await this.authService.register(input);
                 res.status(201).json({
                     success: true,

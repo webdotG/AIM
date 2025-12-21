@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "dependencies": {
+    "@hcaptcha/react-hcaptcha": "^1.17.1",
     "@react-three/drei": "^9.94.3",
     "@react-three/fiber": "^8.14.3",
     "axios": "^1.6.0",

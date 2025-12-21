@@ -1,21 +1,15 @@
 import { Router } from 'express';
 import { authController } from '../../modules/auth/controllers/AuthController';
-import { validate } from '../../shared/middleware/validator.middleware';
-import { 
-  registerSchema, 
-  loginSchema, 
-  recoverSchema 
-} from '../../modules/auth/schemas/auth.schema';
-// import { authLimiter } from '../../modules/security/middleware/rateLimiter';
+import { hcaptchaMiddleware } from '../../shared/middleware/hcaptcha.middleware';
 
 const router = Router();
 
-router.post('/register', authController.register);
-router.post('/login', authController.login);
-router.post('/recover', authController.recover);
-router.get('/verify', authController.verify);
+router.post('/register', hcaptchaMiddleware.verify, authController.register);
+router.post('/login', hcaptchaMiddleware.verify, authController.login);
+router.post('/recover', hcaptchaMiddleware.verify, authController.recover);
 
-// НОВЫЕ ROUTES для проверки пароля
+// Эти endpoints не требуют hCaptcha
+router.get('/verify', authController.verify);
 router.post('/check-password-strength', authController.checkPasswordStrength);
 router.get('/generate-password', authController.generatePasswordRecommendation);
 

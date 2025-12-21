@@ -2,15 +2,6 @@ import React, { useState, useEffect, useMemo } from 'react';
 import ThemeContext from './ThemeContext';
 import themes from './themes';
 
-/**
- * ThemeProvider — управление темами приложения
- * 
- * Функции:
- * - Хранение текущей темы
- * - Переключение тем
- * - Сохранение в localStorage
- * - Применение CSS переменных
- */
 function ThemeProvider({ children, defaultTheme = 'light' }) {
   const [theme, setThemeState] = useState(() => {
     // Пытаемся загрузить из localStorage

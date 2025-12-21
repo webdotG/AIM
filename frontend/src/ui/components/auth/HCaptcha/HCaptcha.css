@@ -1,0 +1,45 @@
+.hcaptcha-wrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin: 16px 0;
+  width: 100%;
+}
+
+.hcaptcha-warning {
+  display: block;
+  padding: 12px 16px;
+  background: #fff3cd;
+  border: 1px solid #ffc107;
+  border-radius: 8px;
+  color: #856404;
+  font-size: 13px;
+  text-align: center;
+  margin: 16px 0;
+}
+
+/* Стили для темной темы */
+[data-theme="dark"] .hcaptcha-wrapper {
+  filter: invert(1) hue-rotate(180deg);
+}
+
+/* Стилизация контейнера hCaptcha */
+.hcaptcha-wrapper > div {
+  /* Это контейнер iframe */
+  margin: 0 auto;
+}
+
+/* Если hCaptcha добавляет свои классы */
+.h-captcha {
+  /* Ваши стили для основного контейнера */
+}
+
+/* Для текстовых подсказок и варнингов */
+.hcaptcha-wrapper .info,
+.hcaptcha-wrapper .warning {
+  font-size: 12px;
+  color: #666;
+  margin-top: 8px;
+}
+
+/* Если нужно стилизовать iframe содержимое - используем JavaScript подход */

@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
 
-// Контекст навигации
 const NavigationContext = createContext();
 
 export const NavigationProvider = ({ children }) => {
