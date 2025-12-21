@@ -1,4 +1,4 @@
-// src/ui/components/layout/Navigation.jsx
+// src/ui/layouts/Navigation.jsx
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useLanguage } from '@/layers/language';
@@ -7,10 +7,28 @@ import './Navigation.css';
 export default function Navigation() {
   const { t } = useLanguage();
   
+  // 4 пункта навигации
   const navItems = [
-    { path: '/timeline', icon: '📝', label: t('navigation.timeline') },
-    { path: '/analytics', icon: '📊', label: t('navigation.analytics') },
-    { path: '/settings', icon: '⚙️', label: t('navigation.settings') },
+    { 
+      path: '/', 
+      icon: '📝', 
+      label: t('navigation.timeline') || 'Лента'
+    },
+    { 
+      path: '/entries/create', 
+      icon: '➕', 
+      label: t('navigation.create') || 'Создать'
+    },
+    { 
+      path: '/analytics', 
+      icon: '📊', 
+      label: t('navigation.analytics') || 'Аналитика'
+    },
+    { 
+      path: '/settings', 
+      icon: '⚙️', 
+      label: t('navigation.settings') || 'Настройки'
+    },
   ];
   
   return (
@@ -22,6 +40,7 @@ export default function Navigation() {
           className={({ isActive }) => 
             `nav-item ${isActive ? 'active' : ''}`
           }
+          end={item.path === '/'}
         >
           <span className="nav-icon">{item.icon}</span>
           <span className="nav-label">{item.label}</span>

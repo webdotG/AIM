@@ -12,8 +12,6 @@ const Header = () => {
       <div className="header-left">
         <h1 className="header-title">AIM</h1>
         <span className="header-version">v0.1.0</span>
-
-      <WebNavigation/>
       </div>
 
 

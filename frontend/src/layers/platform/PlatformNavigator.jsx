@@ -41,7 +41,7 @@ export const NavigationProvider = ({ children }) => {
     <NavigationContext.Provider value={value}>
       {children}
     </NavigationContext.Provider>
-  );
+  );  
 };
 
 export const useNavigation = () => {
