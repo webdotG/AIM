@@ -1,4 +1,3 @@
-// store/UrlSyncStore.js
 import { makeAutoObservable, autorun } from 'mobx';
 
 class UrlSyncStore {

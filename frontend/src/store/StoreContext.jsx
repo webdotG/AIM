@@ -1,7 +1,7 @@
 import React from 'react';
-import { rootStore } from './RootStore';
+import  RootStore  from './RootStore';
 
-export const StoreContext = React.createContext(rootStore);
+export const StoreContext = React.createContext(RootStore);
 
 // Основной хук для доступа ко всем сторам
 export const useStores = () => {
@@ -36,10 +36,11 @@ export const useSkillsStore = () => {
 export const useUIStore = () => {
   return useStores().uiStore;
 };
+export const useUrlSyncStore = () => useStores().urlSyncStor         
 
 export const StoreProvider = ({ children }) => {
   return (
-    <StoreContext.Provider value={rootStore}>
+    <StoreContext.Provider value={RootStore}>
       {children}
     </StoreContext.Provider>
   );

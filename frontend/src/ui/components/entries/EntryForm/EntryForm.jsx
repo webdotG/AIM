@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+// EntryForm.jsx - ПОЛНЫЙ ИСПРАВЛЕННЫЙ КОД
+import React, { useState, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useLanguage } from '@/layers/language';
-import { useEntriesStore, useUIStore } from '@/store/StoreContext';
+import { useEntriesStore, useUIStore, useUrlSyncStore } from '@/store/StoreContext';
 import Modal from '../../common/Modal/Modal';
 import EmotionPicker from '../../emotions/EmotionPicker/EmotionPicker';
 import CircumstancesPicker from '@/ui/components/circumstances/CircumstancesPicker';
@@ -10,35 +11,23 @@ import SkillsPicker from '@/ui/components/skills/SkillsPicker';
 import RelationPicker from '../../relation/RelationPicker';
 import RelationGraph from '../../relation/RelationGraph';
 import TagsPicker from '@/ui/components/tags/TagsPicker';
+import EntryTypePicker from '../../entries/EntryType/EntryTypePicker';
+import UrlStatusBar from '@/ui/components/status/UrlStatusBar';
 import './EntryForm.css';
 
 const EntryForm = observer(() => {
+  // ИСПРАВЛЕНО: Проверка что хуки вернули данные
   const entriesStore = useEntriesStore();
   const uiStore = useUIStore();
+  const urlSyncStore = useUrlSyncStore();
   const { t } = useLanguage();
 
-  // Читаем начальные данные из URL
-  const getInitialFormData = () => {
-    const params = new URLSearchParams(window.location.search);
-    
-    return {
-      type: params.get('type') || 'thought',
-      content: decodeURIComponent(params.get('content') || ''),
-      eventDate: params.get('date') || '',
-      deadline: params.get('deadline') || '',
-      emotions: [],
-      circumstances: [],
-      bodyState: null,
-      skills: [],
-      relations: [],
-      people: [],
-      tags: []
-    };
-  };
+  // если store не загружен
+  // if (!urlSyncStore? || !entriesStore || !uiStore) {
+  //   return <div className="loading-state">Loading form...</div>;
+  // }
 
-  const [formData, setFormData] = useState(getInitialFormData);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [skillProgress, setSkillProgress] = useState([]);
   
   // Модалки для пикеров
   const [showEmotionPicker, setShowEmotionPicker] = useState(false);
@@ -50,161 +39,34 @@ const EntryForm = observer(() => {
   const [showSkillProgressPicker, setShowSkillProgressPicker] = useState(false);
   const [showTagsPicker, setShowTagsPicker] = useState(false);
 
-  // Обновление URL при изменении основных полей
-  useEffect(() => {
-    const url = new URL(window.location);
-    
-    // Обновляем или удаляем параметры
-    if (formData.type && formData.type !== 'thought') {
-      url.searchParams.set('type', formData.type);
-    } else {
-      url.searchParams.delete('type');
-    }
-    
-    if (formData.content.trim()) {
-      url.searchParams.set('content', encodeURIComponent(formData.content));
-    } else {
-      url.searchParams.delete('content');
-    }
-    
-    if (formData.eventDate) {
-      url.searchParams.set('date', formData.eventDate);
-    } else {
-      url.searchParams.delete('date');
-    }
-    
-    if (formData.deadline) {
-      url.searchParams.set('deadline', formData.deadline);
-    } else {
-      url.searchParams.delete('deadline');
-    }
-    
-    window.history.replaceState({}, '', url);
-  }, [formData.type, formData.content, formData.eventDate, formData.deadline]);
-
-  // Функция для чтения данных из всех пикеров из URL
-  const readAllPickerData = useCallback(() => {
-    const params = new URLSearchParams(window.location.search);
-    const data = {
-      emotionsCount: 0,
-      circumstancesCount: 0,
-      hasBodyState: false,
-      skillsCount: 0,
-      relationsCount: 0,
-      tagsCount: 0,
-      skillProgressCount: 0
-    };
-
-    // Эмоции
-    const emoParam = params.get('emo');
-    if (emoParam) {
-      data.emotionsCount = emoParam.split(';').length;
-    }
-
-    // Обстоятельства
-    const circParam = params.get('circ');
-    if (circParam) {
-      data.circumstancesCount = circParam.split(';').length;
-    }
-
-    // Состояние тела
-    const bodyParam = params.get('body');
-    if (bodyParam && bodyParam !== '0|0|') {
-      data.hasBodyState = true;
-    }
-
-    // Навыки
-    const skillsParam = params.get('skills');
-    if (skillsParam) {
-      data.skillsCount = skillsParam.split(';').length;
-    }
-
-    // Связи
-    const relParam = params.get('rel');
-    if (relParam) {
-      data.relationsCount = relParam.split(';').length;
-    }
-
-    // Теги
-    const tagsParam = params.get('tags');
-    if (tagsParam) {
-      data.tagsCount = tagsParam.split(',').length;
-    }
-
-    // Прокачка скиллов
-    const skillProgressParam = params.get('skill_progress');
-    if (skillProgressParam) {
-      data.skillProgressCount = skillProgressParam.split(';').length;
-    }
-
-    return data;
-  }, []);
-
-  // Стейт для отображения данных из URL
-  const [urlData, setUrlData] = useState(() => readAllPickerData());
-
-  // Обновляем данные при изменении URL
-  useEffect(() => {
-    const handleUrlChange = () => {
-      setUrlData(readAllPickerData());
-    };
-
-    // Слушаем изменения URL
-    window.addEventListener('popstate', handleUrlChange);
-    
-    // Также проверяем при каждом рендере
-    handleUrlChange();
-
-    return () => window.removeEventListener('popstate', handleUrlChange);
-  }, [readAllPickerData]);
-
-  const handleTagsChange = useCallback((updatedTags) => {
-    setFormData(prev => ({ ...prev, tags: updatedTags }));
-  }, []);
-
-  const handleSkillProgressChange = useCallback((updatedProgress) => {
-    setSkillProgress(updatedProgress);
-  }, []);
-
-  const typeConfig = useMemo(() => ({
-    dream: { icon: 'DRE', label: t('entries.types.dream'), className: 'type-dream' },
-    memory: { icon: 'MEM', label: t('entries.types.memory'), className: 'type-memory' },
-    thought: { icon: 'THO', label: t('entries.types.thought'), className: 'type-thought' },
-    plan: { icon: 'PLA', label: t('entries.types.plan'), className: 'type-plan' }
-  }), [t]);
-
-  const handleInputChange = useCallback((field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  }, []);
-
-  const handleTypeChange = useCallback((type) => {
-    setFormData(prev => ({
-      ...prev,
-      type,
-      deadline: type !== 'plan' ? '' : prev.deadline
-    }));
-  }, []);
-
   // Обработчики изменений для пикеров
   const handleEmotionsChange = useCallback((updatedEmotions) => {
-    setFormData(prev => ({ ...prev, emotions: updatedEmotions }));
-  }, []);
+    urlSyncStore?.setEmotions(updatedEmotions);
+  }, [urlSyncStore]);
 
   const handleCircumstancesChange = useCallback((updatedCircumstances) => {
-    setFormData(prev => ({ ...prev, circumstances: updatedCircumstances }));
-  }, []);
+    urlSyncStore?.setCircumstances(updatedCircumstances);
+  }, [urlSyncStore]);
 
   const handleBodyStateChange = useCallback((updatedBodyState) => {
-    setFormData(prev => ({ ...prev, bodyState: updatedBodyState }));
-  }, []);
+    urlSyncStore?.setBodyState(updatedBodyState);
+  }, [urlSyncStore]);
 
   const handleSkillsChange = useCallback((updatedSkills) => {
-    setFormData(prev => ({ ...prev, skills: updatedSkills }));
-  }, []);
+    urlSyncStore?.setSkills(updatedSkills);
+  }, [urlSyncStore]);
 
   const handleRelationsChange = useCallback((updatedRelations) => {
-    setFormData(prev => ({ ...prev, relations: updatedRelations }));
-  }, []);
+    urlSyncStore?.setRelations(updatedRelations);
+  }, [urlSyncStore]);
+
+  const handleTagsChange = useCallback((updatedTags) => {
+    urlSyncStore?.setTags(updatedTags);
+  }, [urlSyncStore]);
+
+  const handleSkillProgressChange = useCallback((updatedProgress) => {
+    urlSyncStore?.setSkillProgress(updatedProgress);
+  }, [urlSyncStore]);
 
   const searchGraphs = useCallback(async (params) => {
     try {
@@ -222,12 +84,12 @@ const EntryForm = observer(() => {
   const handleSubmit = useCallback(async (e) => {
     e.preventDefault();
     
-    if (!formData.content.trim()) {
+    if (!urlSyncStore?.content?.trim()) {
       uiStore.showErrorMessage(t('common.requiredContent'));
       return;
     }
 
-    if (formData.type === 'plan' && !formData.deadline) {
+    if (urlSyncStore?.type === 'plan' && !urlSyncStore?.deadline) {
       uiStore.showErrorMessage(t('common.requiredDeadline'));
       return;
     }
@@ -236,38 +98,23 @@ const EntryForm = observer(() => {
 
     try {
       const entryData = {
-        type: formData.type,
-        content: formData.content.trim(),
-        ...(formData.eventDate && { eventDate: new Date(formData.eventDate) }),
-        ...(formData.deadline && { deadline: new Date(formData.deadline) }),
-        emotions: formData.emotions,
-        circumstances: formData.circumstances,
-        bodyState: formData.bodyState,
-        skills: formData.skills,
-        relations: formData.relations,
-        people: formData.people,
-        tags: formData.tags
+        type: urlSyncStore?.type,
+        content: urlSyncStore?.content.trim(),
+        ...(urlSyncStore?.eventDate && { eventDate: new Date(urlSyncStore?.eventDate) }),
+        ...(urlSyncStore?.deadline && { deadline: new Date(urlSyncStore?.deadline) }),
+        emotions: urlSyncStore?.emotions || [],
+        circumstances: urlSyncStore?.circumstances || [],
+        bodyState: urlSyncStore?.bodyState || {},
+        skills: urlSyncStore?.skills || [],
+        relations: urlSyncStore?.relations || [],
+        tags: urlSyncStore?.tags || [],
+        skillProgress: urlSyncStore?.skillProgress || []
       };
 
       await entriesStore.createEntry(entryData);
       
-      // Очищаем URL после успешного сохранения
-      window.history.replaceState({}, '', window.location.pathname);
-      
-      setFormData({
-        type: 'thought',
-        content: '',
-        eventDate: '',
-        deadline: '',
-        emotions: [],
-        circumstances: [],
-        bodyState: null,
-        skills: [],
-        relations: [],
-        people: [],
-        tags: []
-      });
-      setSkillProgress([]);
+      // Очищаем данные через стор
+      urlSyncStore?.reset();
       
       uiStore.showSuccessMessage(t('common.entryCreated'));
 
@@ -277,159 +124,36 @@ const EntryForm = observer(() => {
     } finally {
       setIsSubmitting(false);
     }
-  }, [formData, uiStore, t, entriesStore]);
+  }, [urlSyncStore, uiStore, t, entriesStore]);
 
-  const dateUtils = useMemo(() => ({
-    current: () => new Date().toISOString().split('T')[0],
-    tomorrow: () => {
-      const tomorrow = new Date();
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      return tomorrow.toISOString().split('T')[0];
-    }
-  }), []);
-
-  const hasBodyState = formData.bodyState && 
-    (formData.bodyState.hp > 0 || formData.bodyState.energy > 0 || formData.bodyState.location);
-
-  // Компонент для отображения актуального состояния из URL
-  const UrlStatusBar = () => {
-    const hasAnyData = 
-      formData.content.trim() || 
-      formData.type !== 'thought' ||
-      formData.eventDate ||
-      formData.deadline ||
-      urlData.emotionsCount > 0 ||
-      urlData.circumstancesCount > 0 ||
-      urlData.hasBodyState ||
-      urlData.skillsCount > 0 ||
-      urlData.relationsCount > 0 ||
-      urlData.tagsCount > 0 ||
-      urlData.skillProgressCount > 0;
-
-    if (!hasAnyData) return null;
-
-    return (
-      <div className="url-status-bar">
-        <div className="status-title">Будет сохранено:</div>
-        <div className="status-items">
-          {formData.type !== 'thought' && (
-            <span className="status-item">
-              <span className="status-icon">{typeConfig[formData.type]?.icon}</span>
-              {typeConfig[formData.type]?.label}
-            </span>
-          )}
-          
-          {formData.content.trim() && (
-            <span className="status-item">
-              <span className="status-icon">📝</span>
-              {formData.content.length > 50 
-                ? `${formData.content.substring(0, 50)}...` 
-                : formData.content}
-            </span>
-          )}
-          
-          {formData.eventDate && (
-            <span className="status-item">
-              <span className="status-icon">📅</span>
-              {formData.eventDate}
-            </span>
-          )}
-          
-          {formData.deadline && (
-            <span className="status-item">
-              <span className="status-icon">⏰</span>
-              {formData.deadline}
-            </span>
-          )}
-          
-          {urlData.emotionsCount > 0 && (
-            <span className="status-item">
-              <span className="status-icon">⊕⊖</span>
-              {urlData.emotionsCount} эмоций
-            </span>
-          )}
-          
-          {urlData.circumstancesCount > 0 && (
-            <span className="status-item">
-              <span className="status-icon">WME</span>
-              {urlData.circumstancesCount} обстоятельств
-            </span>
-          )}
-          
-          {urlData.hasBodyState && (
-            <span className="status-item">
-              <span className="status-icon">⚕</span>
-              Состояние тела
-            </span>
-          )}
-          
-          {urlData.skillsCount > 0 && (
-            <span className="status-item">
-              <span className="status-icon">💪</span>
-              {urlData.skillsCount} навыков
-            </span>
-          )}
-          
-          {urlData.skillProgressCount > 0 && (
-            <span className="status-item">
-              <span className="status-icon">⬆</span>
-              {urlData.skillProgressCount} прокачек
-            </span>
-          )}
-          
-          {urlData.relationsCount > 0 && (
-            <span className="status-item">
-              <span className="status-icon">↔</span>
-              {urlData.relationsCount} связей
-            </span>
-          )}
-          
-          {urlData.tagsCount > 0 && (
-            <span className="status-item">
-              <span className="status-icon">#</span>
-              {urlData.tagsCount} тегов
-            </span>
-          )}
-        </div>
-      </div>
-    );
-  };
+  // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: безопасная проверка bodyState
+  const hasBodyState = urlSyncStore?.bodyState && 
+    ((urlSyncStore?.bodyState.hp && urlSyncStore?.bodyState.hp > 0) || 
+     (urlSyncStore?.bodyState.energy && urlSyncStore?.bodyState.energy > 0) || 
+     urlSyncStore?.bodyState.location);
 
   return (
     <>
       <form className="entry-form" onSubmit={handleSubmit}>
         <h3 className="form-title">{t('entries.form.title')}</h3>
 
-        {/* Тип записи */}
-        <div className="type-buttons">
-          {Object.entries(typeConfig).map(([type, config]) => (
-            <button
-              key={type}
-              type="button"
-              className={`type-button ${config.className} ${formData.type === type ? 'active' : ''}`}
-              onClick={() => handleTypeChange(type)}
-              disabled={isSubmitting}
-            >
-              <span className="type-icon">{config.icon}</span>
-              <span className="type-label">{config.label}</span>
-            </button>
-          ))}
-        </div>
+        {/* Тип записи - отдельный компонент */}
+        <EntryTypePicker />
 
         {/* Контент */}
         <div className="form-group">
           <label className="form-label required">{t('entries.form.contentLabel')}</label>
           <textarea
             className="form-textarea"
-            value={formData.content}
-            onChange={(e) => handleInputChange('content', e.target.value)}
+            value={urlSyncStore?.content || ''}
+            onChange={(e) => urlSyncStore?.setContent(e.target.value)}
             placeholder={t('entries.form.contentPlaceholder')}
             required
             disabled={isSubmitting}
             rows={4}
           />
           <div className="character-count">
-            {formData.content.length} символов
+            {(urlSyncStore?.content || '').length} символов
           </div>
         </div>
 
@@ -440,22 +164,22 @@ const EntryForm = observer(() => {
             <input
               className="form-input"
               type="date"
-              value={formData.eventDate}
-              onChange={(e) => handleInputChange('eventDate', e.target.value)}
-              max={dateUtils.current()}
+              value={urlSyncStore?.eventDate || ''}
+              onChange={(e) => urlSyncStore?.setEventDate(e.target.value)}
+              max={new Date().toISOString().split('T')[0]}
               disabled={isSubmitting}
             />
           </div>
 
-          {formData.type === 'plan' && (
+          {urlSyncStore?.type === 'plan' && (
             <div className="form-group">
               <label className="form-label required">{t('entries.form.deadlineLabel')}</label>
               <input
                 className="form-input"
                 type="date"
-                value={formData.deadline}
-                onChange={(e) => handleInputChange('deadline', e.target.value)}
-                min={dateUtils.tomorrow()}
+                value={urlSyncStore?.deadline || ''}
+                onChange={(e) => urlSyncStore?.setDeadline(e.target.value)}
+                min={new Date(Date.now() + 86400000).toISOString().split('T')[0]}
                 required
                 disabled={isSubmitting}
               />
@@ -469,20 +193,20 @@ const EntryForm = observer(() => {
             <label className="form-label">{t('entries.form.emotionsLabel') || '⊕⊖ Эмоции'}</label>
             <button
               type="button"
-              className={`${formData.emotions.length > 0 ? 'emotions-preview-button' : 'add-emotions-button'}`}
+              className={`${(urlSyncStore?.emotions?.length || 0) > 0 ? 'emotions-preview-button' : 'add-emotions-button'}`}
               onClick={() => setShowEmotionPicker(true)}
               disabled={isSubmitting}
             >
-              {formData.emotions.length > 0 
-                ? `${formData.emotions.length} выбрано`
+              {(urlSyncStore?.emotions?.length || 0) > 0 
+                ? `${urlSyncStore?.emotions.length} выбрано`
                 : t('emotions.picker.open') || 'Добавить'
               }
             </button>
           </div>
 
-          {formData.emotions.length > 0 && (
+          {(urlSyncStore?.emotions?.length || 0) > 0 && (
             <div className="emotions-container">
-              {formData.emotions.map((emotion, index) => (
+              {urlSyncStore?.emotions.map((emotion, index) => (
                 <div key={index} className="emotion-badge">
                   <div className="emotion-info">
                     <span className="emotion-icon">{emotion.emotion?.icon || emotion.category?.icon}</span>
@@ -505,20 +229,20 @@ const EntryForm = observer(() => {
             <label className="form-label">{t('entries.form.circumstancesLabel') || '☁☽⚡ Обстоятельства'}</label>
             <button
               type="button"
-              className={`${formData.circumstances.length > 0 ? 'emotions-preview-button' : 'add-emotions-button'}`}
+              className={`${(urlSyncStore?.circumstances?.length || 0) > 0 ? 'emotions-preview-button' : 'add-emotions-button'}`}
               onClick={() => setShowCircumstancesPicker(true)}
               disabled={isSubmitting}
             >
-              {formData.circumstances.length > 0 
-                ? `${formData.circumstances.length} выбрано`
+              {(urlSyncStore?.circumstances?.length || 0) > 0 
+                ? `${urlSyncStore?.circumstances.length} выбрано`
                 : 'Добавить'
               }
             </button>
           </div>
 
-          {formData.circumstances.length > 0 && (
+          {(urlSyncStore?.circumstances?.length || 0) > 0 && (
             <div className="emotions-container">
-              {formData.circumstances.map((circ, index) => (
+              {urlSyncStore?.circumstances.map((circ, index) => (
                 <div key={index} className="emotion-badge">
                   <div className="emotion-info">
                     <span className="emotion-icon">{circ.item?.icon || circ.category?.icon}</span>
@@ -551,16 +275,16 @@ const EntryForm = observer(() => {
             </button>
           </div>
 
-          {hasBodyState && (
+          {hasBodyState && urlSyncStore?.bodyState && (
             <div className="body-state-preview">
-              {formData.bodyState.hp > 0 && (
-                <span className="body-stat">HP: {formData.bodyState.hp}%</span>
+              {urlSyncStore?.bodyState.hp > 0 && (
+                <span className="body-stat">HP: {urlSyncStore?.bodyState.hp}%</span>
               )}
-              {formData.bodyState.energy > 0 && (
-                <span className="body-stat">MANA: {formData.bodyState.energy}%</span>
+              {urlSyncStore?.bodyState.energy > 0 && (
+                <span className="body-stat">MANA: {urlSyncStore?.bodyState.energy}%</span>
               )}
-              {formData.bodyState.location && (
-                <span className="body-stat">📍 {formData.bodyState.location}</span>
+              {urlSyncStore?.bodyState.location && (
+                <span className="body-stat">📍 {urlSyncStore?.bodyState.location}</span>
               )}
             </div>
           )}
@@ -572,20 +296,20 @@ const EntryForm = observer(() => {
             <label className="form-label">{t('entries.form.skillsLabel') || '💪🧠 Навыки'}</label>
             <button
               type="button"
-              className={`${formData.skills.length > 0 ? 'emotions-preview-button' : 'add-emotions-button'}`}
+              className={`${(urlSyncStore?.skills?.length || 0) > 0 ? 'emotions-preview-button' : 'add-emotions-button'}`}
               onClick={() => setShowSkillsPicker(true)}
               disabled={isSubmitting}
             >
-              {formData.skills.length > 0 
-                ? `${formData.skills.length} выбрано`
+              {(urlSyncStore?.skills?.length || 0) > 0 
+                ? `${urlSyncStore?.skills.length} выбрано`
                 : 'Добавить'
               }
             </button>
           </div>
 
-          {formData.skills.length > 0 && (
+          {(urlSyncStore?.skills?.length || 0) > 0 && (
             <div className="emotions-container">
-              {formData.skills.map((skill, index) => (
+              {urlSyncStore?.skills.map((skill, index) => (
                 <div key={index} className="emotion-badge">
                   <div className="emotion-info">
                     <span className="emotion-icon">{skill.skill?.icon}</span>
@@ -608,20 +332,20 @@ const EntryForm = observer(() => {
             <label className="form-label">{t('entries.form.skillProgressLabel') || '⬆ Прокачка навыков'}</label>
             <button
               type="button"
-              className={`${skillProgress.length > 0 ? 'emotions-preview-button' : 'add-emotions-button'}`}
+              className={`${(urlSyncStore?.skillProgress?.length || 0) > 0 ? 'emotions-preview-button' : 'add-emotions-button'}`}
               onClick={() => setShowSkillProgressPicker(true)}
               disabled={isSubmitting}
             >
-              {skillProgress.length > 0 
-                ? `${skillProgress.length} прокачки`
+              {(urlSyncStore?.skillProgress?.length || 0) > 0 
+                ? `${urlSyncStore?.skillProgress.length} прокачки`
                 : 'Добавить прокачку'
               }
             </button>
           </div>
 
-          {skillProgress.length > 0 && (
+          {(urlSyncStore?.skillProgress?.length || 0) > 0 && (
             <div className="emotions-container">
-              {skillProgress.map((progress, index) => (
+              {urlSyncStore?.skillProgress.map((progress, index) => (
                 <div key={index} className="emotion-badge">
                   <div className="emotion-info">
                     <span className="emotion-icon">{progress.skill?.icon || '⬆'}</span>
@@ -647,12 +371,12 @@ const EntryForm = observer(() => {
             <div className="buttons-row">
               <button
                 type="button"
-                className={`${formData.relations.length > 0 ? 'emotions-preview-button' : 'add-emotions-button'}`}
+                className={`${(urlSyncStore?.relations?.length || 0) > 0 ? 'emotions-preview-button' : 'add-emotions-button'}`}
                 onClick={() => setShowRelationPicker(true)}
                 disabled={isSubmitting}
               >
-                {formData.relations.length > 0 
-                  ? `${formData.relations.length} связей`
+                {(urlSyncStore?.relations?.length || 0) > 0 
+                  ? `${urlSyncStore?.relations.length} связей`
                   : 'Добавить связи'
                 }
               </button>
@@ -668,9 +392,9 @@ const EntryForm = observer(() => {
             </div>
           </div>
           
-          {formData.relations.length > 0 && (
+          {(urlSyncStore?.relations?.length || 0) > 0 && (
             <div className="relations-preview">
-              {formData.relations.slice(0, 2).map((rel, index) => (
+              {urlSyncStore?.relations.slice(0, 2).map((rel, index) => (
                 <div key={index} className="relation-preview-item">
                   <span className="relation-preview-icon">{rel.type?.icon || '↔'}</span>
                   <span className="relation-preview-text">
@@ -680,9 +404,9 @@ const EntryForm = observer(() => {
                   </span>
                 </div>
               ))}
-              {formData.relations.length > 2 && (
+              {urlSyncStore?.relations.length > 2 && (
                 <div className="more-relations">
-                  +{formData.relations.length - 2} еще
+                  +{urlSyncStore?.relations.length - 2} еще
                 </div>
               )}
             </div>
@@ -695,20 +419,20 @@ const EntryForm = observer(() => {
             <label className="form-label">{t('entries.form.tagsLabel') || '# Теги'}</label>
             <button
               type="button"
-              className={`${formData.tags.length > 0 ? 'emotions-preview-button' : 'add-emotions-button'}`}
+              className={`${(urlSyncStore?.tags?.length || 0) > 0 ? 'emotions-preview-button' : 'add-emotions-button'}`}
               onClick={() => setShowTagsPicker(true)}
               disabled={isSubmitting}
             >
-              {formData.tags.length > 0 
-                ? `${formData.tags.length} тегов`
+              {(urlSyncStore?.tags?.length || 0) > 0 
+                ? `${urlSyncStore?.tags.length} тегов`
                 : 'Добавить теги'
               }
             </button>
           </div>
 
-          {formData.tags.length > 0 && (
+          {(urlSyncStore?.tags?.length || 0) > 0 && (
             <div className="tags-container">
-              {formData.tags.map((tag, index) => (
+              {urlSyncStore?.tags.map((tag, index) => (
                 <div key={index} className="tag-badge">
                   #{tag}
                 </div>
@@ -724,17 +448,17 @@ const EntryForm = observer(() => {
         <button
           type="submit"
           className="submit-button"
-          disabled={isSubmitting || !formData.content.trim()}
+          disabled={isSubmitting || !urlSyncStore?.content?.trim()}
         >
           {isSubmitting ? `${t('common.saving')}...` : t('entries.form.submit') || 'Создать запись'}
         </button>
 
-        {formData.type === 'plan' && !formData.deadline && (
+        {urlSyncStore?.type === 'plan' && !urlSyncStore?.deadline && (
           <div className="plan-warning">{t('common.planDeadlineRequired')}</div>
         )}
       </form>
 
-      {/* Все модалки остаются без изменений */}
+      {/* Модалки */}
       {showEmotionPicker && (
         <Modal
           isOpen={showEmotionPicker}
@@ -743,7 +467,7 @@ const EntryForm = observer(() => {
           size="lg"
         >
           <EmotionPicker
-            selectedEmotions={formData.emotions}
+            selectedEmotions={urlSyncStore?.emotions || []}
             onChange={handleEmotionsChange}
             maxEmotions={5}
           />
@@ -758,7 +482,7 @@ const EntryForm = observer(() => {
           size="lg"
         >
           <CircumstancesPicker
-            selectedCircumstances={formData.circumstances}
+            selectedCircumstances={urlSyncStore?.circumstances || []}
             onChange={handleCircumstancesChange}
             maxCircumstances={5}
           />
@@ -773,7 +497,7 @@ const EntryForm = observer(() => {
           size="lg"
         >
           <BodyStatePicker
-            bodyState={formData.bodyState}
+            bodyState={urlSyncStore?.bodyState || {}}
             onChange={handleBodyStateChange}
           />
         </Modal>
@@ -787,7 +511,7 @@ const EntryForm = observer(() => {
           size="lg"
         >
           <SkillsPicker
-            selectedSkills={formData.skills}
+            selectedSkills={urlSyncStore?.skills || []}
             onChange={handleSkillsChange}
             maxSkills={10}
           />
@@ -802,7 +526,7 @@ const EntryForm = observer(() => {
           size="lg"
         >
           <RelationPicker
-            selectedRelations={formData.relations}
+            selectedRelations={urlSyncStore?.relations || []}
             onChange={handleRelationsChange}
             maxRelations={5}
             searchGraphs={searchGraphs}
@@ -818,7 +542,7 @@ const EntryForm = observer(() => {
           size="lg"
         >
           <RelationGraph
-            relations={formData.relations}
+            relations={urlSyncStore?.relations || []}
             onClose={() => setShowGraph(false)}
           />
         </Modal>
@@ -832,7 +556,7 @@ const EntryForm = observer(() => {
           size="lg"
         >
           <SkillsPicker
-            selectedSkills={skillProgress}
+            selectedSkills={urlSyncStore?.skillProgress || []}
             onChange={handleSkillProgressChange}
             maxSkills={5}
             mode="progress"
@@ -848,7 +572,7 @@ const EntryForm = observer(() => {
           size="md"
         >
           <TagsPicker
-            selectedTags={formData.tags}
+            selectedTags={urlSyncStore?.tags || []}
             onChange={handleTagsChange}
             maxTags={10}
           />

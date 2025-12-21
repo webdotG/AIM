@@ -8,7 +8,8 @@ export {
   useBodyStatesStore,
   useCircumstancesStore,
   useSkillsStore,
-  useUIStore
+  useUIStore,
+  UrlSyncStore
 } from './StoreContext';
 
 export { AuthStore } from './stores/AuthStore';
@@ -17,3 +18,4 @@ export { BodyStatesStore } from './stores/BodyStatesStore';
 export { CircumstancesStore } from './stores/CircumstancesStore';
 export { SkillsStore } from './stores/SkillsStore';
 export { UIStore } from './stores/UIStore';
+export { UrlSyncStore } from './stores/UrlSyncStore';
