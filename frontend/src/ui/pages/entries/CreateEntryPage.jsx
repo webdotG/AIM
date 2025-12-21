@@ -1,31 +1,21 @@
-// Универсальный TimelinePage
-// src/ui/pages/entries/TimelinePage.jsx
-import { usePlatform } from '@/layers/platform';
 
-export default function TimelinePage({ navigate }) {
-  const { platform } = usePlatform();
-  const { entriesStore } = useStore();
+import EntryCard from '../../components/entries/EntryCard/EntryCard';
+import EntryList from '../../components/entries/EntryList/EntryList';
+import EntryForm from '../../components/entries/EntryForm/EntryForm';
+import Header from '../../components/layout/Header';
 
-  // Разная логика для разных платформ
-  const handleEntryClick = (entryId) => {
-    if (platform === 'telegram' && navigate) {
-      navigate('entry-detail', { id: entryId });
-    } else if (platform === 'web') {
-      // В вебе используем react-router
-      window.history.pushState({}, '', `/entries/${entryId}`);
-    }
-  };
+
+export default function EntryPage({ navigate }) {
+
 
   return (
     <div>
       <h1>Timeline</h1>
-      {entriesStore.entries.map(entry => (
-        <EntryCard 
-          key={entry.id} 
-          entry={entry}
-          onClick={() => handleEntryClick(entry.id)}
-        />
-      ))}
+      <Header />
+         <EntryList />
+         <EntryCard />
+         <EntryForm />
+
     </div>
   );
 }

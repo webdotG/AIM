@@ -1,31 +1,45 @@
-// src/ui/components/emotions/EmotionPicker/EmotionPicker.jsx
 import React, { useState } from 'react';
 import { useLanguage } from '@/layers/language';
-import { useTheme } from '@/layers/theme';
 import './EmotionPicker.css';
 
 const EmotionPicker = ({ 
   selectedEmotions = [], 
   onChange,
-  maxEmotions = 5,
-  showCategoryFirst = true
+  maxEmotions = 5
 }) => {
   const { t } = useLanguage();
-  const { currentTheme } = useTheme();
   
-  const [activeTab, setActiveTab] = useState(showCategoryFirst ? 'category' : 'emotion');
+  const [activeTab, setActiveTab] = useState('category');
   const [selectedCategory, setSelectedCategory] = useState(null);
-  const [showIntensityPicker, setShowIntensityPicker] = useState(false);
-  const [tempEmotion, setTempEmotion] = useState(null);
+  const [selectedEmotion, setSelectedEmotion] = useState(null);
+  const [intensity, setIntensity] = useState(50);
+
+  // Фиксированные значения интенсивности
+  const intensitySteps = [5, 25, 50, 75, 90, 99, 100];
 
   // Категории эмоций
   const categories = [
-    { id: 'positive', label: t('emotions.categories.positive'), color: currentTheme.colors.positive },
-    { id: 'negative', label: t('emotions.categories.negative'), color: currentTheme.colors.negative },
-    { id: 'neutral', label: t('emotions.categories.neutral'), color: currentTheme.colors.neutral }
+    { 
+      id: 'positive', 
+      label: t('emotions.categories.positive'),
+      icon: '😊',
+      description: t('emotions.picker.positiveDesc')
+    },
+    { 
+      id: 'negative', 
+      label: t('emotions.categories.negative'),
+      icon: '😢',
+      description: t('emotions.picker.negativeDesc')
+    },
+    { 
+      id: 'neutral', 
+      label: t('emotions.categories.neutral'),
+      icon: '😐',
+      description: t('emotions.picker.neutralDesc')
+    }
   ];
 
-  // Все 27 эмоций с категориями
+  // Все 27 эмоций
   const allEmotions = {
     positive: [
       { id: 'admiration', emoji: '😌', label: t('emotions.list.admiration') },
@@ -62,476 +76,340 @@ const EmotionPicker = ({
     ]
   };
 
-  // Получить эмоции для выбранной категории
-  const getCurrentEmotions = () => {
-    if (selectedCategory && allEmotions[selectedCategory]) {
-      return allEmotions[selectedCategory];
-    }
-    // Если категория не выбрана, показать все эмоции
-    return [...allEmotions.positive, ...allEmotions.negative, ...allEmotions.neutral];
+  const handleCategorySelect = (categoryId) => {
+    setSelectedCategory(categoryId);
+    // При выборе новой категории сбрасываем конкретную эмоцию
+    setSelectedEmotion(null);
   };
 
-  // Обработка выбора категории
-  const handleCategorySelect = (category) => {
-    setSelectedCategory(category);
-    setActiveTab('emotion');
-  };
-
-  // Обработка выбора эмоции
   const handleEmotionSelect = (emotion) => {
+    setSelectedEmotion(emotion);
+  };
+
+  const handleAddEmotion = () => {
+    if (!selectedCategory) {
+      alert(t('emotions.picker.selectCategoryFirst') || 'Сначала выберите категорию');
+      return;
+    }
+
     if (selectedEmotions.length >= maxEmotions) {
       alert(t('emotions.picker.maxEmotions', { max: maxEmotions }));
       return;
     }
-    
-    setTempEmotion({
-      id: emotion.id,
-      label: emotion.label,
-      emoji: emotion.emoji,
-      category: selectedCategory || 
-        (allEmotions.positive.find(e => e.id === emotion.id) ? 'positive' :
-         allEmotions.negative.find(e => e.id === emotion.id) ? 'negative' : 'neutral'),
-      intensity: 5 // среднее значение по умолчанию
-    });
-    setShowIntensityPicker(true);
-  };
 
-  // Обработка интенсивности
-  const handleIntensityConfirm = (intensity) => {
+    const categoryData = categories.find(c => c.id === selectedCategory);
+    
     const newEmotion = {
-      ...tempEmotion,
-      intensity
+      category: {
+        id: selectedCategory,
+        label: categoryData.label,
+        icon: categoryData.icon
+      },
+      emotion: selectedEmotion ? {
+        id: selectedEmotion.id,
+        label: selectedEmotion.label,
+        emoji: selectedEmotion.emoji
+      } : null,
+      intensity: intensity
     };
+
+    onChange([...selectedEmotions, newEmotion]);
     
-    const updatedEmotions = [...selectedEmotions, newEmotion];
-    onChange(updatedEmotions);
-    setShowIntensityPicker(false);
-    setTempEmotion(null);
-    
-    // Возвращаемся к выбору эмоции
-    setActiveTab('emotion');
+    // Сбрасываем выбор
+    setSelectedCategory(null);
+    setSelectedEmotion(null);
+    setIntensity(50);
+    setActiveTab('category');
   };
 
-  // Удаление эмоции
   const handleRemoveEmotion = (index) => {
     const updatedEmotions = selectedEmotions.filter((_, i) => i !== index);
     onChange(updatedEmotions);
   };
 
-  // Изменение интенсивности существующей эмоции
-  const handleIntensityChange = (index, intensity) => {
+  const handleIntensityChangeForSelected = (index, newIntensity) => {
+    // Находим ближайшее фиксированное значение
+    const closest = intensitySteps.reduce((prev, curr) => {
+      return Math.abs(curr - newIntensity) < Math.abs(prev - newIntensity) ? curr : prev;
+    });
+    
     const updatedEmotions = [...selectedEmotions];
     updatedEmotions[index] = {
       ...updatedEmotions[index],
-      intensity
+      intensity: closest
     };
     onChange(updatedEmotions);
   };
 
-  // Стили
-  const containerStyle = {
-    background: 'var(--color-surface)',
-    borderRadius: '12px',
-    border: '1px solid var(--color-border)',
-    overflow: 'hidden'
+  const getIntensityColor = (intensity) => {
+    if (intensity <= 33) return '#3b82f6'; // blue
+    if (intensity <= 66) return '#f59e0b'; // orange
+    return '#ef4444'; // red
   };
 
-  const headerStyle = {
-    display: 'flex',
-    borderBottom: '1px solid var(--color-border)',
-    background: 'var(--color-surface-hover)'
+  const getIntensityLabel = (intensity) => {
+    if (intensity <= 33) return t('emotions.intensityLevels.low') || 'Низкая';
+    if (intensity <= 66) return t('emotions.intensityLevels.medium') || 'Средняя';
+    return t('emotions.intensityLevels.high') || 'Высокая';
   };
 
-  const tabStyle = (active) => ({
-    flex: 1,
-    padding: '12px',
-    background: active ? 'var(--color-surface)' : 'transparent',
-    border: 'none',
-    borderBottom: active ? '2px solid var(--color-primary)' : 'none',
-    color: active ? 'var(--color-primary)' : 'var(--color-text-secondary)',
-    cursor: 'pointer',
-    fontSize: '14px',
-    fontWeight: active ? '600' : '400',
-    transition: 'all 0.2s'
-  });
-
-  const contentStyle = {
-    padding: '20px'
+  const handleIntensityClick = (value) => {
+    setIntensity(value);
   };
 
-  const categoriesGridStyle = {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
-    gap: '12px'
+  const handleSliderChange = (value) => {
+    // Находим ближайшее фиксированное значение
+    const closest = intensitySteps.reduce((prev, curr) => {
+      return Math.abs(curr - value) < Math.abs(prev - value) ? curr : prev;
+    });
+    setIntensity(closest);
   };
 
-  const categoryCardStyle = (category) => ({
-    padding: '15px',
-    background: `linear-gradient(135deg, ${category.color}20, ${category.color}10)`,
-    border: `2px solid ${category.color}`,
-    borderRadius: '10px',
-    cursor: 'pointer',
-    transition: 'all 0.2s',
-    textAlign: 'center'
-  });
-
-  const emotionsGridStyle = {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
-    gap: '10px'
-  };
-
-  const emotionCardStyle = (selected) => ({
-    padding: '10px',
-    background: selected ? 'var(--color-surface-hover)' : 'var(--color-surface)',
-    border: `1px solid ${selected ? 'var(--color-primary)' : 'var(--color-border)'}`,
-    borderRadius: '8px',
-    cursor: 'pointer',
-    transition: 'all 0.2s',
-    textAlign: 'center',
-    opacity: selected ? 0.6 : 1
-  });
-
-  const selectedEmotionsStyle = {
-    marginTop: '20px',
-    padding: '15px',
-    background: 'var(--color-surface-hover)',
-    borderRadius: '8px'
-  };
-
-  const selectedEmotionItemStyle = {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: '10px',
-    background: 'var(--color-surface)',
-    border: '1px solid var(--color-border)',
-    borderRadius: '6px',
-    marginBottom: '8px'
-  };
-
-  const intensitySliderStyle = {
-    width: '80px',
-    height: '6px',
-    borderRadius: '3px',
-    background: 'var(--color-border)',
-    outline: 'none',
-    cursor: 'pointer'
-  };
-
-  // Рендер выбора категории
   const renderCategories = () => (
-    <div style={categoriesGridStyle}>
+    <div className="categories-grid">
       {categories.map(category => (
         <div
           key={category.id}
-          style={categoryCardStyle(category)}
+          className={`category-card ${selectedCategory === category.id ? 'selected' : ''}`}
+          data-category={category.id}
           onClick={() => handleCategorySelect(category.id)}
-          onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
-          onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
         >
-          <div style={{ fontSize: '24px', marginBottom: '8px' }}>
-            {category.id === 'positive' ? '😊' : 
-             category.id === 'negative' ? '😢' : '😐'}
-          </div>
-          <div style={{ 
-            fontSize: '14px', 
-            fontWeight: '600',
-            color: category.color 
-          }}>
-            {category.label}
-          </div>
-          <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>
-            {category.id === 'positive' ? t('emotions.picker.positiveDesc') :
-             category.id === 'negative' ? t('emotions.picker.negativeDesc') :
-             t('emotions.picker.neutralDesc')}
-          </div>
+          <div className="category-icon">{category.icon}</div>
+          <div className="category-name">{category.label}</div>
+          <div className="category-description">{category.description}</div>
         </div>
       ))}
     </div>
   );
 
-  // Рендер выбора эмоций
-  const renderEmotions = () => (
-    <>
-      {selectedCategory && (
-        <div style={{ 
-          marginBottom: '15px',
-          padding: '10px',
-          background: `linear-gradient(135deg, ${currentTheme.colors[selectedCategory]}20, transparent)`,
-          borderRadius: '8px',
-          border: `1px solid ${currentTheme.colors[selectedCategory]}`,
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px'
-        }}>
-          <button
-            onClick={() => setSelectedCategory(null)}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              fontSize: '16px',
-              cursor: 'pointer'
-            }}
-          >
-            ←
-          </button>
-          <span style={{ fontWeight: '600' }}>
-            {categories.find(c => c.id === selectedCategory)?.label}
-          </span>
+  const renderEmotions = () => {
+    if (!selectedCategory) {
+      return (
+        <div className="empty-state">
+          <p>{t('emotions.picker.selectCategoryFirst') || 'Сначала выберите категорию эмоции'}</p>
         </div>
-      )}
-      
-      <div style={emotionsGridStyle}>
-        {getCurrentEmotions().map(emotion => {
-          const isSelected = selectedEmotions.some(e => e.id === emotion.id);
+      );
+    }
+
+    const emotions = allEmotions[selectedCategory] || [];
+
+    return (
+      <div className="emotions-grid">
+        {emotions.map(emotion => {
+          const isSelected = selectedEmotion?.id === emotion.id;
           return (
             <div
               key={emotion.id}
-              style={emotionCardStyle(isSelected)}
-              onClick={() => !isSelected && handleEmotionSelect(emotion)}
-              onMouseEnter={(e) => !isSelected && (e.currentTarget.style.transform = 'translateY(-2px)')}
-              onMouseLeave={(e) => !isSelected && (e.currentTarget.style.transform = 'translateY(0)')}
+              className={`emotion-card ${isSelected ? 'selected' : ''}`}
+              onClick={() => handleEmotionSelect(emotion)}
             >
-              <div style={{ fontSize: '24px', marginBottom: '5px' }}>
-                {emotion.emoji}
-              </div>
-              <div style={{ 
-                fontSize: '12px',
-                fontWeight: '500',
-                color: isSelected ? 'var(--color-text-secondary)' : 'var(--color-text)'
-              }}>
-                {emotion.label}
-              </div>
+              <div className="emotion-emoji">{emotion.emoji}</div>
+              <div className="emotion-name">{emotion.label}</div>
             </div>
           );
         })}
       </div>
-    </>
-  );
+    );
+  };
 
-  // Рендер выбора интенсивности
-  const renderIntensityPicker = () => (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      background: 'rgba(0, 0, 0, 0.5)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: 1000
-    }}>
-      <div style={{
-        background: 'var(--color-surface)',
-        borderRadius: '12px',
-        padding: '30px',
-        maxWidth: '400px',
-        width: '90%'
-      }}>
-        <h3 style={{ marginTop: 0, marginBottom: '20px' }}>
-          {t('emotions.picker.setIntensity')}
+  const renderIntensityPicker = () => {
+    const isDisabled = !selectedCategory;
+    
+    return (
+      <div className={`intensity-section ${isDisabled ? 'disabled' : ''}`}>
+        <h3 className="intensity-title">
+          {t('emotions.picker.setIntensity') || 'Интенсивность'}
         </h3>
         
-        <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-          <div style={{ fontSize: '48px', marginBottom: '10px' }}>
-            {tempEmotion?.emoji}
-          </div>
-          <div style={{ fontSize: '18px', fontWeight: '600' }}>
-            {tempEmotion?.label}
-          </div>
+        {isDisabled && (
+          <p className="intensity-warning">
+            {t('emotions.picker.selectCategoryFirst') || 'Сначала выберите категорию'}
+          </p>
+        )}
+        
+        <div className="intensity-display">
+          <span className="intensity-value" style={{ color: getIntensityColor(intensity) }}>
+            {intensity}%
+          </span>
+          <span className="intensity-label-text">
+            {getIntensityLabel(intensity)}
+          </span>
         </div>
         
-        <div style={{ marginBottom: '30px' }}>
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'space-between',
-            marginBottom: '10px'
+        <div className="intensity-slider-container">
+          <div className="intensity-track" onClick={(e) => {
+            if (isDisabled) return;
+            const rect = e.currentTarget.getBoundingClientRect();
+            const percent = ((e.clientX - rect.left) / rect.width) * 100;
+            handleSliderChange(percent);
           }}>
-            <span>{t('emotions.intensityLevels.veryLow')}</span>
-            <span>{t('emotions.intensityLevels.veryHigh')}</span>
+            <input
+              className="intensity-slider"
+              type="range"
+              min="0"
+              max="100"
+              step="1"
+              value={intensity}
+              onChange={(e) => handleSliderChange(parseInt(e.target.value))}
+              disabled={isDisabled}
+              style={{
+                '--slider-color': getIntensityColor(intensity),
+                '--slider-percent': `${intensity}%`
+              }}
+            />
           </div>
           
-          <input
-            type="range"
-            min="1"
-            max="10"
-            defaultValue="5"
-            onChange={(e) => setTempEmotion(prev => ({ ...prev, intensity: parseInt(e.target.value) }))}
-            style={{
-              width: '100%',
-              height: '8px',
-              borderRadius: '4px',
-              background: 'linear-gradient(to right, #4CAF50, #FFC107, #F44336)',
-              outline: 'none'
-            }}
-          />
-          
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'space-between',
-            marginTop: '5px',
-            fontSize: '12px',
-            color: 'var(--color-text-secondary)'
-          }}>
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
-              <span key={num}>{num}</span>
+          <div className="intensity-marks">
+            {intensitySteps.map(step => (
+              <span 
+                key={step}
+                className={`intensity-mark ${intensity === step ? 'active' : ''}`}
+                onClick={() => !isDisabled && handleIntensityClick(step)}
+              >
+                {step}%
+              </span>
             ))}
           </div>
         </div>
         
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <button
-            onClick={() => {
-              setShowIntensityPicker(false);
-              setTempEmotion(null);
-            }}
-            style={{
-              flex: 1,
-              padding: '12px',
-              background: 'var(--color-surface-hover)',
-              color: 'var(--color-text)',
-              border: '1px solid var(--color-border)',
-              borderRadius: '6px',
-              cursor: 'pointer'
-            }}
-          >
-            {t('common.cancel')}
-          </button>
-          <button
-            onClick={() => handleIntensityConfirm(tempEmotion.intensity || 5)}
-            style={{
-              flex: 1,
-              padding: '12px',
-              background: 'var(--color-primary)',
-              color: 'white',
-              border: 'none',
-              borderRadius: '6px',
-              cursor: 'pointer'
-            }}
-          >
-            {t('common.confirm')}
-          </button>
-        </div>
+        <button
+          className="add-emotion-button"
+          onClick={handleAddEmotion}
+          disabled={!selectedCategory}
+        >
+          {t('emotions.picker.addEmotion') || 'Добавить эмоцию'}
+        </button>
       </div>
-    </div>
-  );
+    );
+  };
 
-  // Рендер выбранных эмоций
   const renderSelectedEmotions = () => {
     if (selectedEmotions.length === 0) return null;
     
     return (
-      <div style={selectedEmotionsStyle}>
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '15px'
-        }}>
-          <span style={{ fontWeight: '600' }}>
-            {t('emotions.picker.selectedCount', { count: selectedEmotions.length })} / {maxEmotions}
+      <div className="selected-emotions">
+        <div className="selected-header">
+          <span className="selected-count">
+            {t('emotions.picker.selected') || 'Выбрано'}: {selectedEmotions.length} / {maxEmotions}
           </span>
-          {selectedEmotions.length > 0 && (
-            <button
-              onClick={() => onChange([])}
-              style={{
-                padding: '6px 12px',
-                background: 'transparent',
-                color: currentTheme.colors.error,
-                border: `1px solid ${currentTheme.colors.error}`,
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '12px'
-              }}
-            >
-              {t('common.clearAll')}
-            </button>
-          )}
+          <button
+            className="clear-all-button"
+            onClick={() => onChange([])}
+          >
+            {t('common.clearAll') || 'Очистить все'}
+          </button>
         </div>
         
-        {selectedEmotions.map((emotion, index) => (
-          <div key={index} style={selectedEmotionItemStyle}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span style={{ fontSize: '20px' }}>{emotion.emoji}</span>
-              <div>
-                <div style={{ fontWeight: '500' }}>{emotion.label}</div>
-                <div style={{ 
-                  fontSize: '11px', 
-                  color: 'var(--color-text-secondary)',
-                  textTransform: 'capitalize'
-                }}>
-                  {t(`emotions.categories.${emotion.category}`)}
+        <div className="selected-list">
+          {selectedEmotions.map((item, index) => (
+            <div key={index} className="selected-emotion-item">
+              <div className="selected-emotion-main">
+                <span className="selected-emotion-icon">
+                  {item.emotion ? item.emotion.emoji : item.category.icon}
+                </span>
+                <div className="selected-emotion-info">
+                  <div className="selected-emotion-name">
+                    {item.emotion ? item.emotion.label : item.category.label}
+                  </div>
+                  <div className="selected-emotion-subtitle">
+                    {item.emotion && (
+                      <span className="emotion-category-badge">
+                        {item.category.label}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
+              
+              <div className="selected-emotion-controls">
+                <div className="selected-intensity-wrapper">
+                  <div className="selected-intensity-controls-row">
+                    <div className="selected-intensity-slider-track" onClick={(e) => {
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      const percent = ((e.clientX - rect.left) / rect.width) * 100;
+                      handleIntensityChangeForSelected(index, percent);
+                    }}>
+                      <input
+                        className="selected-intensity-slider"
+                        type="range"
+                        min="0"
+                        max="100"
+                        step="1"
+                        value={item.intensity}
+                        onChange={(e) => handleIntensityChangeForSelected(index, parseInt(e.target.value))}
+                        style={{
+                          '--slider-color': getIntensityColor(item.intensity),
+                          '--slider-percent': `${item.intensity}%`
+                        }}
+                      />
+                    </div>
+                    <span 
+                      className="selected-intensity-value"
+                      style={{ color: getIntensityColor(item.intensity) }}
+                    >
+                      {item.intensity}%
+                    </span>
+                  </div>
+                  <div className="selected-intensity-marks">
+                    {intensitySteps.map(step => (
+                      <span
+                        key={step}
+                        className={`selected-intensity-mark ${item.intensity === step ? 'active' : ''}`}
+                        onClick={() => handleIntensityChangeForSelected(index, step)}
+                        style={item.intensity === step ? {
+                          '--slider-color': getIntensityColor(item.intensity)
+                        } : {}}
+                        title={`${step}%`}
+                      />
+                    ))}
+                  </div>
+                </div>
+                
+                <button
+                  className="remove-emotion-button"
+                  onClick={() => handleRemoveEmotion(index)}
+                  title={t('common.remove') || 'Удалить'}
+                >
+                  ×
+                </button>
+              </div>
             </div>
-            
-            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-              <input
-                type="range"
-                min="1"
-                max="10"
-                value={emotion.intensity}
-                onChange={(e) => handleIntensityChange(index, parseInt(e.target.value))}
-                style={intensitySliderStyle}
-              />
-              <span style={{ 
-                minWidth: '20px', 
-                textAlign: 'center',
-                fontWeight: '600',
-                color: emotion.intensity >= 7 ? currentTheme.colors.negative :
-                       emotion.intensity <= 3 ? currentTheme.colors.positive :
-                       currentTheme.colors.neutral
-              }}>
-                {emotion.intensity}
-              </span>
-              <button
-                onClick={() => handleRemoveEmotion(index)}
-                style={{
-                  background: 'transparent',
-                  border: 'none',
-                  color: currentTheme.colors.error,
-                  cursor: 'pointer',
-                  fontSize: '18px',
-                  padding: '0 5px'
-                }}
-              >
-                ×
-              </button>
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     );
   };
 
   return (
-    <div style={containerStyle}>
-      <div style={headerStyle}>
+    <div className="emotion-picker">
+      {renderSelectedEmotions()}
+      
+      <div className="emotion-tabs">
         <button
-          style={tabStyle(activeTab === 'category')}
+          className={`emotion-tab ${activeTab === 'category' ? 'active' : ''}`}
           onClick={() => setActiveTab('category')}
         >
-          {t('emotions.picker.categories')}
+          {t('emotions.picker.categories') || 'Категории'}
         </button>
         <button
-          style={tabStyle(activeTab === 'emotion')}
+          className={`emotion-tab ${activeTab === 'emotion' ? 'active' : ''}`}
           onClick={() => setActiveTab('emotion')}
         >
-          {t('emotions.picker.emotions')}
+          {t('emotions.picker.emotions') || 'Эмоции'}
+        </button>
+        <button
+          className={`emotion-tab ${activeTab === 'intensity' ? 'active' : ''}`}
+          onClick={() => setActiveTab('intensity')}
+        >
+          {t('emotions.picker.intensity') || 'Интенсивность'}
         </button>
       </div>
       
-      <div style={contentStyle}>
+      <div className="emotion-content">
         {activeTab === 'category' && renderCategories()}
         {activeTab === 'emotion' && renderEmotions()}
-        
-        {renderSelectedEmotions()}
+        {activeTab === 'intensity' && renderIntensityPicker()}
       </div>
-      
-      {showIntensityPicker && renderIntensityPicker()}
     </div>
   );
 };

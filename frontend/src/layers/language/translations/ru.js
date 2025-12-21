@@ -41,7 +41,11 @@ const ru = {
   saving: 'Сохранение...',
   selectEmotion: 'Выберите эмоцию',
   addTagPlaceholder: 'Введите тег и нажмите Enter',
-  planDeadlineRequired: 'Для плана требуется указать дедлайн'
+  planDeadlineRequired: 'Для плана требуется указать дедлайн',
+    somethingWentWrong: 'Что-то пошло не так',
+  reload: 'Перезагрузить',
+  goHome: 'На главную',
+  entriesCount: 'Записей: {count}', 
   },
 
   // Navigation

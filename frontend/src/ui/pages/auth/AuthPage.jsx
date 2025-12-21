@@ -7,7 +7,7 @@ import PasswordInput from '@/ui/components/auth/PasswordInput/PasswordInput';
 import HCaptcha from '@/ui/components/auth/HCaptcha/HCaptcha';
 import Button from '@/ui/components/common/Button/Button';
 import Loader from '@/ui/components/common/Loader/Loader';
-import Header from '../../components/layout/Header';
+import Header from '../../../ui/components/layout/Header';
 import { AuthAPIClient } from '@/core/adapters/api/clients/AuthAPIClient';
 import './AuthPage.css';
 
@@ -24,26 +24,23 @@ export default function AuthPage() {
   const [error, setError] = useState('');
   const [passwordStrength, setPasswordStrength] = useState(null);
   
-  const { currentTheme } = useTheme();
+  const { theme } = useTheme();
+  const { t } = useLanguage();
   const navigate = useNavigate();
 
-  // Обработчик hCaptcha
   const handleCaptchaVerify = (token) => {
-    console.log('hCaptcha verified:', token);
     setHcaptchaToken(token);
-    setError(''); // Очищаем ошибки
+    setError('');
   };
 
   const handleCaptchaError = (error) => {
-    console.error('hCaptcha error:', error);
     setHcaptchaToken('');
-    setError('Ошибка проверки hCaptcha. Попробуйте обновить страницу.');
+    setError(t('auth.errors.captchaError'));
   };
 
   const handleCaptchaExpire = () => {
-    console.warn('hCaptcha expired');
     setHcaptchaToken('');
-    setError('hCaptcha истекла. Пожалуйста, пройдите проверку заново.');
+    setError(t('auth.errors.captchaExpired'));
   };
 
   const handleSubmit = async (e) => {
@@ -51,9 +48,8 @@ export default function AuthPage() {
     setLoading(true);
     setError('');
 
-    // Проверка hCaptcha токена
     if (!hcaptchaToken) {
-      setError('Пожалуйста, пройдите проверку hCaptcha');
+      setError(t('auth.errors.captchaRequired'));
       setLoading(false);
       return;
     }
@@ -61,29 +57,28 @@ export default function AuthPage() {
     try {
       if (mode === 'login') {
         if (!login.trim() || !password.trim()) {
-          setError('Заполните все поля');
+          setError(t('auth.errors.fillAllFields'));
           setLoading(false);
           return;
         }
         
-        const result = await authClient.login({
+        await authClient.login({
           login,
           password,
           hcaptchaToken,
         });
 
-        console.log('Login successful:', result);
-        navigate('/timeline');
+        navigate('/');
         
       } else if (mode === 'register') {
         if (password !== confirmPassword) {
-          setError('Пароли не совпадают');
+          setError(t('auth.errors.passwordsNotMatch'));
           setLoading(false);
           return;
         }
         
         if (passwordStrength && !passwordStrength.isStrong) {
-          setError('Пароль недостаточно надёжный. Исправьте замечания выше.');
+          setError(t('auth.errors.passwordNotStrong'));
           setLoading(false);
           return;
         }
@@ -94,13 +89,13 @@ export default function AuthPage() {
           hcaptchaToken,
         });
 
-        alert(`Регистрация успешна!\n\n⚠️ ВАЖНО: Сохраните ваш backup-код:\n\n${result.backupCode}\n\nОн понадобится для восстановления доступа!`);
+        alert(`${t('auth.success.registration')}\n\n⚠️ ВАЖНО: Сохраните ваш backup-код:\n\n${result.backupCode}\n\nОн понадобится для восстановления доступа!`);
         setMode('login');
         setLoading(false);
         
       } else if (mode === 'recover') {
         if (!backupCode.trim() || !password.trim()) {
-          setError('Заполните все поля');
+          setError(t('auth.errors.fillAllFields'));
           setLoading(false);
           return;
         }
@@ -111,15 +106,14 @@ export default function AuthPage() {
           hcaptchaToken,
         });
 
-        alert(`Пароль восстановлен!\n\nНовый backup-код:\n${result.backupCode}`);
+        alert(`${t('auth.success.passwordRecovered')}\n\nНовый backup-код:\n${result.backupCode}`);
         setMode('login');
         setLoading(false);
       }
     } catch (err) {
       console.error('Auth error:', err);
-      setError(err.response?.data?.error || err.message || 'Произошла ошибка');
+      setError(err.response?.data?.error || err.message || t('auth.errors.genericError'));
       setLoading(false);
-      // Сбрасываем hCaptcha при ошибке
       setHcaptchaToken('');
     }
   };
@@ -128,27 +122,53 @@ export default function AuthPage() {
     return <Loader />;
   }
   
+  const getTitle = () => {
+    switch(mode) {
+      case 'login': return t('auth.login.title');
+      case 'register': return t('auth.register.title');
+      case 'recover': return t('auth.recover.title');
+      default: return t('auth.login.title');
+    }
+  };
+
+  const getSubtitle = () => {
+    switch(mode) {
+      case 'login': return t('auth.login.subtitle');
+      case 'register': return t('auth.register.subtitle');
+      case 'recover': return t('auth.recover.subtitle');
+      default: return t('auth.login.subtitle');
+    }
+  };
+
+  const getButtonText = () => {
+    switch(mode) {
+      case 'login': return t('auth.login.submit');
+      case 'register': return t('auth.register.submit');
+      case 'recover': return t('auth.recover.submit');
+      default: return t('auth.login.submit');
+    }
+  };
+
+  const getUsernameLabel = () => {
+    return t('auth.login.label');
+  };
+
+  const getUsernamePlaceholder = () => {
+    return t('auth.login.placeholder');
+  };
+  
   return (
-    <div className="auth-page" data-theme={currentTheme.name}>
+    <div className="auth-page">
       <div className="auth-container">
         <Header />
-        
         <div className="auth-header">
-          <h1>
-            {mode === 'login' && 'Вход'}
-            {mode === 'register' && 'Регистрация'}
-            {mode === 'recover' && 'Восстановление доступа'}
-          </h1>
-          <p>
-            {mode === 'login' && 'Войдите в свой аккаунт'}
-            {mode === 'register' && 'Создайте новый аккаунт'}
-            {mode === 'recover' && 'Используйте backup-код для восстановления'}
-          </p>
+          <h1 className="text-primary">{getTitle()}</h1>
+          <p className="text-secondary">{getSubtitle()}</p>
         </div>
         
         <form onSubmit={handleSubmit} className="auth-form">
           {error && (
-            <div className="error-message">
+            <div className="error-message bg-danger text-inverse rounded-md">
               <span className="error-icon">⚠️</span>
               {error}
             </div>
@@ -156,11 +176,11 @@ export default function AuthPage() {
           
           {mode !== 'recover' && (
             <Input
-              label="Логин"
+              label={getUsernameLabel()}
               type="text"
               value={login}
               onChange={setLogin}
-              placeholder="Введите логин"
+              placeholder={getUsernamePlaceholder()}
               required
               autoFocus={mode === 'login'}
             />
@@ -170,8 +190,8 @@ export default function AuthPage() {
             <PasswordInput
               value={password}
               onChange={setPassword}
-              label="Пароль"
-              placeholder="Придумайте надёжный пароль"
+              label={t('auth.password.label')}
+              placeholder={t('auth.password.placeholder')}
               showStrengthIndicator={true}
               showGenerateButton={true}
               onStrengthChange={setPasswordStrength}
@@ -181,8 +201,8 @@ export default function AuthPage() {
             <PasswordInput
               value={password}
               onChange={setPassword}
-              label="Новый пароль"
-              placeholder="Придумайте новый пароль"
+              label={t('auth.password.label')}
+              placeholder={t('auth.password.placeholder')}
               showStrengthIndicator={true}
               showGenerateButton={false}
               onStrengthChange={setPasswordStrength}
@@ -190,11 +210,11 @@ export default function AuthPage() {
             />
           ) : (
             <Input
-              label="Пароль"
+              label={t('auth.password.label')}
               type="password"
               value={password}
               onChange={setPassword}
-              placeholder="Введите пароль"
+              placeholder={t('auth.password.placeholder')}
               required
             />
           )}
@@ -203,8 +223,8 @@ export default function AuthPage() {
             <PasswordInput
               value={confirmPassword}
               onChange={setConfirmPassword}
-              label="Повторите пароль"
-              placeholder="Введите пароль ещё раз"
+              label={t('auth.confirm_password.label')}
+              placeholder={t('auth.confirm_password.placeholder')}
               showStrengthIndicator={false}
               showGenerateButton={false}
               required
@@ -213,23 +233,22 @@ export default function AuthPage() {
           
           {mode === 'recover' && (
             <Input
-              label="Backup-код"
+              label={t('auth.backup_code.label')}
               type="text"
               value={backupCode}
               onChange={setBackupCode}
-              placeholder="Введите ваш backup-код"
+              placeholder={t('auth.backup_code.placeholder')}
               required
               autoFocus
               maxLength={32}
             />
           )}
 
-          {/* hCaptcha для всех режимов */}
           <HCaptcha
             onVerify={handleCaptchaVerify}
             onError={handleCaptchaError}
             onExpire={handleCaptchaExpire}
-            theme={currentTheme.name === 'dark' ? 'dark' : 'light'}
+            theme={theme}
           />
           
           <Button 
@@ -237,32 +256,20 @@ export default function AuthPage() {
             variant="primary" 
             fullWidth
             disabled={!hcaptchaToken || loading}
+            className="mt-2"
           >
-            {mode === 'login' && 'Войти'}
-            {mode === 'register' && 'Зарегистрироваться'}
-            {mode === 'recover' && 'Восстановить пароль'}
+            {getButtonText()}
           </Button>
           
           {mode === 'register' && (
-            <div className="auth-hint">
+            <div className="auth-hint bg-surface text-secondary">
               <span className="hint-icon"></span>
-              <span className="hint-text">
-                После регистрации вы получите backup-код. <strong>Обязательно сохраните его!</strong>
-              </span>
-            </div>
-          )}
-          
-          {mode === 'recover' && (
-            <div className="auth-hint">
-              <span className="hint-icon"></span>
-              <span className="hint-text">
-                Backup-код был выдан при регистрации. Если вы его потеряли, обратитесь к администратору.
-              </span>
+              <span dangerouslySetInnerHTML={{ __html: t('auth.register.backupCodeInfo') }} />
             </div>
           )}
         </form>
         
-        <div className="auth-footer">
+        <div className="auth-footer border-divider">
           {mode === 'login' && (
             <>
               <button 
@@ -274,7 +281,7 @@ export default function AuthPage() {
                   setHcaptchaToken('');
                 }}
               >
-                Нет аккаунта? <strong>Зарегистрироваться</strong>
+                {t('auth.login.registerLink')}
               </button>
               <button 
                 type="button"
@@ -285,7 +292,7 @@ export default function AuthPage() {
                   setHcaptchaToken('');
                 }}
               >
-                Забыли пароль? <strong>Восстановить</strong>
+                {t('auth.login.recoverLink')}
               </button>
             </>
           )}
@@ -303,7 +310,7 @@ export default function AuthPage() {
                 setHcaptchaToken('');
               }}
             >
-              ← Вернуться к входу
+              {t('auth.back_to_login')}
             </button>
           )}
         </div>

@@ -1,66 +1,38 @@
-const dark = {
+export default {
   name: 'dark',
-  displayName: 'Тёмная',
   colors: {
-    // Primary
-    'primary': '#66b2ff',
-    'primary-dark': '#3d8aff',
-    'primary-light': '#99ccff',
+    // Основные
+    primary: '#60a5fa',
+    secondary: '#a78bfa',
+    success: '#34d399',
+    warning: '#fbbf24',
+    danger: '#f87171',
+    info: '#22d3ee',
     
-    // Background
-    'background': '#121212',
-    'background-secondary': '#1e1e1e',
-    'surface': '#1e1e1e',
-    'surface-hover': '#2a2a2a',
+    // Фоны
+    background: '#111827',
+    surface: '#1f2937',
+    card: '#1f2937',
+    paper: '#374151',
     
-    // Text
-    'text': '#ffffff',
-    'text-secondary': '#b0b0b0',
-    'text-disabled': '#757575',
-    'text-inverse': '#121212',
+    // Текст - исправляем названия
+    text: '#f9fafb',  // было textPrimary
+    textSecondary: '#d1d5db',
+    textDisabled: '#6b7280',
+    textInverse: '#111827',
     
-    // Border
-    'border': '#333333',
-    'border-hover': '#4a4a4a',
+    // Границы
+    border: '#374151',
+    divider: '#4b5563',
     
-    // Emotions (более приглушённые в тёмной теме)
-    'positive': '#66bb6a',
-    'negative': '#ef5350',
-    'neutral': '#bdbdbd',
+    // Состояния
+    hover: '#374151',
+    active: '#4b5563',
+    selected: '#1e40af',
+    disabled: '#374151',
     
-    // Entry types
-    'dream': '#ba68c8',
-    'memory': '#ffb74d',
-    'thought': '#64b5f6',
-    'plan': '#81c784',
-    
-    // Status
-    'success': '#66bb6a',
-    'error': '#ef5350',
-    'warning': '#ffb74d',
-    'info': '#64b5f6',
-    
-    // Shadow
-    'shadow': 'rgba(0, 0, 0, 0.3)',
-    'shadow-hover': 'rgba(0, 0, 0, 0.5)'
-  },
-  
-  spacing: {
-    unit: 8
-  },
-  
-  borderRadius: {
-    small: '4px',
-    medium: '8px',
-    large: '12px',
-    round: '50%'
-  },
-  
-  shadows: {
-    small: '0 2px 4px var(--color-shadow)',
-    medium: '0 4px 8px var(--color-shadow)',
-    large: '0 8px 16px var(--color-shadow)'
+    // Дополнительные
+    overlay: 'rgba(0, 0, 0, 0.7)',
+    shadow: 'rgba(0, 0, 0, 0.3)',
   }
 };
-
-export default dark;

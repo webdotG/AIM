@@ -4,32 +4,40 @@ import themes from './themes';
 
 function ThemeProvider({ children, defaultTheme = 'light' }) {
   const [theme, setThemeState] = useState(() => {
-    // Пытаемся загрузить из localStorage
     const saved = localStorage.getItem('app_theme');
     return saved || defaultTheme;
   });
   
-  // Применяем CSS переменные
+  // CSS переменные
   useEffect(() => {
     const currentTheme = themes[theme] || themes.light;
     
-    // Применяем каждую CSS переменную
+    // все цвета как CSS переменные
     Object.entries(currentTheme.colors).forEach(([key, value]) => {
-      document.documentElement.style.setProperty(`--color-${key}`, value);
+      if (typeof value === 'object') {
+        // Вложенные объекты (text, brand)
+        Object.entries(value).forEach(([subKey, subValue]) => {
+          document.documentElement.style.setProperty(
+            `--color-${key}-${subKey}`,
+            subValue
+          );
+        });
+      } else {
+        // Простые значения
+        document.documentElement.style.setProperty(`--color-${key}`, value);
+      }
     });
     
-    // Устанавливаем data-theme атрибут (для CSS селекторов)
+    // Устанавливаем data-theme атрибут
     document.documentElement.setAttribute('data-theme', theme);
     
   }, [theme]);
   
-  // Сохраняем в localStorage
   const setTheme = (newTheme) => {
     setThemeState(newTheme);
     localStorage.setItem('app_theme', newTheme);
   };
   
-  // Переключение между темами
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
     setTheme(newTheme);

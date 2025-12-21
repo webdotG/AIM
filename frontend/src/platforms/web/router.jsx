@@ -2,9 +2,9 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
 import { useStores } from '@/store/StoreContext';
-import MainLayout from '@/ui/layouts/MainLayout';
+import WebLayout from '../../ui/components/layout/WebLayout';
 import AuthPage from '@/ui/pages/auth/AuthPage';
-import TimelinePage from '@/ui/pages/analytics/TimelinePage';
+import TimelinePage from '../../ui/pages/analytics/AnalyticsTimelinePage';
 import CreateEntryPage from '@/ui/pages/entries/CreateEntryPage';
 import EntryDetailPage from '@/ui/pages/entries/detail/EntryDetailPage';
 import AnalyticsPage from '@/ui/pages/analytics/AnalyticsPage';
@@ -28,7 +28,7 @@ export default function WebRouter() {
         
         {/* <Route path="/" element={
           <ProtectedRoute>
-            <MainLayout />
+            <WebLayout />
           </ProtectedRoute>
         }> */}
           <Route index element={<TimelinePage />} />
