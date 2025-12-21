@@ -11,22 +11,22 @@ export default function Navigation() {
   const navItems = [
     { 
       path: '/', 
-      icon: '📝', 
+      icon: 'all', 
       label: t('navigation.timeline') || 'Лента'
     },
     { 
       path: '/entries/create', 
-      icon: '➕', 
+      icon: 'crt', 
       label: t('navigation.create') || 'Создать'
     },
     { 
       path: '/analytics', 
-      icon: '📊', 
+      icon: 'anl', 
       label: t('navigation.analytics') || 'Аналитика'
     },
     { 
       path: '/settings', 
-      icon: '⚙️', 
+      icon: 'set', 
       label: t('navigation.settings') || 'Настройки'
     },
   ];

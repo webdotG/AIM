@@ -13,7 +13,7 @@ const WebLayout = () => {
   return (
     <div className="web-layout" data-theme={theme}>
       {/* Навигация */}
-      <WebNavigation />
+      {/* <WebNavigation /> */}
       
       {/* Основной контент */}
       <main className="page-content">

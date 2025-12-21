@@ -9,7 +9,7 @@ export default function AnalyticsPage() {
   
   return (
     <div className="analytics-page">
-      <Header 
+      {/* <Header  */}
         title={t('analytics.title')}
         showBack={true}
       />

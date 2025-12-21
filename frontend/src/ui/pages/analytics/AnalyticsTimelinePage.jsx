@@ -23,7 +23,7 @@ const TimelinePage = observer(() => {
     <div className="timeline-page" data-theme={theme}>
       {/* Заголовок */}
       <div className="timeline-header">
-        <Header />
+        {/* <Header /> */}
         {/* <h1 className="timeline-title">{t('entries.list.title')}</h1> */}
         <p style={{textAlign:"center"}}className="timeline-subtitle">
           {totalEntries === 0 

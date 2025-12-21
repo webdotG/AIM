@@ -1,12 +1,12 @@
-// src/layers/platform/PlatformProvider.jsx
-import React, { useEffect, useState } from 'react'; // ← Добавь useState
+
+import React, { useEffect, useState } from 'react';
 import PlatformContext from './PlatformContext';
 import { NavigationProvider } from './PlatformNavigator';
 
-const PlatformProvider = ({ children }) => { // ← УБРАТЬ platform из пропсов!
+const PlatformProvider = ({ children }) => {
   const [platform, setPlatform] = useState('web');
   
-  // Стили и конфигурацию для каждой платформы
+
   const platformConfig = {
     web: {
       layout: 'MainLayout',

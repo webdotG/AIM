@@ -11,7 +11,7 @@ const CreateEntryPage = () => {
     <div className="create-entry-page">
       <h2>Создать запись</h2>
 
-          <Header />
+          {/* <Header /> */}
                 <EntryForm />
     </div>
   );
