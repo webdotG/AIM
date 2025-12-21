@@ -1,38 +1,43 @@
 export default {
   name: 'light',
+  label: 'Светлая',
   colors: {
     // Основные
-    primary: '#3b82f6',
-    secondary: '#8b5cf6',
-    success: '#10b981',
-    warning: '#f59e0b',
-    danger: '#ef4444',
-    info: '#06b6d4',
+    '--bg-primary': '#ffffff',
+    '--bg-secondary': '#f8f9fa',
+    '--bg-tertiary': '#e9ecef',
     
-    // Фоны
-    background: '#ffffff',
-    surface: '#f9fafb',
-    card: '#ffffff',
-    paper: '#ffffff',
+    // Текст
+    '--text-primary': '#000000',
+    '--text-secondary': '#6c757d',
+    '--text-inverse': '#ffffff',
     
-    // Текст - исправляем названия
-    text: '#111827', 
-    textSecondary: '#6b7280',
-    textDisabled: '#9ca3af',
-    textInverse: '#ffffff',
+    // Акценты
+    '--primary': '#007bff',
+    '--primary-hover': '#0056b3',
+    '--secondary': '#6c757d',
+    '--success': '#28a745',
+    '--danger': '#dc3545',
+    '--warning': '#ffc107',
+    '--info': '#17a2b8',
     
     // Границы
-    border: '#e5e7eb',
-    divider: '#f3f4f6',
+    '--border-color': '#dee2e6',
+    '--border-light': '#f1f1f1',
     
-    // Состояния
-    hover: '#f3f4f6',
-    active: '#e5e7eb',
-    selected: '#dbeafe',
-    disabled: '#f3f4f6',
+    // Хедер и навигация
+    '--header-bg': '#ffffff',
+    '--nav-bg': '#ffffff',
+    '--nav-active': '#007bff',
     
-    // Дополнительные
-    overlay: 'rgba(0, 0, 0, 0.5)',
-    shadow: 'rgba(0, 0, 0, 0.1)',
+    // Формы
+    '--input-bg': '#ffffff',
+    '--input-border': '#ced4da',
+    '--input-focus': '#80bdff',
+    
+    // Тени
+    '--shadow-sm': '0 1px 2px rgba(0,0,0,0.05)',
+    '--shadow-md': '0 4px 6px rgba(0,0,0,0.1)',
+    '--shadow-lg': '0 10px 15px rgba(0,0,0,0.1)',
   }
 };

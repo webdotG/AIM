@@ -1,38 +1,43 @@
 export default {
   name: 'dark',
+  label: 'Темная',
   colors: {
-    // Основные
-    primary: '#60a5fa',
-    secondary: '#a78bfa',
-    success: '#34d399',
-    warning: '#fbbf24',
-    danger: '#f87171',
-    info: '#22d3ee',
+    // Основные (инвертированные)
+    '--bg-primary': '#000000',
+    '--bg-secondary': '#1a1a1a',
+    '--bg-tertiary': '#2d2d2d',
     
-    // Фоны
-    background: '#111827',
-    surface: '#1f2937',
-    card: '#1f2937',
-    paper: '#374151',
+    // Текст (инвертированный)
+    '--text-primary': '#ffffff',
+    '--text-secondary': '#adb5bd',
+    '--text-inverse': '#000000',
     
-    // Текст - исправляем названия
-    text: '#f9fafb',  // было textPrimary
-    textSecondary: '#d1d5db',
-    textDisabled: '#6b7280',
-    textInverse: '#111827',
+    // Акценты (те же)
+    '--primary': '#007bff',
+    '--primary-hover': '#0056b3',
+    '--secondary': '#6c757d',
+    '--success': '#28a745',
+    '--danger': '#dc3545',
+    '--warning': '#ffc107',
+    '--info': '#17a2b8',
     
     // Границы
-    border: '#374151',
-    divider: '#4b5563',
+    '--border-color': '#495057',
+    '--border-light': '#343a40',
     
-    // Состояния
-    hover: '#374151',
-    active: '#4b5563',
-    selected: '#1e40af',
-    disabled: '#374151',
+    // Хедер и навигация
+    '--header-bg': '#1a1a1a',
+    '--nav-bg': '#1a1a1a',
+    '--nav-active': '#007bff',
     
-    // Дополнительные
-    overlay: 'rgba(0, 0, 0, 0.7)',
-    shadow: 'rgba(0, 0, 0, 0.3)',
+    // Формы
+    '--input-bg': '#2d2d2d',
+    '--input-border': '#495057',
+    '--input-focus': '#80bdff',
+    
+    // Тени
+    '--shadow-sm': '0 1px 2px rgba(255,255,255,0.05)',
+    '--shadow-md': '0 4px 6px rgba(255,255,255,0.1)',
+    '--shadow-lg': '0 10px 15px rgba(255,255,255,0.1)',
   }
 };

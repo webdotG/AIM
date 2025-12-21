@@ -1,60 +1,61 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import ThemeContext from './ThemeContext';
 import themes from './themes';
 
-function ThemeProvider({ children, defaultTheme = 'light' }) {
-  const [theme, setThemeState] = useState(() => {
-    const saved = localStorage.getItem('app_theme');
-    return saved || defaultTheme;
+export const ThemeProvider = ({ children }) => {
+  const [themeName, setThemeName] = useState(() => {
+    return localStorage.getItem('theme') || 'light';
   });
-  
-  // CSS переменные
+
+  const currentTheme = themes[themeName] || themes.light;
+
   useEffect(() => {
-    const currentTheme = themes[theme] || themes.light;
+
+    localStorage.setItem('theme', themeName);
     
-    // все цвета как CSS переменные
-    Object.entries(currentTheme.colors).forEach(([key, value]) => {
-      if (typeof value === 'object') {
-        // Вложенные объекты (text, brand)
-        Object.entries(value).forEach(([subKey, subValue]) => {
-          document.documentElement.style.setProperty(
-            `--color-${key}-${subKey}`,
-            subValue
-          );
-        });
-      } else {
-        // Простые значения
-        document.documentElement.style.setProperty(`--color-${key}`, value);
-      }
+    const root = document.documentElement;
+    
+    // Очищаем предыдущие переменные
+    Object.keys(themes).forEach(theme => {
+      const themeColors = themes[theme].colors;
+      Object.keys(themeColors).forEach(color => {
+        root.style.removeProperty(color);
+      });
     });
     
-    // Устанавливаем data-theme атрибут
-    document.documentElement.setAttribute('data-theme', theme);
+    // Устанавливаем новые переменные
+    Object.entries(currentTheme.colors).forEach(([key, value]) => {
+      root.style.setProperty(key, value);
+    });
     
-  }, [theme]);
-  
-  const setTheme = (newTheme) => {
-    setThemeState(newTheme);
-    localStorage.setItem('app_theme', newTheme);
+    // Добавляем класс темы для body (опционально)
+    document.body.className = `theme-${themeName}`;
+    
+    console.log(`Тема "${currentTheme.label}" применена`);
+  }, [themeName, currentTheme]);
+
+  const setTheme = (name) => {
+    if (themes[name]) {
+      setThemeName(name);
+    } else {
+      console.warn(`Тема "${name}" не найдена, используем "light"`);
+      setThemeName('light');
+    }
   };
-  
-  const toggleTheme = () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light';
-    setTheme(newTheme);
-  };
-  
-  const value = useMemo(() => ({
-    theme,
-    currentTheme: themes[theme] || themes.light,
+
+  const value = {
+    theme: themeName,
+    themeData: currentTheme,
     setTheme,
-    toggleTheme
-  }), [theme]);
-  
+    themes: Object.values(themes).map(t => ({ 
+      name: t.name, 
+      label: t.label 
+    }))
+  };
+
   return (
     <ThemeContext.Provider value={value}>
       {children}
     </ThemeContext.Provider>
   );
-}
-
-export default ThemeProvider;
+};

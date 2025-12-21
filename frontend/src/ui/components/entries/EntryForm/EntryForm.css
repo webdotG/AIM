@@ -641,3 +641,90 @@
   justify-content: center;
   align-items: end;
 }
+
+.entry-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+  background: var(--bg-secondary);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-md);
+  transition: all var(--transition-normal);
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.entry-form.telegram {
+  max-width: 100%;
+  margin: var(--spacing-sm);
+  padding: var(--spacing-md);
+  box-shadow: none;
+  border: 1px solid var(--border-color);
+}
+
+/* Адаптивные стили */
+@media (max-width: 768px) {
+  .entry-form {
+    margin: 0 var(--spacing-sm);
+    padding: var(--spacing-md);
+  }
+  
+  .date-row {
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+}
+
+@media (min-width: 1200px) {
+  .entry-form {
+    max-width: 500px;
+  }
+}
+
+/* Анимации */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.entry-form {
+  animation: fadeIn 0.3s ease;
+}
+
+/* Темные темы */
+:root[data-theme="dark"] .entry-form {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+}
+
+:root[data-theme="darling"] .entry-form {
+  background: var(--bg-secondary);
+  border: 2px solid var(--primary);
+  box-shadow: 0 0 20px rgba(255, 51, 102, 0.1);
+}
+
+/* Утилитарные классы */
+.picker-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-sm);
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.required::after {
+  content: " *";
+  color: var(--danger);
+}

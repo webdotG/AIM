@@ -460,7 +460,7 @@ auth: {
   },
 
   // Settings
-  settings: {
+  settings: { 
     title: 'Настройки',
     theme: {
       title: 'Тема',

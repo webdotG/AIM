@@ -16,7 +16,7 @@ export default function SettingsPage() {
   
   return (
     <div className="settings-page" data-theme={currentTheme.name}>
-      {/* <Header/> */}
+      {/* <Header/  > */}
 
     </div>
   );
