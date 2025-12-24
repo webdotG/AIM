@@ -1,12 +1,11 @@
 import React from 'react';
 import RootStore from './RootStore';
 
-// Создаем единственный экземпляр RootStore
 const rootStoreInstance = new RootStore();
 
 export const StoreContext = React.createContext(rootStoreInstance);
 
-// Основной хук для доступа ко всем сторам
+// для доступа ко всем сторам
 export const useStores = () => {
   const context = React.useContext(StoreContext);
   if (!context) {
@@ -15,7 +14,7 @@ export const useStores = () => {
   return context;
 };
 
-// Индивидуальные хуки для каждого стора
+// для каждого стора
 export const useAuthStore = () => {
   return useStores().authStore;
 };
@@ -40,12 +39,10 @@ export const useUIStore = () => {
   return useStores().uiStore;
 };
 
-// ИСПРАВЛЕНО: добавлена буква 'e' в конце
 export const useUrlSyncStore = () => {
   return useStores().urlSyncStore;
 };
 
-// ИСПРАВЛЕНО: передаем экземпляр, а не класс
 export const StoreProvider = ({ children }) => {
   return (
     <StoreContext.Provider value={rootStoreInstance}>

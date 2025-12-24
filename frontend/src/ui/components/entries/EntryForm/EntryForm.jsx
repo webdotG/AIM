@@ -1,4 +1,3 @@
-// src/ui/components/entries/EntryForm/EntryForm.jsx
 import React, { useState, useCallback, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useLanguage } from '@/layers/language';
@@ -7,16 +6,11 @@ import { useTheme } from '@/layers/theme';
 // import { useSecurity } from '@/layers/security';
 import { useEntriesStore, useUIStore, useUrlSyncStore } from '@/store/StoreContext';
 
-// Платформенные адаптеры - ТОЛЬКО ОДИН ИМПОРТ!
-import { 
-  PlatformButton, 
-  PlatformModal,
-  PlatformTextArea,
-  PlatformInput,
-  usePlatformNotification 
-} from '@/ui/components/common/PlatformAdapter';
-
 // Компоненты пикеров
+import Modal from '../../common/Modal/Modal';
+import Button from '../../common/Button/Button';
+import Input from '../../common/Input/Input';
+import TextArea from '../../common/Input/TextArea';
 import EmotionPicker from '../../emotions/EmotionPicker/EmotionPicker';
 import CircumstancesPicker from '@/ui/components/circumstances/CircumstancesPicker';
 import BodyStatePicker from '../../bodyState/BodyStatePicker';
@@ -27,14 +21,13 @@ import TagsPicker from '@/ui/components/tags/TagsPicker';
 import EntryTypePicker from '../../entries/EntryType/EntryTypePicker';
 import UrlStatusBar from '@/ui/components/status/UrlStatusBar';
 
-// Константы
+
 // import { ENTRY_TYPES } from '@/core/constants/entries';
 const ENTRY_TYPES = {
-  NOTE: 'note',
+  DREAM: 'dream',
   MEMORY: 'memory',
+  THOUGHT: 'thought',
   PLAN: 'plan',
-  GOAL: 'goal',
-  EVENT: 'event'
 };
 
 // import  validateEntry  from '@/security/validators/schemas/entrySchema';
@@ -56,23 +49,20 @@ const validateEntry = (entryData) => {
 };
 
 import './EntryForm.css';
+import { useErrorBoundary } from '../../common/ErrorBoundary/ErrorBoundary';
 
 const EntryForm = observer(() => {
-  // === 1. ВСЕ СЛОИ ===
   const { t } = useLanguage();
   const { isTelegram, utils } = usePlatform();
   const { themeData } = useTheme();
   
-  // === 2. ВСЕ STORES ===
   const entriesStore = useEntriesStore();
   const uiStore = useUIStore();
   const urlSyncStore = useUrlSyncStore();
   
-  // === 3. СОСТОЯНИЯ ===
-  const showNotification = usePlatformNotification();
+  const showNotification = useErrorBoundary();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // === 4. МОДАЛКИ (единый объект) ===
   const [modals, setModals] = useState({
     emotion: false,
     circumstances: false,
@@ -84,7 +74,6 @@ const EntryForm = observer(() => {
     tags: false,
   });
   
-  // === 5. ОТКРЫТИЕ/ЗАКРЫТИЕ МОДАЛОК ===
   const openModal = useCallback((modalName) => {
     if (isTelegram && utils.hapticFeedback) {
       utils.hapticFeedback('light');
@@ -96,7 +85,7 @@ const EntryForm = observer(() => {
     setModals(prev => ({ ...prev, [modalName]: false }));
   }, []);
   
-  // === 6. УНИВЕРСАЛЬНЫЙ ОБРАБОТЧИК ПИКЕРОВ ===
+
   const createPickerHandler = useCallback((setterName, hapticType = 'success') => 
     (data) => {
       if (urlSyncStore && urlSyncStore[setterName]) {
@@ -108,7 +97,7 @@ const EntryForm = observer(() => {
     },
   [urlSyncStore, isTelegram, utils]);
   
-  // === 7. ВСЕ ОБРАБОТЧИКИ ===
+
   const handleEmotionsChange = createPickerHandler('setEmotions');
   const handleCircumstancesChange = createPickerHandler('setCircumstances');
   const handleBodyStateChange = createPickerHandler('setBodyState');
@@ -117,7 +106,7 @@ const EntryForm = observer(() => {
   const handleTagsChange = createPickerHandler('setTags');
   const handleSkillProgressChange = createPickerHandler('setSkillProgress');
   
-  // === 8. ПОИСК ДЛЯ ГРАФА ===
+  // === ПОИСК ДЛЯ ГРАФА ===
   const searchGraphs = useCallback(async (params) => {
     try {
       return await entriesStore.searchEntries({
@@ -131,12 +120,11 @@ const EntryForm = observer(() => {
     }
   }, [entriesStore]);
   
-  // === 9. ОТПРАВКА ФОРМЫ ===
+
   const handleSubmit = useCallback(async (e) => {
     e.preventDefault();
     e.stopPropagation();
     
-    // 9.1. ПРОВЕРКА ДАННЫХ
     if (!urlSyncStore || !urlSyncStore.content || !urlSyncStore.content.trim()) {
       showNotification(t('common.requiredContent') || 'Заполните содержание', 'error');
       return;
@@ -147,7 +135,6 @@ const EntryForm = observer(() => {
       return;
     }
     
-    // 9.2. НАЧАЛО ОТПРАВКИ
     setIsSubmitting(true);
     
     if (isTelegram && utils.hapticFeedback) {
@@ -155,7 +142,6 @@ const EntryForm = observer(() => {
     }
     
     try {
-      // 9.3. ПОДГОТОВКА ДАННЫХ
       const entryData = {
         type: urlSyncStore.type || ENTRY_TYPES.NOTE,
         content: urlSyncStore.content.trim(),
@@ -173,16 +159,13 @@ const EntryForm = observer(() => {
         createdAt: new Date().toISOString()
       };
       
-      // 9.4. ВАЛИДАЦИЯ
       const validation = validateEntry(entryData);
       if (!validation.isValid) {
         throw new Error(validation.errors?.join(', ') || 'Некорректные данные');
       }
-      
-      // 9.5. ОТПРАВКА В STORE
+
       await entriesStore.createEntry(entryData);
-      
-      // 9.6. УСПЕШНОЕ СОЗДАНИЕ
+
       if (urlSyncStore.reset) {
         urlSyncStore.reset();
       }
@@ -196,13 +179,11 @@ const EntryForm = observer(() => {
         utils.hapticFeedback('success');
       }
       
-      // 9.7. ДОПОЛНИТЕЛЬНЫЕ ДЕЙСТВИЯ
       if (uiStore && uiStore.clearError) {
         uiStore.clearError();
       }
       
     } catch (error) {
-      // 9.8. ОБРАБОТКА ОШИБОК
       console.error('EntryForm submit error:', error);
       
       const errorMessage = error.message || t('common.error') || 'Ошибка при создании записи';
@@ -216,7 +197,7 @@ const EntryForm = observer(() => {
         uiStore.setError(error);
       }
     } finally {
-      // 9.9. ЗАВЕРШЕНИЕ
+      // ЗАВЕРШЕНИЕ
       setIsSubmitting(false);
     }
   }, [
@@ -224,7 +205,7 @@ const EntryForm = observer(() => {
     isTelegram, utils, themeData, uiStore
   ]);
   
-  // === 10. ВЫЧИСЛЯЕМЫЕ ЗНАЧЕНИЯ ===
+  // === ВЫЧИСЛЯЕМЫЕ ЗНАЧЕНИЯ ===
   const hasBodyState = useMemo(() => {
     if (!urlSyncStore || !urlSyncStore.bodyState) return false;
     
@@ -246,7 +227,6 @@ const EntryForm = observer(() => {
     border: isTelegram ? '1px solid var(--border-color, #ddd)' : 'none'
   }), [isTelegram, themeData]);
   
-  // === 11. РЕНДЕР СЕКЦИИ ПИКЕРА ===
   const renderPickerSection = useCallback(({
     label,
     icon,
@@ -261,7 +241,7 @@ const EntryForm = observer(() => {
           <span className="picker-icon">{icon}</span>
           <span className="picker-label">{label}</span>
         </label>
-        <PlatformButton
+        <Button
           variant={value ? 'secondary' : 'primary'}
           onClick={() => openModal(modalName)}
           disabled={isSubmitting}
@@ -269,7 +249,7 @@ const EntryForm = observer(() => {
           size="small"
         >
           {buttonText}
-        </PlatformButton>
+        </Button>
       </div>
       {value && previewComponent && (
         <div className="picker-preview">
@@ -279,7 +259,7 @@ const EntryForm = observer(() => {
     </div>
   ), [openModal, isSubmitting]);
   
-  // === 12. ПРЕВЬЮ ЭМОЦИЙ ===
+  // === ПРЕВЬЮ ЭМОЦИЙ ===
   const emotionsPreview = useMemo(() => {
     if (!urlSyncStore?.emotions || urlSyncStore.emotions.length === 0) return null;
     
@@ -303,7 +283,7 @@ const EntryForm = observer(() => {
     );
   }, [urlSyncStore?.emotions]);
   
-  // === 13. ПРЕВЬЮ ТЕГОВ ===
+  // === ПРЕВЬЮ ТЕГОВ ===
   const tagsPreview = useMemo(() => {
     if (!urlSyncStore?.tags || urlSyncStore.tags.length === 0) return null;
     
@@ -321,7 +301,7 @@ const EntryForm = observer(() => {
     );
   }, [urlSyncStore?.tags]);
   
-  // === 14. ПРЕВЬЮ СОСТОЯНИЯ ТЕЛА ===
+  // === ПРЕВЬЮ СОСТОЯНИЯ ТЕЛА ===
   const bodyStatePreview = useMemo(() => {
     if (!hasBodyState || !urlSyncStore?.bodyState) return null;
     
@@ -360,19 +340,17 @@ const EntryForm = observer(() => {
         style={formStyle}
         noValidate
       >
-        {/* 15.1. ЗАГОЛОВОК */}
+
         <h3 className="form-title">
           {t('entries.form.title') || 'Создать запись'}
         </h3>
         
-        {/* 15.2. ТИП ЗАПИСИ */}
         <div className="form-group">
           <EntryTypePicker />
         </div>
         
-        {/* 15.3. КОНТЕНТ */}
         <div className="form-group">
-          <PlatformTextArea
+          <TextArea
             value={urlSyncStore?.content || ''}
             onChange={(value) => urlSyncStore?.setContent?.(value)}
             label={t('entries.form.contentLabel') || 'Содержание'}
@@ -384,10 +362,9 @@ const EntryForm = observer(() => {
           />
         </div>
         
-        {/* 15.4. ДАТЫ */}
         <div className="date-row">
           <div className="form-group">
-            <PlatformInput
+            <Input
               type="date"
               value={urlSyncStore?.eventDate || ''}
               onChange={(value) => urlSyncStore?.setEventDate?.(value)}
@@ -399,7 +376,7 @@ const EntryForm = observer(() => {
           {/* {urlSyncStore?.type === ENTRY_TYPES.PLAN && ( */}
           {urlSyncStore?.type === 'plan' && !urlSyncStore?.deadline && (
             <div className="form-group">
-              <PlatformInput
+              <Input
                 type="date"
                 value={urlSyncStore?.deadline || ''}
                 onChange={(value) => urlSyncStore?.setDeadline?.(value)}
@@ -411,7 +388,6 @@ const EntryForm = observer(() => {
           )}
         </div>
         
-        {/* 15.5. СЕКЦИЯ ЭМОЦИЙ */}
         {renderPickerSection({
           label: t('entries.form.emotionsLabel') || 'Эмоции',
           icon: '⊕⊖',
@@ -423,7 +399,6 @@ const EntryForm = observer(() => {
           previewComponent: emotionsPreview
         })}
         
-        {/* 15.6. СЕКЦИЯ ОБСТОЯТЕЛЬСТВ */}
         {renderPickerSection({
           label: t('entries.form.circumstancesLabel') || 'Обстоятельства',
           icon: '☁☽⚡',
@@ -454,7 +429,6 @@ const EntryForm = observer(() => {
           )
         })}
         
-        {/* 15.7. СОСТОЯНИЕ ТЕЛА */}
         {renderPickerSection({
           label: t('entries.form.bodyStateLabel') || 'Состояние тела',
           icon: '❤️⚡',
@@ -466,7 +440,6 @@ const EntryForm = observer(() => {
           previewComponent: bodyStatePreview
         })}
         
-        {/* 15.8. НАВЫКИ */}
         {renderPickerSection({
           label: t('entries.form.skillsLabel') || 'Навыки',
           icon: '💪🧠',
@@ -495,7 +468,6 @@ const EntryForm = observer(() => {
           )
         })}
         
-        {/* 15.9. СВЯЗИ */}
         {renderPickerSection({
           label: t('entries.form.relationsLabel') || 'Связи',
           icon: '↔',
@@ -506,7 +478,7 @@ const EntryForm = observer(() => {
             : t('relations.picker.open') || 'Добавить связи',
           previewComponent: urlSyncStore?.relations?.length > 0 && (
             <div className="relations-preview">
-              <PlatformButton
+              <Button
                 type="button"
                 variant="ghost"
                 onClick={() => openModal('graph')}
@@ -514,7 +486,7 @@ const EntryForm = observer(() => {
                 size="small"
               >
                 {t('common.showGraph') || 'Показать граф'}
-              </PlatformButton>
+              </Button>
               <div className="relations-list">
                 {urlSyncStore.relations.slice(0, 2).map((rel, index) => (
                   <div key={index} className="relation-item">
@@ -534,7 +506,6 @@ const EntryForm = observer(() => {
           )
         })}
         
-        {/* 15.10. ТЕГИ */}
         {renderPickerSection({
           label: t('entries.form.tagsLabel') || 'Теги',
           icon: '#',
@@ -546,7 +517,6 @@ const EntryForm = observer(() => {
           previewComponent: tagsPreview
         })}
         
-        {/* 15.11. ПРОКАЧКА НАВЫКОВ */}
         {renderPickerSection({
           label: t('entries.form.skillProgressLabel') || 'Прокачка навыков',
           icon: '⬆',
@@ -575,14 +545,12 @@ const EntryForm = observer(() => {
           )
         })}
         
-        {/* 15.12. СТАТУС БАР */}
         <div className="form-group">
           <UrlStatusBar />
         </div>
         
-        {/* 15.13. КНОПКА ОТПРАВКИ */}
         <div className="form-actions">
-          <PlatformButton
+          <Button
             type="submit"
             variant="primary"
             size="large"
@@ -595,10 +563,9 @@ const EntryForm = observer(() => {
               ? `${t('common.saving') || 'Сохранение'}...` 
               : t('entries.form.submit') || 'Создать запись'
             }
-          </PlatformButton>
+          </Button>
         </div>
         
-        {/* 15.14. ПРЕДУПРЕЖДЕНИЯ */}
         {urlSyncStore?.type === ENTRY_TYPES.PLAN && !urlSyncStore?.deadline && (
           <div className="form-warning plan-warning">
             ⚠️ {t('common.planDeadlineRequired') || 'Для плана требуется срок выполнения'}
@@ -612,10 +579,10 @@ const EntryForm = observer(() => {
         )}
       </form>
       
-      {/* === 16. ВСЕ МОДАЛКИ === */}
+      {/* === ВСЕ МОДАЛКИ === */}
       
-      {/* 16.1. ЭМОЦИИ */}
-      <PlatformModal
+
+      <Modal
         isOpen={modals.emotion}
         onClose={() => closeModal('emotion')}
         title={t('emotions.picker.title') || 'Выбор эмоций'}
@@ -626,10 +593,10 @@ const EntryForm = observer(() => {
           onChange={handleEmotionsChange}
           maxEmotions={5}
         />
-      </PlatformModal>
+      </Modal>
       
-      {/* 16.2. ОБСТОЯТЕЛЬСТВА */}
-      <PlatformModal
+
+      <Modal
         isOpen={modals.circumstances}
         onClose={() => closeModal('circumstances')}
         title={t('circumstances.picker.title') || 'Выбор обстоятельств'}
@@ -640,10 +607,10 @@ const EntryForm = observer(() => {
           onChange={handleCircumstancesChange}
           maxCircumstances={5}
         />
-      </PlatformModal>
+      </Modal>
       
-      {/* 16.3. СОСТОЯНИЕ ТЕЛА */}
-      <PlatformModal
+
+      <Modal
         isOpen={modals.bodyState}
         onClose={() => closeModal('bodyState')}
         title={t('body.picker.title') || 'Состояние тела'}
@@ -653,10 +620,9 @@ const EntryForm = observer(() => {
           bodyState={urlSyncStore?.bodyState || {}}
           onChange={handleBodyStateChange}
         />
-      </PlatformModal>
+      </Modal>
       
-      {/* 16.4. НАВЫКИ */}
-      <PlatformModal
+      <Modal
         isOpen={modals.skills}
         onClose={() => closeModal('skills')}
         title={t('skills.picker.title') || 'Выбор навыков'}
@@ -667,10 +633,9 @@ const EntryForm = observer(() => {
           onChange={handleSkillsChange}
           maxSkills={10}
         />
-      </PlatformModal>
+      </Modal>
       
-      {/* 16.5. СВЯЗИ */}
-      <PlatformModal
+      <Modal
         isOpen={modals.relations}
         onClose={() => closeModal('relations')}
         title={t('relations.picker.title') || 'Добавление связей'}
@@ -682,10 +647,9 @@ const EntryForm = observer(() => {
           maxRelations={5}
           searchGraphs={searchGraphs}
         />
-      </PlatformModal>
+      </Modal>
       
-      {/* 16.6. ГРАФ СВЯЗЕЙ */}
-      <PlatformModal
+      <Modal
         isOpen={modals.graph}
         onClose={() => closeModal('graph')}
         title={t('relations.graph.title') || 'Граф связей'}
@@ -695,10 +659,9 @@ const EntryForm = observer(() => {
           relations={urlSyncStore?.relations || []}
           onClose={() => closeModal('graph')}
         />
-      </PlatformModal>
+      </Modal>
       
-      {/* 16.7. ПРОКАЧКА НАВЫКОВ */}
-      <PlatformModal
+      <Modal
         isOpen={modals.skillProgress}
         onClose={() => closeModal('skillProgress')}
         title={t('skillProgress.picker.title') || 'Прокачка навыков'}
@@ -710,10 +673,9 @@ const EntryForm = observer(() => {
           maxSkills={5}
           mode="progress"
         />
-      </PlatformModal>
+      </Modal>
       
-      {/* 16.8. ТЕГИ */}
-      <PlatformModal
+      <Modal
         isOpen={modals.tags}
         onClose={() => closeModal('tags')}
         title={t('tags.picker.title') || 'Добавление тегов'}
@@ -724,7 +686,7 @@ const EntryForm = observer(() => {
           onChange={handleTagsChange}
           maxTags={10}
         />
-      </PlatformModal>
+      </Modal>
     </>
   );
 });

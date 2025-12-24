@@ -1,8 +1,7 @@
-// src/ui/components/layout/Header.jsx
 import React, { useState } from 'react';
 import { useTheme } from '@/layers/theme';
 import { useLanguage } from '@/layers/language';
-import SearchBar from './SearchBar'; // ← НОВЫЙ ИМПОРТ
+import SearchBar from './SearchBar';
 import './Header.css';
 
 const Header = () => {
@@ -35,9 +34,9 @@ const Header = () => {
                 className={`theme-button ${theme === themeOption.name ? 'active' : ''}`}
                 title={themeOption.label}
               >
-                {themeOption.name === 'light' && '🌞'}
-                {themeOption.name === 'dark' && '🌙'}
-                {themeOption.name === 'darling' && '❤️'}
+                {themeOption.name === 'light' && 'Li'}
+                {themeOption.name === 'dark' && 'Dr'}
+                {themeOption.name === 'darling' && 'LiDr'}
               </button>
             ))}
           </div>
@@ -53,19 +52,19 @@ const Header = () => {
               onClick={() => setLanguage('ru')}
               className={`language-button ${language === 'ru' ? 'active' : ''}`}
             >
-              🇷🇺
+              ru
             </button>
             <button
               onClick={() => setLanguage('en')}
               className={`language-button ${language === 'en' ? 'active' : ''}`}
             >
-              🇺🇸
+              tb
             </button>
             <button
               onClick={() => setLanguage('fr')}
               className={`language-button ${language === 'fr' ? 'active' : ''}`}
             >
-              🇫🇷
+              fr
             </button>
           </div>
         </div>

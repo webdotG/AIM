@@ -10,28 +10,15 @@ export const ThemeProvider = ({ children }) => {
   const currentTheme = themes[themeName] || themes.light;
 
   useEffect(() => {
-
     localStorage.setItem('theme', themeName);
+
+    // ok.css автоматически применит нужные переменные
+    document.documentElement.setAttribute('data-theme', themeName);
     
-    const root = document.documentElement;
-    
-    // Очищаем предыдущие переменные
-    Object.keys(themes).forEach(theme => {
-      const themeColors = themes[theme].colors;
-      Object.keys(themeColors).forEach(color => {
-        root.style.removeProperty(color);
-      });
-    });
-    
-    // Устанавливаем новые переменные
-    Object.entries(currentTheme.colors).forEach(([key, value]) => {
-      root.style.setProperty(key, value);
-    });
-    
-    // Добавляем класс темы для body (опционально)
+    // класс для body (опционально, для дополнительной стилизации)
     document.body.className = `theme-${themeName}`;
     
-    console.log(`Тема "${currentTheme.label}" применена`);
+    console.log(`Тема "${currentTheme.label}" (${themeName}) применена`);
   }, [themeName, currentTheme]);
 
   const setTheme = (name) => {

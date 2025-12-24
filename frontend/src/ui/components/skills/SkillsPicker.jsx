@@ -2,16 +2,15 @@ import React, { useState, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useLanguage } from '@/layers/language';
 import { usePlatform } from '@/layers/platform';
+import Button from '../common/Button/Button';
 import './SkillsPicker.css';
 
-// ТОЛЬКО ИМПОРТ, без объявления!
-import { PlatformButton } from '@/ui/components/common/PlatformAdapter';
 
 const SkillsPicker = observer(({
   selectedSkills = [],
   onChange,
   maxSkills = 10,
-  mode = 'default' // 'default' или 'progress'
+  mode = 'default'
 }) => {
   const { t } = useLanguage();
   const { isTelegram } = usePlatform();
@@ -22,9 +21,9 @@ const SkillsPicker = observer(({
   return (
     <div className="skills-picker">
       {/* Используй PlatformButton из импорта */}
-      <PlatformButton onClick={handleAddSkill}>
+      <Button onClick={handleAddSkill}>
         Добавить навык
-      </PlatformButton>
+      </Button>
     </div>
   );
 });

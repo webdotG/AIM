@@ -1,4 +1,4 @@
-
+// src/ui/components/layout/SearchBar.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/layers/language';
@@ -15,11 +15,11 @@ const SEARCH_CATEGORIES = {
 };
 
 const CATEGORY_ICONS = {
-  [SEARCH_CATEGORIES.ALL]: 'A',
-  [SEARCH_CATEGORIES.ENTRIES]: 'E',
-  [SEARCH_CATEGORIES.SKILLS]: 'S',
-  [SEARCH_CATEGORIES.PEOPLE]: 'P',
-  [SEARCH_CATEGORIES.TAGS]: 'T'
+  [SEARCH_CATEGORIES.ALL]: '🔍',
+  [SEARCH_CATEGORIES.ENTRIES]: '📝',
+  [SEARCH_CATEGORIES.SKILLS]: '💪',
+  [SEARCH_CATEGORIES.PEOPLE]: '👥',
+  [SEARCH_CATEGORIES.TAGS]: '#️⃣'
 };
 
 const SearchBar = () => {

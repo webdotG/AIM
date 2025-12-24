@@ -1,411 +1,132 @@
-/* Header.css - Газетный стиль */
-
+/* src/ui/components/layout/Header.css */
 .header {
-  padding: var(--spacing-lg) var(--spacing-xl);
-  background-color: var(--color-background);
-  border-top: 3px solid var(--color-text);
-  border-bottom: 3px double var(--color-text);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: var(--spacing-lg);
-  position: relative;
-}
-
-.header::after {
-  content: '';
-  position: absolute;
-  bottom: -1px;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background-color: var(--color-text);
+  padding: 15px 20px;
+  background-color: var(--header-bg);
+  border-bottom: 1px solid var(--border-color);
+  gap: 20px;
 }
 
 .header-left {
   display: flex;
-  width: 100%;
   align-items: center;
-  gap: var(--spacing-md);
-  border-left: 3px solid var(--color-text);
-  padding-left: var(--spacing-md);
+  gap: 20px;
+  flex: 1;
+  min-width: 0; /* Для корректного сжатия */
+}
+
+.header-brand {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .header-title {
   margin: 0;
-  color: var(--color-text);
-  font-size: 1.75rem;
+  font-size: 24px;
   font-weight: 700;
+  color: var(--text-primary);
   font-family: 'Georgia', 'Times New Roman', serif;
-  letter-spacing: 2px;
-  text-transform: uppercase;
 }
 
 .header-version {
-  font-size: 0.75rem;
-  color: var(--color-text);
-  padding: 2px var(--spacing-sm);
-  background-color: var(--color-background);
-  border: 1px solid var(--color-text);
-  border-radius: 0;
+  font-size: 12px;
+  color: var(--text-secondary);
   font-family: 'Courier New', monospace;
-  letter-spacing: 1px;
-  font-weight: 600;
 }
+
+/* Поиск теперь через SearchBar компонент */
 
 .header-right {
   display: flex;
   align-items: center;
-  gap: var(--spacing-xl);
+  gap: 20px;
+  flex-shrink: 0;
 }
 
-/* Theme Switcher - Газетный стиль */
-.theme-switcher {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs);
-}
-
-.theme-switcher-label {
-  font-size: 0.75rem;
-  color: var(--color-text);
-  font-family: 'Georgia', 'Times New Roman', serif;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  font-weight: 600;
-}
-
-.theme-switcher-options {
-  display: flex;
-  gap: 0;
-  background-color: var(--color-background);
-  border: 2px solid var(--color-text);
-  padding: 0;
-}
-
-.theme-option {
-  padding: var(--spacing-xs) var(--spacing-md);
-  border: none;
-  border-right: 1px solid var(--color-text);
-  background: var(--color-background);
-  color: var(--color-text);
-  cursor: pointer;
-  font-size: 0.75rem;
-  font-family: 'Georgia', 'Times New Roman', serif;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-weight: 500;
-  transition: all 0.15s ease;
-}
-
-.theme-option:last-child {
-  border-right: none;
-}
-
-.theme-option:hover {
-  background-color: var(--color-text);
-  color: var(--color-background);
-}
-
-.theme-option.active {
-  background-color: var(--color-text);
-  color: var(--color-background);
-  font-weight: 700;
-}
-
-/* Language Switcher - Газетный стиль */
+/* Переключатели тем и языков остаются без изменений */
+.theme-switcher,
 .language-switcher {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-xs);
+  gap: 4px;
 }
 
-.language-switcher-label {
-  font-size: 0.75rem;
-  color: var(--color-text);
-  font-family: 'Georgia', 'Times New Roman', serif;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  font-weight: 600;
-}
-
-.language-switcher-options {
-  display: flex;
-  gap: 0;
-  background-color: var(--color-background);
-  border: 2px solid var(--color-text);
-  padding: 0;
-}
-
-.language-option {
-  padding: var(--spacing-xs) var(--spacing-md);
-  border: none;
-  border-right: 1px solid var(--color-text);
-  background: var(--color-background);
-  color: var(--color-text);
-  cursor: pointer;
-  font-size: 0.75rem;
-  font-family: 'Georgia', 'Times New Roman', serif;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-weight: 500;
-  transition: all 0.15s ease;
-}
-
-.language-option:last-child {
-  border-right: none;
-}
-
-.language-option:hover {
-  background-color: var(--color-text);
-  color: var(--color-background);
-}
-
-.language-option.active {
-  background-color: var(--color-text);
-  color: var(--color-background);
-  font-weight: 700;
-}
-
-/* Альтернативные метки (если используются старые классы) */
 .switcher-label {
-  font-size: 0.75rem;
-  color: var(--color-text);
-  font-family: 'Georgia', 'Times New Roman', serif;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  font-weight: 600;
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
 }
 
 .switcher-buttons {
   display: flex;
-  gap: 0;
-  background-color: var(--color-background);
-  border: 2px solid var(--color-text);
-  padding: 0;
-  border-radius: 0;
+  gap: 4px;
 }
 
 .theme-button,
 .language-button {
-  padding: var(--spacing-xs) var(--spacing-md);
-  border: none;
-  border-right: 1px solid var(--color-text);
-  border-radius: 0;
-  background: var(--color-background);
-  color: var(--color-text);
+  padding: 6px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
   cursor: pointer;
-  font-size: 0.75rem;
-  font-family: 'Georgia', 'Times New Roman', serif;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  transition: all 0.15s ease;
-}
-
-.theme-button:last-child,
-.language-button:last-child {
-  border-right: none;
+  font-size: 14px;
+  transition: all 0.2s;
+  min-width: 40px;
+  text-align: center;
 }
 
 .theme-button:hover,
 .language-button:hover {
-  background-color: var(--color-text);
-  color: var(--color-background);
+  background: var(--bg-tertiary);
 }
 
 .theme-button.active,
 .language-button.active {
-  background-color: var(--color-text);
-  color: var(--color-background);
-  font-weight: 700;
+  background: var(--primary);
+  color: var(--text-inverse);
+  border-color: var(--primary);
 }
 
-/* Responsive */
-@media (max-width: 992px) {
+/* Адаптивность */
+@media (max-width: 1024px) {
   .header {
-    padding: var(--spacing-md) var(--spacing-lg);
+    flex-wrap: wrap;
+    gap: 15px;
   }
   
-  .header-title {
-    font-size: 1.5rem;
-    letter-spacing: 1px;
+  .header-left {
+    order: 1;
+    width: 100%;
+    margin-bottom: 10px;
   }
   
   .header-right {
-    gap: var(--spacing-lg);
+    order: 2;
+    justify-content: space-between;
+    width: 100%;
   }
 }
 
 @media (max-width: 768px) {
   .header {
-    padding: var(--spacing-sm) var(--spacing-md);
-    flex-wrap: wrap;
-    gap: var(--spacing-md);
-  }
-  
-  .header-left {
-    border-left-width: 2px;
-    padding-left: var(--spacing-sm);
+    padding: 10px 15px;
   }
   
   .header-title {
-    font-size: 1.25rem;
-    letter-spacing: 0.5px;
-  }
-  
-  .header-version {
-    font-size: 0.625rem;
-    padding: 1px var(--spacing-xs);
-  }
-  
-  .header-right {
-    width: 100%;
-    gap: var(--spacing-md);
-    justify-content: space-between;
+    font-size: 20px;
   }
   
   .theme-switcher,
   .language-switcher {
-    flex: 1;
+    min-width: 0;
   }
   
-  .theme-switcher-options,
-  .language-switcher-options,
   .switcher-buttons {
-    width: 100%;
+    flex-wrap: wrap;
   }
-  
-  .theme-option,
-  .language-option,
-  .theme-button,
-  .language-button {
-    flex: 1;
-    justify-content: center;
-    padding: var(--spacing-xs) var(--spacing-sm);
-    font-size: 0.625rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .header-title {
-    font-size: 1rem;
-  }
-  
-  .header-right {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  
-  .theme-switcher-label,
-  .language-switcher-label,
-  .switcher-label {
-    font-size: 0.625rem;
-  }
-}
-
-/* Печать */
-@media print {
-  .header {
-    border-top: 2px solid black;
-    border-bottom: 2px double black;
-  }
-  
-  .header::after {
-    background-color: black;
-  }
-  
-  .header-left {
-    border-left-color: black;
-  }
-  
-  .header-title,
-  .header-version,
-  .theme-switcher-label,
-  .language-switcher-label {
-    color: black !important;
-  }
-  
-  .header-version,
-  .theme-switcher-options,
-  .language-switcher-options,
-  .switcher-buttons {
-    border-color: black !important;
-  }
-  
-  .theme-option,
-  .language-option,
-  .theme-button,
-  .language-button {
-    border-color: black !important;
-    color: black !important;
-  }
-  
-  .theme-option.active,
-  .language-option.active,
-  .theme-button.active,
-  .language-button.active {
-    background-color: black !important;
-    color: white !important;
-  }
-}
-/* src/ui/components/layout/Header.css */
-.header {
-  /* существующие стили */
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 15px 20px;
-  background-color: var(--header-bg, #f8f9fa);
-  border-bottom: 1px solid var(--border-color, #e9ecef);
-}
-
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
-
-.header-search {
-  display: flex;
-  align-items: center;
-  max-width: 300px;
-}
-
-.search-input {
-  flex: 1;
-  padding: 8px 12px;
-  border: 1px solid var(--border-color, #ddd);
-  border-radius: 4px 0 0 4px;
-  font-size: 14px;
-  outline: none;
-  transition: border-color 0.2s;
-}
-
-.search-input:focus {
-  border-color: var(--primary-color, #007bff);
-}
-
-.search-button {
-  padding: 8px 16px;
-  background-color: var(--primary-color, #007bff);
-  color: white;
-  border: 1px solid var(--primary-color, #007bff);
-  border-left: none;
-  border-radius: 0 4px 4px 0;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.search-button:hover {
-  background-color: var(--primary-hover, #0056b3);
-}
-
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
+} 

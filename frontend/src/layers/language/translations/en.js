@@ -42,49 +42,6 @@ const en = {
   selectEmotion: 'Select emotion',
   addTagPlaceholder: 'Enter tag and press Enter',
   planDeadlineRequired: 'Plan requires a deadline',
-  // relations: {
-  //   "types": {
-  //     "led_to": "Led to",
-  //     "reminded_of": "Reminded of",
-  //     "inspired_by": "Inspired by",
-  //     "caused_by": "Caused by",
-  //     "related_to": "Related to",
-  //     "resulted_in": "Resulted in"
-  //   },
-  //   "descriptions": {
-  //     "led_to": "This entry led to another entry",
-  //     "reminded_of": "Reminds of another entry",
-  //     "inspired_by": "Was inspired by another entry",
-  //     "caused_by": "Was caused by another entry",
-  //     "related_to": "Is related to another entry",
-  //     "resulted_in": "Resulted in another entry"
-  //   },
-  //   "picker": {
-  //     "title": "Add Connections",
-  //     "open": "Connect to other entries",
-  //     "selectType": "How is this related?",
-  //     "typeHelp": "Choose the type of connection",
-  //     "searchEntry": "Search for entry",
-  //     "searchPlaceholder": "Search by content or date...",
-  //     "searchHint": "Start typing to search your entries",
-  //     "noResults": "No entries found",
-  //     "addDescription": "Add description",
-  //     "descriptionLabel": "Description (optional)",
-  //     "descriptionPlaceholder": "Why is this connected? (optional)",
-  //     "addRelation": "Add connection",
-  //     "skipDescription": "Skip description",
-  //     "selected": "Selected: {count} / {max}"
-  //   },
-  //   "graph": {
-  //     "title": "Relationship Graph",
-  //     "noData": "No connections to visualize"
-  //   }
-  // },
-  // "entries": {
-  //   "form": {
-  //     "relationsLabel": "Connections"
-  //   }
-  // }
   },
 
   // Navigation
