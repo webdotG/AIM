@@ -1,0 +1,121 @@
+.textarea-wrapper {
+  margin-bottom: var(--spacing-md);
+  width: 100%;
+  font-family: var(--font-serif);
+}
+
+.textarea-label {
+  display: block;
+  margin-bottom: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-family: var(--font-serif);
+}
+
+.required-mark {
+  color: red;
+  font-weight: var(--font-weight-bold);
+}
+
+.textarea-field {
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--font-size-base);
+  border: 2px solid var(--color-border);
+  background: var(--color-background);
+  color: var(--color-text);
+  outline: none;
+  font-family: var(--font-serif);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  resize: vertical;
+  min-height: calc(var(--spacing-md) * 6);
+  position: relative;
+}
+
+.textarea-field::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  right: 4px;
+  bottom: 4px;
+  border: 1px solid var(--color-border);
+  pointer-events: none;
+}
+
+.textarea-field:focus {
+  border-width: 3px;
+}
+
+.textarea-wrapper.has-error .textarea-field {
+  border-color: red;
+}
+
+.textarea-wrapper.has-error .textarea-field::before {
+  border-color: red;
+}
+
+.textarea-wrapper.is-disabled .textarea-field {
+  background: var(--color-background);
+  color: var(--color-text);
+  opacity: 0.7;
+}
+
+.textarea-error {
+  margin-top: var(--spacing-xs);
+  font-size: var(--font-size-xs);
+  color: red;
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-family: var(--font-serif);
+}
+
+.textarea-counter {
+  margin-top: var(--spacing-xs);
+  font-size: var(--font-size-xs);
+  color: var(--color-text);
+  text-align: right;
+  font-family: var(--font-mono);
+  font-weight: var(--font-weight-bold);
+}
+
+/* Адаптивность */
+@media (max-width: 480px) {
+  .textarea-field {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: var(--font-size-sm);
+    min-height: calc(var(--spacing-md) * 4);
+  }
+}
+
+/* Печать */
+@media print {
+  .textarea-field {
+    border: 2px solid black;
+  }
+  
+  .textarea-field::before {
+    border: 1px solid black;
+  }
+  
+  .textarea-wrapper.has-error .textarea-field {
+    border-color: black;
+  }
+  
+  .textarea-wrapper.has-error .textarea-field::before {
+    border-color: black;
+  }
+  
+  .required-mark {
+    color: black;
+  }
+  
+  .textarea-error {
+    color: black;
+  }
+}
