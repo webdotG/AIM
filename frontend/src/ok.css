@@ -1,100 +1,108 @@
-
 :root {
-  /* СВЕТЛАЯ ТЕМА ПО УМОЛЧАНИЮ */
+  /* Основные цвета - чистый спектр */
+  --color-primary: blue;
+  --color-secondary: purple;
+  --color-success: green;
+  --color-warning: orange;
+  --color-danger: red;
+  --color-info: cyan;
   
-  /* Основные цвета */
-  --color-primary: #3b82f6;
-  --color-secondary: #8b5cf6;
-  --color-success: #10b981;
-  --color-warning: #f59e0b;
-  --color-danger: #ef4444;
-  --color-info: #06b6d4;
+  /* Фоны - только белый и черный */
+  --color-background: white;
+  --color-surface: white;
+  --color-card: white;
+  --color-paper: white;
   
-  /* Фоны */
-  --color-background: #ffffff;
-  --color-surface: #f9fafb;
-  --color-card: #ffffff;
-  --color-paper: #ffffff;
+  /* Текст - только черный и белый */
+  --color-text: black;
+  --color-text-secondary: black;
+  --color-text-disabled: black;
+  --color-text-inverse: white;
   
-  /* Текст */
-  --color-text: #111827;
-  --color-text-secondary: #6b7280;
-  --color-text-disabled: #9ca3af;
-  --color-text-inverse: #ffffff;
+  /* Границы - черные */
+  --color-border: black;
+  --color-divider: black;
   
-  /* Границы */
-  --color-border: #e5e7eb;
-  --color-divider: #f3f4f6;
+  /* Состояния - черный и белый */
+  --color-hover: black;
+  --color-active: black;
+  --color-selected: black;
+  --color-disabled: black;
   
-  /* Состояния */
-  --color-hover: #f3f4f6;
-  --color-active: #e5e7eb;
-  --color-selected: #dbeafe;
-  --color-disabled: #f3f4f6;
+  /* Специальные - без оттенков */
+  --color-overlay: black;
+  --color-shadow: black;
   
-  /* Специальные */
-  --color-overlay: rgba(0, 0, 0, 0.5);
-  --color-shadow: rgba(0, 0, 0, 0.1);
+  /* Прозрачные версии - чистые цвета */
+  --color-primary-transparent: rgba(0, 0, 255, 0.1);
+  --color-secondary-transparent: rgba(128, 0, 128, 0.1);
+  --color-success-transparent: rgba(0, 128, 0, 0.1);
+  --color-warning-transparent: rgba(255, 165, 0, 0.1);
+  --color-danger-transparent: rgba(255, 0, 0, 0.1);
+  --color-info-transparent: rgba(0, 255, 255, 0.1);
   
-  /* Прозрачные версии */
-  --color-primary-transparent: rgba(59, 130, 246, 0.1);
-  --color-secondary-transparent: rgba(139, 92, 246, 0.1);
-  --color-success-transparent: rgba(16, 185, 129, 0.1);
-  --color-warning-transparent: rgba(245, 158, 11, 0.1);
-  --color-danger-transparent: rgba(239, 68, 68, 0.1);
-  --color-info-transparent: rgba(6, 182, 212, 0.1);
+  /* ==================== */
+  /* ТИПОГРАФИЯ */
+  /* ==================== */
   
-  /* Тёмные версии */
-  --color-primary-dark: #2563eb;
-  --color-success-dark: #059669;
-  --color-warning-dark: #d97706;
-  --color-danger-dark: #dc2626;
-  --color-info-dark: #0891b2;
-  
-  /* Типография - НЕ ЗАВИСИТ ОТ ТЕМЫ */
-  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-  --font-serif: 'Georgia', 'Times New Roman', serif;
+  /* Шрифты - строгие */
+  --font-family:  san-serif;
+  --font-serif:  san-serif;
+    /* --font-family: 'Georgia', 'Times New Roman', serif;
+  --font-serif: 'Georgia', 'Times New Roman', serif; */
   --font-mono: 'Courier New', monospace;
   
   /* Размеры шрифтов */
-  --font-size-xs: 0.75rem;    /* 12px */
-  --font-size-sm: 0.875rem;   /* 14px */
-  --font-size-base: 1rem;     /* 16px */
-  --font-size-lg: 1.125rem;   /* 18px */
-  --font-size-xl: 1.25rem;    /* 20px */
-  --font-size-2xl: 1.5rem;    /* 24px */
-  --font-size-3xl: 1.875rem;  /* 30px */
-  --font-size-4xl: 2.25rem;   /* 36px */
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 1.875rem;
+  --font-size-4xl: 2.25rem;
   
-  /* Насыщенность шрифтов */
+  /* Насыщенность */
   --font-weight-normal: 400;
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
   
-  /* Отступы */
-  --spacing-xs: 0.25rem;    /* 4px */
-  --spacing-sm: 0.5rem;     /* 8px */
-  --spacing-md: 1rem;       /* 16px */
-  --spacing-lg: 1.5rem;     /* 24px */
-  --spacing-xl: 2rem;       /* 32px */
-  --spacing-2xl: 3rem;      /* 48px */
+  /* ==================== */
+  /* ОТСТУПЫ */
+  /* ==================== */
   
-  /* Скругления */
-  --border-radius-sm: 0.25rem;   /* 4px */
-  --border-radius-md: 0.5rem;    /* 8px */
-  --border-radius-lg: 0.75rem;   /* 12px */
-  --border-radius-xl: 1rem;      /* 16px */
-  --border-radius-full: 9999px;  /* Полное скругление */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
   
-  /* Тени */
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  /* ==================== */
+  /* ГРАНИЦЫ - БЕЗ СКРУГЛЕНИЙ */
+  /* ==================== */
   
-  /* Z-index уровни */
+  --border-radius-sm: 0;
+  --border-radius-md: 0;
+  --border-radius-lg: 0;
+  --border-radius-xl: 0;
+  --border-radius-full: 0;
+  
+  /* ==================== */
+  /* ТЕНИ - МИНИМАЛЬНЫЕ */
+  /* ==================== */
+  
+  --shadow-sm: 0 0 0 1px black;
+  --shadow-md: 0 0 0 2px black;
+  --shadow-lg: 0 0 0 3px black;
+  --shadow-xl: 0 0 0 4px black;
+  --shadow-2xl: 0 0 0 5px black;
+  
+  /* ==================== */
+  /* Z-ИНДЕКСЫ */
+  /* ==================== */
+  
   --z-dropdown: 1000;
   --z-sticky: 1020;
   --z-fixed: 1030;
@@ -104,14 +112,20 @@
   --z-tooltip: 1070;
   --z-toast: 1080;
   
-  /* Ширины контейнеров */
+  /* ==================== */
+  /* ШИРИНЫ */
+  /* ==================== */
+  
   --container-sm: 640px;
   --container-md: 768px;
   --container-lg: 1024px;
   --container-xl: 1280px;
   --container-2xl: 1536px;
   
-  /* Анимации */
+  /* ==================== */
+  /* АНИМАЦИИ */
+  /* ==================== */
+  
   --transition-fast: 150ms;
   --transition-normal: 300ms;
   --transition-slow: 500ms;
@@ -120,133 +134,103 @@
   --ease-in: cubic-bezier(0.4, 0, 1, 1);
 }
 
-/* =============================== */
+/* ==================== */
 /* ТЕМНАЯ ТЕМА */
-/* =============================== */
+/* ==================== */
 
 [data-theme="dark"] {
-  /* Основные цвета */
-  --color-primary: #60a5fa;
-  --color-secondary: #a78bfa;
-  --color-success: #34d399;
-  --color-warning: #fbbf24;
-  --color-danger: #f87171;
-  --color-info: #22d3ee;
+  /* Фоны - черные */
+  --color-background: black;
+  --color-surface: black;
+  --color-card: black;
+  --color-paper: black;
   
-  /* Фоны */
-  --color-background: #111827;
-  --color-surface: #1f2937;
-  --color-card: #1f2937;
-  --color-paper: #374151;
+  /* Текст - белые */
+  --color-text: white;
+  --color-text-secondary: white;
+  --color-text-disabled: white;
+  --color-text-inverse: black;
   
-  /* Текст */
-  --color-text: #f9fafb;
-  --color-text-secondary: #d1d5db;
-  --color-text-disabled: #6b7280;
-  --color-text-inverse: #111827;
+  /* Границы - белые */
+  --color-border: white;
+  --color-divider: white;
   
-  /* Границы */
-  --color-border: #374151;
-  --color-divider: #4b5563;
-  
-  /* Состояния */
-  --color-hover: #374151;
-  --color-active: #4b5563;
-  --color-selected: #1e40af;
-  --color-disabled: #374151;
+  /* Состояния - белые */
+  --color-hover: white;
+  --color-active: white;
+  --color-selected: white;
+  --color-disabled: white;
   
   /* Специальные */
-  --color-overlay: rgba(0, 0, 0, 0.7);
-  --color-shadow: rgba(0, 0, 0, 0.3);
+  --color-overlay: white;
+  --color-shadow: white;
   
-  /* Прозрачные версии */
-  --color-primary-transparent: rgba(96, 165, 250, 0.15);
-  --color-secondary-transparent: rgba(167, 139, 250, 0.15);
-  --color-success-transparent: rgba(52, 211, 153, 0.15);
-  --color-warning-transparent: rgba(251, 191, 36, 0.15);
-  --color-danger-transparent: rgba(248, 113, 113, 0.15);
-  --color-info-transparent: rgba(34, 211, 238, 0.15);
-  
-  /* Тёмные версии */
-  --color-primary-dark: #3b82f6;
-  --color-success-dark: #10b981;
-  --color-warning-dark: #f59e0b;
-  --color-danger-dark: #ef4444;
-  --color-info-dark: #06b6d4;
-  
-  /* Тени (темнее для тёмной темы) */
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
-  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  /* Тени */
+  --shadow-sm: 0 0 0 1px white;
+  --shadow-md: 0 0 0 2px white;
+  --shadow-lg: 0 0 0 3px white;
+  --shadow-xl: 0 0 0 4px white;
+  --shadow-2xl: 0 0 0 5px white;
 }
 
-/* =============================== */
-/* DARLING ТЕМА (Красная) */
-/* =============================== */
+/* ==================== */
+/* DARLING ТЕМА */
+/* ==================== */
 
 [data-theme="darling"] {
-  /* Основные цвета - красные акценты */
-  --color-primary: #ff3366;
-  --color-secondary: #993366;
-  --color-success: #33ff66;
-  --color-warning: #ffcc33;
-  --color-danger: #ff3333;
-  --color-info: #33ccff;
+  /* Основные цвета - чистый спектр */
+  --color-primary: red;
+  --color-secondary: red;
+  --color-success: red;
+  --color-warning: red;
+  --color-danger: red;
+  --color-info: red;
   
-  /* Фоны - тёмные с красным оттенком */
-  --color-background: #0a0a0a;
-  --color-surface: #1a0a0a;
-  --color-card: #1a0a0a;
-  --color-paper: #2a0a0a;
+  /* Фоны - черные */
+  --color-background: black;
+  --color-surface: black;
+  --color-card: black;
+  --color-paper: black;
   
-  /* Текст */
-  --color-text: #ffffff;
-  --color-text-secondary: #ffcccc;
-  --color-text-disabled: #996666;
-  --color-text-inverse: #0a0a0a;
+  /* Текст - белые и красные */
+  --color-text: white;
+  --color-text-secondary: white;
+  --color-text-disabled: white;
+  --color-text-inverse: black;
   
   /* Границы - красные */
-  --color-border: #660033;
-  --color-divider: #330019;
+  --color-border: red;
+  --color-divider: red;
   
-  /* Состояния */
-  --color-hover: #2a0a0a;
-  --color-active: #3a0a0a;
-  --color-selected: #cc2952;
-  --color-disabled: #2a0a0a;
+  /* Состояния - красные */
+  --color-hover: red;
+  --color-active: red;
+  --color-selected: red;
+  --color-disabled: red;
   
   /* Специальные */
-  --color-overlay: rgba(255, 51, 102, 0.3);
-  --color-shadow: rgba(255, 51, 102, 0.2);
+  --color-overlay: red;
+  --color-shadow: red;
   
-  /* Прозрачные версии */
-  --color-primary-transparent: rgba(255, 51, 102, 0.15);
-  --color-secondary-transparent: rgba(153, 51, 102, 0.15);
-  --color-success-transparent: rgba(51, 255, 102, 0.15);
-  --color-warning-transparent: rgba(255, 204, 51, 0.15);
-  --color-danger-transparent: rgba(255, 51, 51, 0.15);
-  --color-info-transparent: rgba(51, 204, 255, 0.15);
+  /* Прозрачные версии - красные */
+  --color-primary-transparent: rgba(255, 0, 0, 0.1);
+  --color-secondary-transparent: rgba(255, 0, 0, 0.1);
+  --color-success-transparent: rgba(255, 0, 0, 0.1);
+  --color-warning-transparent: rgba(255, 0, 0, 0.1);
+  --color-danger-transparent: rgba(255, 0, 0, 0.1);
+  --color-info-transparent: rgba(255, 0, 0, 0.1);
   
-  /* Тёмные версии */
-  --color-primary-dark: #cc2952;
-  --color-success-dark: #29cc52;
-  --color-warning-dark: #cca329;
-  --color-danger-dark: #cc2929;
-  --color-info-dark: #29a3cc;
-  
-  /* Тени - с красным оттенком */
-  --shadow-sm: 0 1px 2px 0 rgba(255, 51, 102, 0.2);
-  --shadow-md: 0 4px 6px -1px rgba(255, 51, 102, 0.3);
-  --shadow-lg: 0 10px 15px -3px rgba(255, 51, 102, 0.4);
-  --shadow-xl: 0 20px 25px -5px rgba(255, 51, 102, 0.4);
-  --shadow-2xl: 0 25px 50px -12px rgba(255, 51, 102, 0.5);
+  /* Тени - красные */
+  --shadow-sm: 0 0 0 1px red;
+  --shadow-md: 0 0 0 2px red;
+  --shadow-lg: 0 0 0 3px red;
+  --shadow-xl: 0 0 0 4px red;
+  --shadow-2xl: 0 0 0 5px red;
 }
 
-/* =============================== */
+/* ==================== */
 /* БАЗОВЫЕ СТИЛИ */
-/* =============================== */
+/* ==================== */
 
 *, *::before, *::after {
   box-sizing: border-box;
@@ -276,15 +260,18 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* =============================== */
+/* ==================== */
 /* ТИПОГРАФИЯ */
-/* =============================== */
+/* ==================== */
 
 h1, h2, h3, h4, h5, h6 {
-  font-weight: var(--font-weight-semibold);
+  font-weight: var(--font-weight-bold);
   line-height: 1.2;
   color: var(--color-text);
   margin-bottom: var(--spacing-sm);
+  font-family: var(--font-serif);
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 h1 { font-size: var(--font-size-4xl); }
@@ -296,43 +283,48 @@ h6 { font-size: var(--font-size-base); }
 
 p {
   margin-bottom: var(--spacing-md);
+  font-family: var(--font-serif);
 }
 
 a {
   color: var(--color-primary);
   text-decoration: none;
   transition: color var(--transition-fast) var(--ease-in-out);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 a:hover {
-  color: var(--color-secondary);
-  text-decoration: underline;
+  /* color: var(--color-secondary); */
+  /* text-decoration: underline; */
+  opacity: 0.81;
 }
 
 small { font-size: var(--font-size-sm); }
-strong { font-weight: var(--font-weight-semibold); }
+strong { font-weight: var(--font-weight-bold); }
 
-/* =============================== */
+/* ==================== */
 /* УТИЛИТНЫЕ КЛАССЫ */
-/* =============================== */
+/* ==================== */
 
 /* Цвета текста */
-.text-primary { color: var(--color-text); }
-.text-secondary { color: var(--color-text-secondary); }
+.text-primary { color: blue; }
+.text-secondary { color: purple; }
+.text-success { color: green; }
+.text-warning { color: orange; }
+.text-danger { color: red; }
+.text-info { color: cyan; }
 .text-disabled { color: var(--color-text-disabled); }
 .text-inverse { color: var(--color-text-inverse); }
-.text-success { color: var(--color-success); }
-.text-warning { color: var(--color-warning); }
-.text-danger { color: var(--color-danger); }
-.text-info { color: var(--color-info); }
 
 /* Фоны */
-.bg-primary { background-color: var(--color-primary); }
-.bg-secondary { background-color: var(--color-secondary); }
-.bg-success { background-color: var(--color-success); }
-.bg-warning { background-color: var(--color-warning); }
-.bg-danger { background-color: var(--color-danger); }
-.bg-info { background-color: var(--color-info); }
+.bg-primary { background-color: blue; }
+.bg-secondary { background-color: purple; }
+.bg-success { background-color: green; }
+.bg-warning { background-color: orange; }
+.bg-danger { background-color: red; }
+.bg-info { background-color: cyan; }
 .bg-background { background-color: var(--color-background); }
 .bg-surface { background-color: var(--color-surface); }
 .bg-card { background-color: var(--color-card); }
@@ -364,6 +356,8 @@ strong { font-weight: var(--font-weight-semibold); }
 
 /* Границы */
 .border { border: 1px solid var(--color-border); }
+.border-2 { border: 2px solid var(--color-border); }
+.border-3 { border: 3px solid var(--color-border); }
 .rounded { border-radius: var(--border-radius-md); }
 .rounded-lg { border-radius: var(--border-radius-lg); }
 .rounded-full { border-radius: var(--border-radius-full); }
@@ -373,14 +367,15 @@ strong { font-weight: var(--font-weight-semibold); }
 .shadow { box-shadow: var(--shadow-md); }
 .shadow-lg { box-shadow: var(--shadow-lg); }
 
-/* =============================== */
+/* ==================== */
 /* КОМПОНЕНТЫ */
-/* =============================== */
+/* ==================== */
 
 .container {
   width: 100%;
   margin: 0 auto;
   padding: 0 var(--spacing-md);
+  border: 1px solid var(--color-border);
 }
 
 @media (min-width: 640px) { .container { max-width: var(--container-sm); } }
@@ -393,39 +388,49 @@ strong { font-weight: var(--font-weight-semibold); }
   align-items: center;
   justify-content: center;
   padding: var(--spacing-sm) var(--spacing-md);
-  border-radius: var(--border-radius-md);
-  font-weight: var(--font-weight-medium);
+  border: 2px solid var(--color-border);
+  font-weight: var(--font-weight-bold);
   cursor: pointer;
   transition: all var(--transition-fast) var(--ease-in-out);
-  border: 1px solid transparent;
   text-decoration: none;
+  font-family: var(--font-serif);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  background: var(--color-background);
+  color: var(--color-text);
 }
 
 .btn-primary {
-  background-color: var(--color-primary);
-  color: var(--color-text-inverse);
+  /* background-color: var(--color-background);
+  color: var(--color-text-inverse); */
 }
 
 .btn-primary:hover:not(:disabled) {
-  opacity: 0.9;
+  background-color: var(--color-text);
+  color: var(--color-background);
 }
 
 .card {
   background-color: var(--color-card);
-  border-radius: var(--border-radius-lg);
-  border: 1px solid var(--color-border);
+  border: 2px solid var(--color-border);
   padding: var(--spacing-lg);
-  box-shadow: var(--shadow-sm);
-  transition: box-shadow var(--transition-normal) var(--ease-in-out);
+  position: relative;
 }
 
-.card:hover {
-  box-shadow: var(--shadow-md);
+.card::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  right: 4px;
+  bottom: 4px;
+  border: 1px solid var(--color-border);
+  pointer-events: none;
 }
 
-/* =============================== */
+/* ==================== */
 /* SCROLLBAR */
-/* =============================== */
+/* ==================== */
 
 ::-webkit-scrollbar {
   width: 8px;
@@ -433,20 +438,454 @@ strong { font-weight: var(--font-weight-semibold); }
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--color-surface);
-  border-radius: var(--border-radius-full);
+  background: var(--color-background);
 }
 
 ::-webkit-scrollbar-thumb {
   background: var(--color-border);
-  border-radius: var(--border-radius-full);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-text-secondary);
+  background: var(--color-primary);
 }
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: var(--color-border) var(--color-surface);
+  scrollbar-color: var(--color-border) var(--color-background);
+}
+
+/* ==================== */
+/* NEON ТЕМА - НАСТОЯЩИЙ НЕОН */
+/* ==================== */
+
+[data-theme="neon"] {
+  /* Основные цвета - неоновые */
+  --color-primary: #00ffff;
+  --color-secondary: #ff00ff;
+  --color-success: #00ff00;
+  --color-warning: #ffff00;
+  --color-danger: #ff0066;
+  --color-info: #00ffff;
+  
+  /* Фоны - глубокий черный */
+  --color-background: #000000;
+  --color-surface: #0a0a0a;
+  --color-card: #0f0f0f;
+  --color-paper: #1a1a1a;
+  
+  /* Текст - неоновые оттенки */
+  --color-text: #00ffff;
+  --color-text-secondary: #ff00ff;
+  --color-text-disabled: #333333;
+  --color-text-inverse: #000000;
+  
+  /* Границы - неоновые */
+  --color-border: #00ffff;
+  --color-divider: #ff00ff;
+  
+  /* Состояния - неоновые */
+  --color-hover: #00ffff;
+  --color-active: #ff00ff;
+  --color-selected: #00ff00;
+  --color-disabled: #222222;
+  
+  /* Специальные */
+  --color-overlay: rgba(0, 255, 255, 0.1);
+  --color-shadow: #00ffff;
+  
+  /* Прозрачные версии - неоновые */
+  --color-primary-transparent: rgba(0, 255, 255, 0.15);
+  --color-secondary-transparent: rgba(255, 0, 255, 0.15);
+  --color-success-transparent: rgba(0, 255, 0, 0.15);
+  --color-warning-transparent: rgba(255, 255, 0, 0.15);
+  --color-danger-transparent: rgba(255, 0, 102, 0.15);
+  --color-info-transparent: rgba(0, 255, 255, 0.15);
+  
+  /* Многослойное неоновое свечение */
+  --shadow-sm: 
+    0 0 5px rgba(0, 255, 255, 0.8),
+    0 0 10px rgba(0, 255, 255, 0.5),
+    0 0 15px rgba(0, 255, 255, 0.3);
+  
+  --shadow-md: 
+    0 0 7px rgba(0, 255, 255, 1),
+    0 0 15px rgba(0, 255, 255, 0.7),
+    0 0 25px rgba(0, 255, 255, 0.4),
+    0 0 35px rgba(0, 255, 255, 0.2);
+  
+  --shadow-lg: 
+    0 0 10px rgba(0, 255, 255, 1),
+    0 0 20px rgba(0, 255, 255, 0.8),
+    0 0 35px rgba(0, 255, 255, 0.5),
+    0 0 50px rgba(0, 255, 255, 0.3),
+    0 0 70px rgba(0, 255, 255, 0.15);
+  
+  --shadow-xl: 
+    0 0 15px rgba(0, 255, 255, 1),
+    0 0 30px rgba(0, 255, 255, 0.9),
+    0 0 50px rgba(0, 255, 255, 0.6),
+    0 0 75px rgba(0, 255, 255, 0.4),
+    0 0 100px rgba(0, 255, 255, 0.2);
+  
+  --shadow-2xl: 
+    0 0 20px rgba(0, 255, 255, 1),
+    0 0 40px rgba(0, 255, 255, 1),
+    0 0 65px rgba(0, 255, 255, 0.7),
+    0 0 90px rgba(0, 255, 255, 0.5),
+    0 0 120px rgba(0, 255, 255, 0.3);
+}
+
+/* ==================== */
+/* АНИМАЦИИ ПУЛЬСАЦИИ */
+/* ==================== */
+
+@keyframes neonPulse {
+  0%, 100% {
+    text-shadow: 
+      0 0 5px rgba(0, 255, 255, 1),
+      0 0 10px rgba(0, 255, 255, 0.8),
+      0 0 20px rgba(0, 255, 255, 0.6),
+      0 0 30px rgba(0, 255, 255, 0.4),
+      0 0 40px rgba(0, 255, 255, 0.2);
+  }
+  50% {
+    text-shadow: 
+      0 0 10px rgba(0, 255, 255, 1),
+      0 0 20px rgba(0, 255, 255, 1),
+      0 0 35px rgba(0, 255, 255, 0.8),
+      0 0 50px rgba(0, 255, 255, 0.6),
+      0 0 70px rgba(0, 255, 255, 0.4);
+  }
+}
+
+@keyframes neonFlicker {
+  0%, 18%, 22%, 25%, 53%, 57%, 100% {
+    opacity: 1;
+    text-shadow: 
+      0 0 5px rgba(0, 255, 255, 1),
+      0 0 10px rgba(0, 255, 255, 0.8),
+      0 0 20px rgba(0, 255, 255, 0.6);
+  }
+  20%, 24%, 55% {
+    opacity: 0.8;
+    text-shadow: 
+      0 0 3px rgba(0, 255, 255, 0.8),
+      0 0 6px rgba(0, 255, 255, 0.6);
+  }
+}
+
+@keyframes neonBorderPulse {
+  0%, 100% {
+    box-shadow: 
+      0 0 5px rgba(0, 255, 255, 0.8),
+      0 0 10px rgba(0, 255, 255, 0.6),
+      0 0 20px rgba(0, 255, 255, 0.4),
+      inset 0 0 5px rgba(0, 255, 255, 0.3);
+  }
+  50% {
+    box-shadow: 
+      0 0 10px rgba(0, 255, 255, 1),
+      0 0 20px rgba(0, 255, 255, 0.8),
+      0 0 35px rgba(0, 255, 255, 0.6),
+      inset 0 0 10px rgba(0, 255, 255, 0.5);
+  }
+}
+
+@keyframes neonGlow {
+  0%, 100% {
+    filter: brightness(1) drop-shadow(0 0 5px rgba(0, 255, 255, 0.5));
+  }
+  50% {
+    filter: brightness(1.2) drop-shadow(0 0 15px rgba(0, 255, 255, 0.8));
+  }
+}
+
+/* ==================== */
+/* БАЗОВЫЕ ЭЛЕМЕНТЫ */
+/* ==================== */
+
+[data-theme="neon"] body {
+  background: 
+    radial-gradient(ellipse at top, rgba(0, 255, 255, 0.05) 0%, transparent 50%),
+    radial-gradient(ellipse at bottom, rgba(255, 0, 255, 0.05) 0%, transparent 50%),
+    #000000;
+}
+
+/* Заголовки - мощное свечение с пульсацией */
+[data-theme="neon"] h1,
+[data-theme="neon"] h2,
+[data-theme="neon"] h3 {
+  text-shadow: 
+    0 0 7px rgba(0, 255, 255, 1),
+    0 0 15px rgba(0, 255, 255, 0.8),
+    0 0 25px rgba(0, 255, 255, 0.6),
+    0 0 40px rgba(0, 255, 255, 0.4),
+    0 0 60px rgba(0, 255, 255, 0.2);
+  animation: neonPulse 3s ease-in-out infinite;
+}
+
+[data-theme="neon"] h4,
+[data-theme="neon"] h5,
+[data-theme="neon"] h6 {
+  text-shadow: 
+    0 0 5px rgba(0, 255, 255, 0.9),
+    0 0 10px rgba(0, 255, 255, 0.6),
+    0 0 20px rgba(0, 255, 255, 0.3);
+}
+
+/* Обычный текст - легкое свечение */
+[data-theme="neon"] p,
+[data-theme="neon"] span {
+  text-shadow: 
+    0 0 3px rgba(0, 255, 255, 0.6),
+    0 0 8px rgba(0, 255, 255, 0.3);
+}
+
+/* Ссылки - интенсивное свечение при наведении */
+[data-theme="neon"] a {
+  text-shadow: 
+    0 0 5px rgba(0, 255, 255, 0.8),
+    0 0 10px rgba(0, 255, 255, 0.5);
+  transition: all 0.3s ease;
+}
+
+[data-theme="neon"] a:hover {
+  text-shadow: 
+    0 0 8px rgba(0, 255, 255, 1),
+    0 0 18px rgba(0, 255, 255, 0.8),
+    0 0 30px rgba(0, 255, 255, 0.6),
+    0 0 45px rgba(0, 255, 255, 0.4);
+  animation: neonPulse 1.5s ease-in-out infinite;
+}
+
+/* ==================== */
+/* КНОПКИ - НЕОНОВЫЕ ТРУБКИ */
+/* ==================== */
+
+[data-theme="neon"] .btn {
+  position: relative;
+  border: 2px solid #00ffff;
+  background: rgba(0, 255, 255, 0.05);
+  box-shadow: 
+    0 0 5px rgba(0, 255, 255, 0.5),
+    0 0 10px rgba(0, 255, 255, 0.3),
+    inset 0 0 5px rgba(0, 255, 255, 0.2);
+  text-shadow: 
+    0 0 5px rgba(0, 255, 255, 1),
+    0 0 10px rgba(0, 255, 255, 0.7);
+  transition: all 0.3s ease;
+}
+
+[data-theme="neon"] .btn::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: transparent;
+  border: 2px solid rgba(0, 255, 255, 0.3);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+[data-theme="neon"] .btn:hover {
+  background: rgba(0, 255, 255, 0.1);
+  box-shadow: 
+    0 0 10px rgba(0, 255, 255, 0.8),
+    0 0 20px rgba(0, 255, 255, 0.6),
+    0 0 35px rgba(0, 255, 255, 0.4),
+    inset 0 0 10px rgba(0, 255, 255, 0.3);
+  text-shadow: 
+    0 0 8px rgba(0, 255, 255, 1),
+    0 0 18px rgba(0, 255, 255, 0.8),
+    0 0 30px rgba(0, 255, 255, 0.5);
+  animation: neonBorderPulse 2s ease-in-out infinite;
+}
+
+[data-theme="neon"] .btn:hover::before {
+  opacity: 1;
+}
+
+[data-theme="neon"] .btn-primary {
+  border-color: #00ffff;
+  color: #00ffff;
+  background: rgba(0, 255, 255, 0.08);
+}
+
+/* ==================== */
+/* КАРТОЧКИ - СВЕТЯЩИЕСЯ ПАНЕЛИ */
+/* ==================== */
+
+[data-theme="neon"] .card {
+  background: rgba(0, 255, 255, 0.02);
+  border: 2px solid #00ffff;
+  box-shadow: 
+    0 0 15px rgba(0, 255, 255, 0.4),
+    0 0 30px rgba(0, 255, 255, 0.2),
+    inset 0 0 15px rgba(0, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+[data-theme="neon"] .card::before {
+  border-color: rgba(0, 255, 255, 0.4);
+  box-shadow: 
+    0 0 10px rgba(0, 255, 255, 0.3),
+    inset 0 0 10px rgba(0, 255, 255, 0.2);
+}
+
+[data-theme="neon"] .card::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(
+    circle,
+    rgba(0, 255, 255, 0.1) 0%,
+    transparent 50%
+  );
+  animation: neonGlow 4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* ==================== */
+/* HEADER - НЕОНОВАЯ ПАНЕЛЬ */
+/* ==================== */
+
+[data-theme="neon"] .header {
+  border-bottom: 2px solid #00ffff;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+  box-shadow: 
+    0 2px 20px rgba(0, 255, 255, 0.5),
+    0 4px 40px rgba(0, 255, 255, 0.3),
+    inset 0 -1px 10px rgba(0, 255, 255, 0.2);
+  position: relative;
+}
+
+[data-theme="neon"] .header::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(0, 255, 255, 0.8) 20%,
+    rgba(0, 255, 255, 1) 50%,
+    rgba(0, 255, 255, 0.8) 80%,
+    transparent 100%
+  );
+  animation: neonFlicker 5s infinite;
+}
+
+[data-theme="neon"] .header-title {
+  animation: neonPulse 2s ease-in-out infinite;
+  text-shadow: 
+    0 0 10px rgba(0, 255, 255, 1),
+    0 0 20px rgba(0, 255, 255, 0.8),
+    0 0 35px rgba(0, 255, 255, 0.6),
+    0 0 50px rgba(0, 255, 255, 0.4);
+}
+
+/* ==================== */
+/* ДРОПДАУНЫ - НЕОНОВЫЕ МЕНЮ */
+/* ==================== */
+
+[data-theme="neon"] .switcher-dropdown {
+  background: rgba(0, 0, 0, 0.95);
+  border: 2px solid #00ffff;
+  box-shadow: 
+    0 0 20px rgba(0, 255, 255, 0.6),
+    0 0 40px rgba(0, 255, 255, 0.3),
+    inset 0 0 20px rgba(0, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+[data-theme="neon"] .dropdown-option {
+  border-bottom-color: rgba(0, 255, 255, 0.3);
+  text-shadow: 
+    0 0 5px rgba(0, 255, 255, 0.7),
+    0 0 10px rgba(0, 255, 255, 0.4);
+  transition: all 0.2s ease;
+}
+
+[data-theme="neon"] .dropdown-option:hover {
+  background: rgba(0, 255, 255, 0.15);
+  text-shadow: 
+    0 0 8px rgba(0, 255, 255, 1),
+    0 0 18px rgba(0, 255, 255, 0.7),
+    0 0 30px rgba(0, 255, 255, 0.4);
+  box-shadow: inset 0 0 15px rgba(0, 255, 255, 0.3);
+}
+
+[data-theme="neon"] .dropdown-option.selected {
+  background: rgba(0, 255, 255, 0.2);
+  box-shadow: 
+    inset 0 0 10px rgba(0, 255, 255, 0.4),
+    inset 2px 0 5px rgba(0, 255, 255, 0.6);
+}
+
+/* ==================== */
+/* СКРОЛЛБАР - НЕОНОВЫЙ */
+/* ==================== */
+
+[data-theme="neon"] ::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.8);
+  border: 1px solid rgba(0, 255, 255, 0.2);
+}
+
+[data-theme="neon"] ::-webkit-scrollbar-thumb {
+  background: rgba(0, 255, 255, 0.5);
+  box-shadow: 
+    0 0 5px rgba(0, 255, 255, 0.8),
+    inset 0 0 5px rgba(0, 255, 255, 0.5);
+  border: 1px solid rgba(0, 255, 255, 0.7);
+}
+
+[data-theme="neon"] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 255, 255, 0.7);
+  box-shadow: 
+    0 0 10px rgba(0, 255, 255, 1),
+    0 0 20px rgba(0, 255, 255, 0.6),
+    inset 0 0 10px rgba(0, 255, 255, 0.7);
+}
+
+/* ==================== */
+/* ИНПУТЫ - НЕОНОВЫЕ ПОЛЯ */
+/* ==================== */
+
+[data-theme="neon"] input,
+[data-theme="neon"] textarea,
+[data-theme="neon"] select {
+  background: rgba(0, 255, 255, 0.05);
+  border: 2px solid rgba(0, 255, 255, 0.5);
+  color: #00ffff;
+  box-shadow: 
+    0 0 5px rgba(0, 255, 255, 0.3),
+    inset 0 0 5px rgba(0, 255, 255, 0.2);
+  text-shadow: 
+    0 0 3px rgba(0, 255, 255, 0.6);
+}
+
+[data-theme="neon"] input:focus,
+[data-theme="neon"] textarea:focus,
+[data-theme="neon"] select:focus {
+  border-color: #00ffff;
+  box-shadow: 
+    0 0 10px rgba(0, 255, 255, 0.6),
+    0 0 20px rgba(0, 255, 255, 0.4),
+    inset 0 0 10px rgba(0, 255, 255, 0.3);
+  outline: none;
+}
+
+[data-theme="neon"] input::placeholder,
+[data-theme="neon"] textarea::placeholder {
+  color: rgba(0, 255, 255, 0.5);
+  text-shadow: 0 0 3px rgba(0, 255, 255, 0.3);
 }

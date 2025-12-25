@@ -26,7 +26,7 @@ const EntryList = observer(() => {
   if (isEmpty) {
     return (
       <div className="entry-list-empty">
-        <div className="empty-icon">icon</div>
+        <div className="empty-icon"></div>
         <p className="empty-title">{t('entries.list.emptyState')}</p>
         <p className="empty-subtitle">{t('entries.list.createFirst')}</p>
       </div>

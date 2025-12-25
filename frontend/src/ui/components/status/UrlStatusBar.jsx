@@ -52,11 +52,6 @@ const UrlStatusBar = observer(() => {
 
   return (
     <div className="url-status-bar">
-      <div className="status-header">
-        <div className="status-title">
-          <span className="status-icon">📋</span>
-          <span>Будет сохранено ({summary.totalItems}):</span>
-        </div>
         <button
           className="status-clear-btn"
           onClick={() => urlSyncStore?.reset()}
@@ -64,13 +59,19 @@ const UrlStatusBar = observer(() => {
         >
           Очистить
         </button>
+      {/* <div className="status-header">
+        <div className="status-title">
+          <span className="status-icon"></span>
+          <span>Будет сохранено ({summary.totalItems}):</span>
+        </div>
+
       </div>
       
       <div className="status-content">
         <div className="status-items">
           {summary.type !== 'thought' && (
             <div className="status-item">
-              <div className="status-item-icon" style={{ color: '#8E44AD' }}>
+              <div className="status-item-icon">
                 {typeConfig[summary.type]?.icon}
               </div>
               <div className="status-item-text">
@@ -82,8 +83,8 @@ const UrlStatusBar = observer(() => {
           
           {summary.contentPreview && (
             <div className="status-item">
-              <div className="status-item-icon" style={{ color: '#3498DB' }}>
-                📝
+              <div className="status-item-icon">
+              
               </div>
               <div className="status-item-text">
                 <div className="status-item-title">{summary.contentPreview}</div>
@@ -94,8 +95,8 @@ const UrlStatusBar = observer(() => {
           
           {summary.hasDate && (
             <div className="status-item">
-              <div className="status-item-icon" style={{ color: '#2ECC71' }}>
-                📅
+              <div className="status-item-icon">
+                
               </div>
               <div className="status-item-text">
                 <div className="status-item-title">{urlSyncStore?.eventDate}</div>
@@ -106,8 +107,8 @@ const UrlStatusBar = observer(() => {
           
           {summary.hasDeadline && (
             <div className="status-item">
-              <div className="status-item-icon" style={{ color: '#E74C3C' }}>
-                ⏰
+              <div className="status-item-icon">
+                
               </div>
               <div className="status-item-text">
                 <div className="status-item-title">{urlSyncStore?.deadline}</div>
@@ -118,8 +119,8 @@ const UrlStatusBar = observer(() => {
           
           {summary.emotionsCount > 0 && (
             <div className="status-item">
-              <div className="status-item-icon" style={{ color: '#F39C12' }}>
-                ⊕⊖
+              <div className="status-item-icon">
+                
               </div>
               <div className="status-item-text">
                 <div className="status-item-title">{summary.emotionsCount} эмоций</div>
@@ -130,8 +131,8 @@ const UrlStatusBar = observer(() => {
           
           {summary.circumstancesCount > 0 && (
             <div className="status-item">
-              <div className="status-item-icon" style={{ color: '#1ABC9C' }}>
-                WME
+              <div className="status-item-icon">
+                
               </div>
               <div className="status-item-text">
                 <div className="status-item-title">{summary.circumstancesCount} обстоятельств</div>
@@ -142,15 +143,15 @@ const UrlStatusBar = observer(() => {
           
           {summary.hasBodyState && (
             <div className="status-item">
-              <div className="status-item-icon" style={{ color: '#9B59B6' }}>
-                ⚕
+              <div className="status-item-icon" >
+                
               </div>
               <div className="status-item-text">
                 <div className="status-item-title">Состояние тела</div>
                 <div className="status-item-subtitle">
                   {urlSyncStore?.bodyState.hp > 0 && `HP: ${urlSyncStore?.bodyState.hp}% `}
                   {urlSyncStore?.bodyState.energy > 0 && `MANA: ${urlSyncStore?.bodyState.energy}% `}
-                  {urlSyncStore?.bodyState.location && `📍 ${urlSyncStore?.bodyState.location}`}
+                  {urlSyncStore?.bodyState.location && ` ${urlSyncStore?.bodyState.location}`}
                 </div>
               </div>
             </div>
@@ -158,8 +159,8 @@ const UrlStatusBar = observer(() => {
           
           {summary.skillsCount > 0 && (
             <div className="status-item">
-              <div className="status-item-icon" style={{ color: '#E67E22' }}>
-                💪
+              <div className="status-item-icon">
+                
               </div>
               <div className="status-item-text">
                 <div className="status-item-title">{summary.skillsCount} навыков</div>
@@ -170,8 +171,8 @@ const UrlStatusBar = observer(() => {
           
           {summary.skillProgressCount > 0 && (
             <div className="status-item">
-              <div className="status-item-icon" style={{ color: '#27AE60' }}>
-                ⬆
+              <div className="status-item-icon" >
+                
               </div>
               <div className="status-item-text">
                 <div className="status-item-title">{summary.skillProgressCount} прокачек</div>
@@ -182,8 +183,8 @@ const UrlStatusBar = observer(() => {
           
           {summary.relationsCount > 0 && (
             <div className="status-item">
-              <div className="status-item-icon" style={{ color: '#2980B9' }}>
-                ↔
+              <div className="status-item-icon">
+                
               </div>
               <div className="status-item-text">
                 <div className="status-item-title">{summary.relationsCount} связей</div>
@@ -194,8 +195,8 @@ const UrlStatusBar = observer(() => {
           
           {summary.tagsCount > 0 && (
             <div className="status-item">
-              <div className="status-item-icon" style={{ color: '#7F8C8D' }}>
-                #
+              <div className="status-item-icon" >
+                
               </div>
               <div className="status-item-text">
                 <div className="status-item-title">{summary.tagsCount} тегов</div>
@@ -211,12 +212,12 @@ const UrlStatusBar = observer(() => {
       
       <div className="status-footer">
         <div className="status-url-hint">
-          <span className="hint-icon">🔗</span>
+          <span className="hint-icon"></span>
           <span className="hint-text">
             Все данные сохранены в URL. Можно делиться ссылкой.
           </span>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 });

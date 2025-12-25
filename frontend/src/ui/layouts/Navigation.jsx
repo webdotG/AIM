@@ -1,5 +1,3 @@
-// src/ui/layouts/Navigation.jsx
-import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useLanguage } from '@/layers/language';
 import './Navigation.css';
@@ -7,27 +5,30 @@ import './Navigation.css';
 export default function Navigation() {
   const { t } = useLanguage();
   
-  // 4 пункта навигации
   const navItems = [
     { 
       path: '/', 
       icon: 'all', 
-      label: t('navigation.timeline') || 'Лента'
+       label: 'Лента'
+      // label: t('navigation.timeline') || 'Лента'
     },
     { 
       path: '/entries/create', 
       icon: 'crt', 
-      label: t('navigation.create') || 'Создать'
+       label:'Создать'
+      // label: t('navigation.create') || 'Создать'
     },
     { 
       path: '/analytics', 
       icon: 'anl', 
-      label: t('navigation.analytics') || 'Аналитика'
+      label: 'Аналитика'
+      // label: t('navigation.analytics') || 'Аналитика'
     },
     { 
       path: '/settings', 
       icon: 'set', 
-      label: t('navigation.settings') || 'Настройки'
+      label: 'Настройки'
+      // label: t('navigation.settings') || 'Настройки'
     },
   ];
   
@@ -42,7 +43,7 @@ export default function Navigation() {
           }
           end={item.path === '/'}
         >
-          <span className="nav-icon">{item.icon}</span>
+          {/* <span className="nav-icon">{item.icon}</span> */}
           <span className="nav-label">{item.label}</span>
         </NavLink>
       ))}

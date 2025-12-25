@@ -6,7 +6,6 @@ import AuthPage from '@/ui/pages/auth/AuthPage';
 import TimelinePage from '../../\/ui/pages/analytics/AnalyticsTimelinePage';
 import CreateEntryPage from '@/ui/pages/entries/CreateEntryPage';
 import EntryDetailPage from '@/ui/pages/entries/detail/EntryDetailPage';
-import AnalyticsPage from '@/ui/pages/analytics/AnalyticsPage';
 import SettingsPage from '@/ui/pages/settings/SettingsPage';
 
 const RouterContent = observer(() => {
@@ -20,7 +19,7 @@ const RouterContent = observer(() => {
     case 'entry-detail':
       return <EntryDetailPage id={currentRoute.params.id} />;
     case 'analytics':
-      return <AnalyticsPage />;
+      return <TimelinePage />;
     case 'settings':
       return <SettingsPage />;
     default:

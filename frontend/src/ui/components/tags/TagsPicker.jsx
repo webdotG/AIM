@@ -204,7 +204,7 @@ const TagsPicker = ({
               >
                 #{tag.slice(0, -1)}
                 {selectedTags.includes(tag.slice(0, -1)) && (
-                  <span className="quick-tag-check">✓</span>
+                  <span className="quick-tag-check"></span>
                 )}
               </button>
             ))}

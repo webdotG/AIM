@@ -240,9 +240,9 @@ const EmotionPicker = ({
                   className={`category-card ${selectedCategory === category.id ? 'selected' : ''}`}
                   onClick={() => handleCategorySelect(category.id)}
                 >
-                  <div className="category-icon">{category.icon}</div>
+                  {/* <div className="category-icon">{category.icon}</div> */}
                   <div className="category-name">{category.label}</div>
-                  <div className="category-description">{category.description}</div>
+                  {/* <div className="category-description">{category.description}</div> */}
                 </div>
               ))}
             </div>

@@ -19,10 +19,8 @@ import RelationPicker from '../../relation/RelationPicker';
 import RelationGraph from '../../relation/RelationGraph';
 import TagsPicker from '@/ui/components/tags/TagsPicker';
 import EntryTypePicker from '../../entries/EntryType/EntryTypePicker';
-import UrlStatusBar from '@/ui/components/status/UrlStatusBar';
 
 
-// import { ENTRY_TYPES } from '@/core/constants/entries';
 const ENTRY_TYPES = {
   DREAM: 'dream',
   MEMORY: 'memory',
@@ -221,7 +219,7 @@ const EntryForm = observer(() => {
     maxWidth: isTelegram ? '100%' : '400px',
     margin: isTelegram ? '10px' : '0 auto',
     padding: isTelegram ? '15px' : '20px',
-    backgroundColor: themeData.colors?.['--bg-secondary'] || '#ffffff',
+    backgroundColor: themeData.colors?.['--bg-secondary'],
     borderRadius: '12px',
     boxShadow: isTelegram ? 'none' : '0 4px 12px rgba(0, 0, 0, 0.1)',
     border: isTelegram ? '1px solid var(--border-color, #ddd)' : 'none'
@@ -238,7 +236,7 @@ const EntryForm = observer(() => {
     <div className="form-group">
       <div className="picker-header">
         <label className="form-label">
-          <span className="picker-icon">{icon}</span>
+          {/* <span className="picker-icon">{icon}</span> */}
           <span className="picker-label">{label}</span>
         </label>
         <Button
@@ -268,7 +266,7 @@ const EntryForm = observer(() => {
         {urlSyncStore.emotions.slice(0, 3).map((emotion, index) => (
           <div key={index} className="emotion-badge">
             <span className="emotion-icon">
-              {emotion.emotion?.icon || emotion.category?.icon || '⊕'}
+              {emotion.emotion?.icon || emotion.category?.icon || ''}
             </span>
             <span className="emotion-label">
               {emotion.emotion?.label || emotion.category?.label || 'Эмоция'}
@@ -311,19 +309,19 @@ const EntryForm = observer(() => {
       <div className="body-state-preview">
         {hp > 0 && (
           <div className="body-stat">
-            <span className="stat-icon">❤️</span>
+            <span className="stat-icon">HP</span>
             <span className="stat-value">HP: {hp}%</span>
           </div>
         )}
         {energy > 0 && (
           <div className="body-stat">
-            <span className="stat-icon">⚡</span>
+            <span className="stat-icon">EN</span>
             <span className="stat-value">Energy: {energy}%</span>
           </div>
         )}
         {location && location.trim() && (
           <div className="body-stat">
-            <span className="stat-icon">📍</span>
+            <span className="stat-icon">LOC</span>
             <span className="stat-value">{location}</span>
           </div>
         )}
@@ -331,11 +329,11 @@ const EntryForm = observer(() => {
     );
   }, [hasBodyState, urlSyncStore?.bodyState]);
   
-  // === 15. ГЛАВНЫЙ РЕНДЕР ===
+  // === ГЛАВНЫЙ РЕНДЕР ===
   return (
     <>
       <form 
-        className={`entry-form ${isTelegram ? 'telegram' : 'web'}`}
+        className={`entry-form ${isTelegram ? 'telegram' : 'web'}` } //${isTelegram ? 'telegram' : 'web'}
         onSubmit={handleSubmit}
         style={formStyle}
         noValidate
@@ -390,7 +388,7 @@ const EntryForm = observer(() => {
         
         {renderPickerSection({
           label: t('entries.form.emotionsLabel') || 'Эмоции',
-          icon: '⊕⊖',
+          icon: '',
           modalName: 'emotion',
           value: urlSyncStore?.emotions?.length > 0,
           buttonText: urlSyncStore?.emotions?.length > 0 
@@ -401,7 +399,7 @@ const EntryForm = observer(() => {
         
         {renderPickerSection({
           label: t('entries.form.circumstancesLabel') || 'Обстоятельства',
-          icon: '☁☽⚡',
+          icon: '',
           modalName: 'circumstances',
           value: urlSyncStore?.circumstances?.length > 0,
           buttonText: urlSyncStore?.circumstances?.length > 0 
@@ -412,7 +410,7 @@ const EntryForm = observer(() => {
               {urlSyncStore.circumstances.slice(0, 2).map((circ, index) => (
                 <div key={index} className="circumstance-badge">
                   <span className="circumstance-icon">
-                    {circ.item?.icon || circ.category?.icon || '☁'}
+                    {circ.item?.icon || circ.category?.icon || ''}
                   </span>
                   <span className="circumstance-label">
                     {circ.item?.label || circ.category?.label || 'Обстоятельство'}
@@ -431,7 +429,7 @@ const EntryForm = observer(() => {
         
         {renderPickerSection({
           label: t('entries.form.bodyStateLabel') || 'Состояние тела',
-          icon: '❤️⚡',
+          icon: '',
           modalName: 'bodyState',
           value: hasBodyState,
           buttonText: hasBodyState 
@@ -442,7 +440,7 @@ const EntryForm = observer(() => {
         
         {renderPickerSection({
           label: t('entries.form.skillsLabel') || 'Навыки',
-          icon: '💪🧠',
+          icon: '',
           modalName: 'skills',
           value: urlSyncStore?.skills?.length > 0,
           buttonText: urlSyncStore?.skills?.length > 0 
@@ -453,7 +451,7 @@ const EntryForm = observer(() => {
               {urlSyncStore.skills.slice(0, 2).map((skill, index) => (
                 <div key={index} className="skill-badge">
                   <span className="skill-icon">
-                    {skill.skill?.icon || '💪'}
+                    {skill.skill?.icon || ''}
                   </span>
                   <span className="skill-label">
                     {skill.skill?.label || 'Навык'} - LVL {skill.level}
@@ -470,7 +468,7 @@ const EntryForm = observer(() => {
         
         {renderPickerSection({
           label: t('entries.form.relationsLabel') || 'Связи',
-          icon: '↔',
+          icon: '',
           modalName: 'relations',
           value: urlSyncStore?.relations?.length > 0,
           buttonText: urlSyncStore?.relations?.length > 0 
@@ -491,7 +489,7 @@ const EntryForm = observer(() => {
                 {urlSyncStore.relations.slice(0, 2).map((rel, index) => (
                   <div key={index} className="relation-item">
                     <span className="relation-icon">
-                      {rel.type?.icon || '↔'}
+                      {rel.type?.icon || ''}
                     </span>
                     <span className="relation-description">
                       {rel.description?.slice(0, 30) || 'Связь'}...
@@ -519,7 +517,7 @@ const EntryForm = observer(() => {
         
         {renderPickerSection({
           label: t('entries.form.skillProgressLabel') || 'Прокачка навыков',
-          icon: '⬆',
+          icon: '',
           modalName: 'skillProgress',
           value: urlSyncStore?.skillProgress?.length > 0,
           buttonText: urlSyncStore?.skillProgress?.length > 0 
@@ -529,7 +527,7 @@ const EntryForm = observer(() => {
             <div className="progress-preview">
               {urlSyncStore.skillProgress.slice(0, 2).map((progress, index) => (
                 <div key={index} className="progress-badge">
-                  <span className="progress-icon">⬆</span>
+                  <span className="progress-icon">↑</span>
                   <span className="progress-skill">
                     {progress.skill?.label || progress.skill?.name || 'Навык'}
                   </span>
@@ -545,9 +543,9 @@ const EntryForm = observer(() => {
           )
         })}
         
-        <div className="form-group">
+        {/* <div className="form-group">
           <UrlStatusBar />
-        </div>
+        </div> */}
         
         <div className="form-actions">
           <Button
@@ -568,19 +566,13 @@ const EntryForm = observer(() => {
         
         {urlSyncStore?.type === ENTRY_TYPES.PLAN && !urlSyncStore?.deadline && (
           <div className="form-warning plan-warning">
-            ⚠️ {t('common.planDeadlineRequired') || 'Для плана требуется срок выполнения'}
+            ! {t('common.planDeadlineRequired') || 'Для плана требуется срок выполнения'}
           </div>
         )}
-        
-        {!urlSyncStore?.content?.trim() && (
-          <div className="form-hint content-hint">
-            ✏️ {t('common.requiredContentHint') || 'Начните вводить текст'}
-          </div>
-        )}
+
       </form>
       
       {/* === ВСЕ МОДАЛКИ === */}
-      
 
       <Modal
         isOpen={modals.emotion}

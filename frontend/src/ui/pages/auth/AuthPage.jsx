@@ -7,7 +7,6 @@ import PasswordInput from '@/ui/components/auth/PasswordInput/PasswordInput';
 import HCaptcha from '@/ui/components/auth/HCaptcha/HCaptcha';
 import Button from '@/ui/components/common/Button/Button';
 import Loader from '@/ui/components/common/Loader/Loader';
-import Header from '../../../ui/components/layout/Header';
 import { AuthAPIClient } from '@/core/adapters/api/clients/AuthAPIClient';
 import './AuthPage.css';
 
@@ -89,7 +88,7 @@ export default function AuthPage() {
           hcaptchaToken,
         });
 
-        alert(`${t('auth.success.registration')}\n\n⚠️ ВАЖНО: Сохраните ваш backup-код:\n\n${result.backupCode}\n\nОн понадобится для восстановления доступа!`);
+        alert(`${t('auth.success.registration')}\n\nВАЖНО: Сохраните ваш backup-код:\n\n${result.backupCode}\n\nОн понадобится для восстановления доступа!`);
         setMode('login');
         setLoading(false);
         
@@ -160,16 +159,15 @@ export default function AuthPage() {
   return (
     <div className="auth-page">
       <div className="auth-container">
-        <Header />
         <div className="auth-header">
-          <h1 className="text-primary">{getTitle()}</h1>
-          <p className="text-secondary">{getSubtitle()}</p>
+          <h1 className="auth-title">{getTitle()}</h1>
+          <p className="auth-subtitle">{getSubtitle()}</p>
         </div>
         
         <form onSubmit={handleSubmit} className="auth-form">
           {error && (
-            <div className="error-message bg-danger text-inverse rounded-md">
-              <span className="error-icon">⚠️</span>
+            <div className="error-message">
+              <span className="error-icon">!</span>
               {error}
             </div>
           )}
@@ -256,20 +254,20 @@ export default function AuthPage() {
             variant="primary" 
             fullWidth
             disabled={!hcaptchaToken || loading}
-            className="mt-2"
+            className="auth-submit-button"
           >
             {getButtonText()}
           </Button>
           
           {mode === 'register' && (
-            <div className="auth-hint bg-surface text-secondary">
-              <span className="hint-icon"></span>
-              <span dangerouslySetInnerHTML={{ __html: t('auth.register.backupCodeInfo') }} />
+            <div className="auth-hint">
+              <span className="hint-icon">i</span>
+              <span>{t('auth.register.backupCodeInfo')}</span>
             </div>
           )}
         </form>
         
-        <div className="auth-footer border-divider">
+        <div className="auth-footer">
           {mode === 'login' && (
             <>
               <button 

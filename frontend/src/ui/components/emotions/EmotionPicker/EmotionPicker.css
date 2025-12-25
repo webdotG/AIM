@@ -1,5 +1,3 @@
-/* EmotionPicker.css - Газетный стиль с визуализацией интенсивности */
-
 .emotion-picker {
   width: 100%;
   display: flex;
@@ -7,7 +5,20 @@
   gap: var(--spacing-lg);
   padding: var(--spacing-lg);
   background-color: var(--color-background);
-  border: 2px solid var(--color-border);
+  border: 3px solid var(--color-border);
+  position: relative;
+  font-family: var(--font-serif);
+}
+
+.emotion-picker::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  right: 4px;
+  bottom: 4px;
+  border: 1px solid var(--color-border);
+  pointer-events: none;
 }
 
 /* Tabs - Газетный стиль */
@@ -35,10 +46,10 @@
   border-bottom: none;
   border-right: none;
   cursor: pointer;
-  font-size: 0.875rem;
-  font-weight: 500;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
   color: var(--color-text);
-  transition: all 0.15s ease;
+  transition: all var(--transition-fast) var(--ease-in-out);
   font-family: var(--font-serif);
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -57,15 +68,27 @@
 .emotion-tab.active {
   background-color: var(--color-text);
   color: var(--color-background);
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
 }
 
 /* Content */
 .emotion-content {
   padding: var(--spacing-xl);
   background: var(--color-background);
-  border: 2px solid var(--color-border);
+  border: 3px solid var(--color-border);
   min-height: 400px;
+  position: relative;
+}
+
+.emotion-content::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  right: 4px;
+  bottom: 4px;
+  border: 1px solid var(--color-border);
+  pointer-events: none;
 }
 
 /* Categories Grid */
@@ -81,7 +104,7 @@
   background: var(--color-background);
   border: 3px solid var(--color-border);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all var(--transition-fast) var(--ease-in-out);
   text-align: center;
   position: relative;
 }
@@ -110,7 +133,7 @@
 .category-card.selected {
   background-color: var(--color-text);
   color: var(--color-background);
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
 }
 
 .category-card.selected .category-name,
@@ -121,11 +144,13 @@
 .category-icon {
   font-size: 3rem;
   margin-bottom: var(--spacing-md);
+  font-family: var(--font-mono);
+  font-weight: var(--font-weight-bold);
 }
 
 .category-name {
-  font-size: 1.125rem;
-  font-weight: 600;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
   color: var(--color-text);
   margin-bottom: var(--spacing-xs);
   font-family: var(--font-serif);
@@ -134,7 +159,7 @@
 }
 
 .category-description {
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
   color: var(--color-text);
   font-family: var(--font-serif);
   font-style: italic;
@@ -154,8 +179,26 @@
   background: var(--color-background);
   border: 2px solid var(--color-border);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all var(--transition-fast) var(--ease-in-out);
   text-align: center;
+  position: relative;
+}
+
+.emotion-card::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  right: 4px;
+  bottom: 4px;
+  border: 1px solid var(--color-border);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--transition-fast) var(--ease-in-out);
+}
+
+.emotion-card:hover::before {
+  opacity: 1;
 }
 
 .emotion-card:hover {
@@ -170,21 +213,28 @@
 .emotion-card.selected {
   background-color: var(--color-text);
   color: var(--color-background);
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
 }
 
 .emotion-card.selected .emotion-name {
   color: var(--color-background);
 }
 
+.emotion-card.selected::before {
+  opacity: 1;
+  border-color: var(--color-background);
+}
+
 .emotion-emoji {
   font-size: 2.5rem;
   margin-bottom: var(--spacing-sm);
+  font-family: var(--font-mono);
+  font-weight: var(--font-weight-bold);
 }
 
 .emotion-name {
-  font-size: 0.875rem;
-  font-weight: 500;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
   color: var(--color-text);
   font-family: var(--font-serif);
   text-transform: uppercase;
@@ -200,7 +250,7 @@
 }
 
 .empty-state p {
-  font-size: 1.125rem;
+  font-size: var(--font-size-lg);
   margin: 0;
   font-style: italic;
 }
@@ -216,10 +266,10 @@
 .intensity-section::before {
   content: '';
   position: absolute;
-  top: 12px;
-  left: 12px;
-  right: 12px;
-  bottom: 12px;
+  top: 4px;
+  left: 4px;
+  right: 4px;
+  bottom: 4px;
   border: 1px solid var(--color-border);
   pointer-events: none;
 }
@@ -230,8 +280,8 @@
 }
 
 .intensity-title {
-  font-size: 1.25rem;
-  font-weight: 700;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
   color: var(--color-text);
   margin: 0 0 var(--spacing-lg) 0;
   font-family: var(--font-serif);
@@ -243,16 +293,28 @@
 
 .intensity-warning {
   color: var(--color-text);
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
   margin-bottom: var(--spacing-lg);
   font-family: var(--font-serif);
   font-style: italic;
-  border: 1px solid var(--color-border);
+  border: 2px solid var(--color-border);
   padding: var(--spacing-md);
-  background-color: var(--color-highlight);
+  background-color: var(--color-background);
+  position: relative;
 }
 
-/* Intensity Visualizer - Круговая шкала */
+.intensity-warning::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  right: 4px;
+  bottom: 4px;
+  border: 1px solid var(--color-border);
+  pointer-events: none;
+}
+
+/* Intensity Visualizer - Круговая шкала (ВАЖНО: сохранена визуализация интенсивности) */
 .intensity-visualizer {
   display: flex;
   flex-direction: column;
@@ -260,8 +322,20 @@
   gap: var(--spacing-xl);
   margin: var(--spacing-xl) 0;
   padding: var(--spacing-lg);
-  border: 2px solid var(--color-border);
-  background: var(--color-highlight);
+  border: 3px solid var(--color-border);
+  background: var(--color-background);
+  position: relative;
+}
+
+.intensity-visualizer::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  right: 4px;
+  bottom: 4px;
+  border: 1px solid var(--color-border);
+  pointer-events: none;
 }
 
 .intensity-wheel-container {
@@ -273,40 +347,38 @@
 .intensity-wheel-bg {
   width: 100%;
   height: 100%;
-  border-radius: 50%;
-  background: #e0e0e0; /* Серый фон для незаполненной части */
   position: relative;
   border: 4px solid var(--color-border);
   overflow: hidden;
 }
 
+/* ВАЖНО: Градиент преобразован от белого к черному (без серых оттенков) */
 .intensity-wheel-fill {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  border-radius: 50%;
+  /* Градиент от белого к черному - показывает интенсивность */
   background: conic-gradient(
     from -90deg,
-    #ffffff 0%,
-    #f0f0f0 10%,
-    #d0d0d0 20%,
-    #b0b0b0 30%,
-    #909090 40%,
-    #707070 50%,
-    #505050 60%,
-    #303030 70%,
-    #000000 80%,
-    #000000 100%
+    var(--color-background) 0%,
+    var(--color-background) 10%,
+    var(--color-text) 20%,
+    var(--color-text) 30%,
+    var(--color-background) 40%,
+    var(--color-background) 50%,
+    var(--color-text) 60%,
+    var(--color-text) 70%,
+    var(--color-background) 80%,
+    var(--color-background) 100%
   );
-  /* Градиент будет показываться только до выбранного значения */
   clip-path: inset(0 0 0 0);
   transform: rotate(0deg);
-  transition: transform 0.3s ease;
+  transition: transform var(--transition-normal) var(--ease-in-out);
 }
 
-/* Круг для центра (пустой) */
+/* Центральный круг */
 .intensity-wheel-center {
   position: absolute;
   top: 50%;
@@ -314,7 +386,6 @@
   transform: translate(-50%, -50%);
   width: 60px;
   height: 60px;
-  border-radius: 50%;
   background-color: var(--color-background);
   border: 3px solid var(--color-border);
   z-index: 2;
@@ -332,7 +403,7 @@
   height: 4px;
   background-color: var(--color-text);
   transform: rotate(-90deg);
-  transition: transform 0.3s ease;
+  transition: transform var(--transition-normal) var(--ease-in-out);
   z-index: 3;
 }
 
@@ -346,8 +417,6 @@
   height: 16px;
   background-color: var(--color-text);
   border: 2px solid var(--color-background);
-  border-radius: 50%;
-    width: 100%;
 }
 
 .intensity-display {
@@ -359,72 +428,46 @@
   border: 2px solid var(--color-border);
   background: var(--color-background);
   min-width: 200px;
-    width: 100%;
-    display:  none;
+  position: relative;
+  display: none;
+}
+
+.intensity-display::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  right: 4px;
+  bottom: 4px;
+  border: 1px solid var(--color-border);
+  pointer-events: none;
 }
 
 .intensity-value {
   font-size: 3rem;
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
   font-family: var(--font-mono);
   letter-spacing: 2px;
-  /* Градиент для текста будет применен через JS в зависимости от значения */
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
-  background-size: 200% 200%;
-  background-position: 0% 0%;
+  color: var(--color-text);
 }
 
-/* Базовые градиенты для разных значений интенсивности */
-.intensity-value[data-intensity="0"] {
-  background-image: linear-gradient(45deg, #ffffff, #f0f0f0);
-}
-
-.intensity-value[data-intensity="1"] {
-  background-image: linear-gradient(45deg, #f0f0f0, #d0d0d0);
-}
-
-.intensity-value[data-intensity="2"] {
-  background-image: linear-gradient(45deg, #e0e0e0, #c0c0c0);
-}
-
-.intensity-value[data-intensity="3"] {
-  background-image: linear-gradient(45deg, #d0d0d0, #b0b0b0);
-}
-
-.intensity-value[data-intensity="4"] {
-  background-image: linear-gradient(45deg, #c0c0c0, #a0a0a0);
-}
-
-.intensity-value[data-intensity="5"] {
-  background-image: linear-gradient(45deg, #b0b0b0, #909090);
-}
-
-.intensity-value[data-intensity="6"] {
-  background-image: linear-gradient(45deg, #a0a0a0, #808080);
-}
-
-.intensity-value[data-intensity="7"] {
-  background-image: linear-gradient(45deg, #909090, #707070);
-}
-
-.intensity-value[data-intensity="8"] {
-  background-image: linear-gradient(45deg, #808080, #606060);
-}
-
-.intensity-value[data-intensity="9"] {
-  background-image: linear-gradient(45deg, #707070, #505050);
-}
-
-.intensity-value[data-intensity="10"] {
-  background-image: linear-gradient(45deg, #606060, #404040);
-}
+/* Значения интенсивности через контраст черный/белый */
+.intensity-value[data-intensity="0"] { color: var(--color-background); }
+.intensity-value[data-intensity="1"] { color: var(--color-text); opacity: 0.1; }
+.intensity-value[data-intensity="2"] { color: var(--color-text); opacity: 0.2; }
+.intensity-value[data-intensity="3"] { color: var(--color-text); opacity: 0.3; }
+.intensity-value[data-intensity="4"] { color: var(--color-text); opacity: 0.4; }
+.intensity-value[data-intensity="5"] { color: var(--color-text); opacity: 0.5; }
+.intensity-value[data-intensity="6"] { color: var(--color-text); opacity: 0.6; }
+.intensity-value[data-intensity="7"] { color: var(--color-text); opacity: 0.7; }
+.intensity-value[data-intensity="8"] { color: var(--color-text); opacity: 0.8; }
+.intensity-value[data-intensity="9"] { color: var(--color-text); opacity: 0.9; }
+.intensity-value[data-intensity="10"] { color: var(--color-text); opacity: 1; }
 
 .intensity-label-text {
-  font-size: 1.125rem;
+  font-size: var(--font-size-lg);
   color: var(--color-text);
-  font-weight: 600;
+  font-weight: var(--font-weight-bold);
   font-family: var(--font-serif);
   text-transform: uppercase;
   letter-spacing: 1.5px;
@@ -432,46 +475,52 @@
   padding-left: var(--spacing-md);
 }
 
-/* Intensity Slider - Линейный вариант */
+/* Intensity Slider - Линейный вариант (ВАЖНО: сохранен градиент интенсивности) */
 .intensity-slider-container {
   position: relative;
   margin: var(--spacing-xl) 0;
   padding: var(--spacing-lg);
-  border: 2px solid var(--color-border);
-  background: var(--color-highlight);
-      width: 100%;
+  border: 3px solid var(--color-border);
+  background: var(--color-background);
+  width: 100%;
+}
+
+.intensity-slider-container::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  right: 4px;
+  bottom: 4px;
+  border: 1px solid var(--color-border);
+  pointer-events: none;
 }
 
 .intensity-track-wrapper {
   position: relative;
   height: 24px;
   border: 2px solid var(--color-border);
-  background: #e0e0e0; /* Серый фон для трека */
+  background: var(--color-background);
   margin: var(--spacing-md) 0;
   overflow: hidden;
-      width: 100%;
+  width: 100%;
 }
 
+/* ВАЖНО: Градиент преобразован в чередование черного/белого для показа интенсивности */
 .intensity-track-fill {
   position: absolute;
   top: 0;
   left: 0;
   height: 100%;
-  width: 0%; /* через JS */
-  background: linear-gradient(to right,
-    #ffffff 0%,
-    #f0f0f0 10%,
-    #d0d0d0 20%,
-    #b0b0b0 30%,
-    #909090 40%,
-    #707070 50%,
-    #505050 60%,
-    #303030 70%,
-    #202020 80%,
-    #000000 90%,
-    #000000 100%
+  width: 0%;
+  background: repeating-linear-gradient(
+    to right,
+    var(--color-background),
+    var(--color-background) 10px,
+    var(--color-text) 10px,
+    var(--color-text) 20px
   );
-  transition: width 0.3s ease;
+  transition: width var(--transition-normal) var(--ease-in-out);
 }
 
 .intensity-slider {
@@ -491,37 +540,29 @@
   appearance: none;
   width: 32px;
   height: 32px;
-  border-radius: 0;
   background: var(--color-background);
   border: 3px solid var(--color-border);
   cursor: pointer;
-  /* transition: all 0.15s ease; */
   position: relative;
   z-index: 3;
 }
 
 .intensity-slider::-webkit-slider-thumb:hover {
   background: var(--color-text);
-  transform: scale(1.1);
 }
 
 .intensity-slider::-moz-range-thumb {
   width: 32px;
   height: 32px;
-  border-radius: 0;
   background: var(--color-background);
   border: 3px solid var(--color-border);
   cursor: pointer;
-  /* transition: all 0.15s ease; */
   z-index: 3;
 }
 
 .intensity-slider::-moz-range-thumb:hover {
   background: var(--color-text);
-  transform: scale(1.1);
 }
-
-/* Убрали центральную красную метку */
 
 .intensity-marks {
   display: flex;
@@ -531,16 +572,16 @@
 }
 
 .intensity-mark {
-  font-size: 0.75rem;
+  font-size: var(--font-size-xs);
   color: var(--color-text);
   cursor: pointer;
   padding: var(--spacing-xs) var(--spacing-sm);
-  border: 1px solid var(--color-border);
+  border: 2px solid var(--color-border);
   background: var(--color-background);
   font-family: var(--font-mono);
-  font-weight: 600;
+  font-weight: var(--font-weight-bold);
   letter-spacing: 1px;
-  transition: all 0.15s ease;
+  transition: all var(--transition-fast) var(--ease-in-out);
   text-transform: uppercase;
 }
 
@@ -552,8 +593,8 @@
 .intensity-mark.active {
   background-color: var(--color-text);
   color: var(--color-background);
-  font-weight: 700;
-  border: 2px solid var(--color-border);
+  font-weight: var(--font-weight-bold);
+  border: 3px solid var(--color-border);
 }
 
 /* Add Emotion Button */
@@ -563,14 +604,33 @@
   background: var(--color-text);
   color: var(--color-background);
   border: 3px solid var(--color-border);
-  font-size: 1rem;
-  font-weight: 700;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all var(--transition-fast) var(--ease-in-out);
   font-family: var(--font-serif);
   text-transform: uppercase;
   letter-spacing: 2px;
   margin-top: var(--spacing-lg);
+  position: relative;
+}
+
+.add-emotion-button::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  right: 4px;
+  bottom: 4px;
+  border: 1px solid var(--color-border);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--transition-fast) var(--ease-in-out);
+}
+
+.add-emotion-button:hover::before {
+  opacity: 1;
+  border-color: var(--color-background);
 }
 
 .add-emotion-button:hover:not(:disabled) {
@@ -589,6 +649,18 @@
   background: var(--color-background);
   border: 3px solid var(--color-border);
   margin-top: var(--spacing-lg);
+  position: relative;
+}
+
+.selected-emotions::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  right: 4px;
+  bottom: 4px;
+  border: 1px solid var(--color-border);
+  pointer-events: none;
 }
 
 .selected-header {
@@ -601,8 +673,8 @@
 }
 
 .selected-count {
-  font-size: 1rem;
-  font-weight: 700;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
   color: var(--color-text);
   font-family: var(--font-serif);
   text-transform: uppercase;
@@ -614,13 +686,31 @@
   background: var(--color-background);
   color: var(--color-text);
   border: 2px solid var(--color-border);
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all var(--transition-fast) var(--ease-in-out);
   font-family: var(--font-serif);
   text-transform: uppercase;
   letter-spacing: 1px;
+  position: relative;
+}
+
+.clear-all-button::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  right: 2px;
+  bottom: 2px;
+  border: 1px solid var(--color-border);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--transition-fast) var(--ease-in-out);
+}
+
+.clear-all-button:hover::before {
+  opacity: 1;
 }
 
 .clear-all-button:hover {
@@ -667,6 +757,8 @@
 .selected-emotion-icon {
   font-size: 2rem;
   flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-weight: var(--font-weight-bold);
 }
 
 .selected-emotion-info {
@@ -675,8 +767,8 @@
 }
 
 .selected-emotion-name {
-  font-size: 1rem;
-  font-weight: 700;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
   color: var(--color-text);
   margin-bottom: var(--spacing-xs);
   font-family: var(--font-serif);
@@ -690,8 +782,8 @@
   background: var(--color-background);
   color: var(--color-text);
   border: 1px solid var(--color-border);
-  font-size: 0.625rem;
-  font-weight: 600;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
   font-family: var(--font-mono);
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -733,24 +825,25 @@
   width: 100%;
   height: 16px;
   border: 2px solid var(--color-border);
-  background: #e0e0e0; /* Серый фон */
+  background: var(--color-background);
   overflow: hidden;
 }
 
+/* ВАЖНО: Градиент для выбранной эмоции - чередование черного/белого */
 .selected-intensity-track-fill {
   position: absolute;
   top: 0;
   left: 0;
   height: 100%;
-  width: 0%; /* Будет изменяться через JS */
-  background: linear-gradient(to right,
-    #ffffff 0%,
-    #f0f0f0 25%,
-    #b0b0b0 50%,
-    #606060 75%,
-    #000000 100%
+  width: 0%;
+  background: repeating-linear-gradient(
+    to right,
+    var(--color-background),
+    var(--color-background) 5px,
+    var(--color-text) 5px,
+    var(--color-text) 10px
   );
-  transition: width 0.3s ease;
+  transition: width var(--transition-normal) var(--ease-in-out);
 }
 
 .selected-intensity-slider {
@@ -771,11 +864,9 @@
   appearance: none;
   width: 20px;
   height: 20px;
-  border-radius: 0;
   background: var(--color-background);
   border: 2px solid var(--color-border);
   cursor: pointer;
-  /* transition: all 0.15s ease; */
   z-index: 3;
 }
 
@@ -786,11 +877,9 @@
 .selected-intensity-slider::-moz-range-thumb {
   width: 20px;
   height: 20px;
-  border-radius: 0;
   background: var(--color-background);
   border: 2px solid var(--color-border);
   cursor: pointer;
-  /* transition: all 0.15s ease; */
   z-index: 3;
 }
 
@@ -799,16 +888,13 @@
 }
 
 .selected-intensity-value {
-  font-size: 1.125rem;
-  font-weight: 700;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
   min-width: 40px;
   text-align: center;
   font-family: var(--font-mono);
   letter-spacing: 1px;
-  /* Градиент для текста будет применен через JS */
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
+  color: var(--color-text);
 }
 
 .selected-intensity-marks {
@@ -821,11 +907,10 @@
 .selected-intensity-mark {
   width: 8px;
   height: 8px;
-  border-radius: 0;
   background: var(--color-background);
   border: 1px solid var(--color-border);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all var(--transition-fast) var(--ease-in-out);
 }
 
 .selected-intensity-mark:hover {
@@ -846,17 +931,36 @@
   background: var(--color-background);
   color: var(--color-text);
   border: 2px solid var(--color-border);
-  font-size: 1.25rem;
+  font-size: var(--font-size-base);
   line-height: 1;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all var(--transition-fast) var(--ease-in-out);
   flex-shrink: 0;
   font-family: var(--font-serif);
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
+  position: relative;
+}
+
+.remove-emotion-button::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  right: 2px;
+  bottom: 2px;
+  border: 1px solid var(--color-border);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--transition-fast) var(--ease-in-out);
+}
+
+.remove-emotion-button:hover::before {
+  opacity: 1;
 }
 
 .remove-emotion-button:hover {
-opacity: 0.5;
+  background-color: var(--color-text);
+  color: var(--color-background);
 }
 
 /* Responsive */
@@ -897,10 +1001,6 @@ opacity: 0.5;
     flex-direction: column;
   }
   
-  .intensity-display {
-    width: 100%;
-  }
-  
   .selected-emotion-item {
     flex-direction: column;
     align-items: flex-start;
@@ -922,11 +1022,11 @@ opacity: 0.5;
 @media (max-width: 480px) {
   .emotion-tab {
     padding: var(--spacing-sm) var(--spacing-md);
-    font-size: 0.75rem;
+    font-size: var(--font-size-xs);
   }
   
   .category-name {
-    font-size: 1rem;
+    font-size: var(--font-size-base);
   }
   
   .intensity-wheel-container {
@@ -957,6 +1057,15 @@ opacity: 0.5;
     color: black !important;
   }
   
+  .emotion-picker::before,
+  .emotion-content::before,
+  .category-card::before,
+  .emotion-card::before,
+  .intensity-section::before,
+  .selected-emotions::before {
+    border-color: black !important;
+  }
+  
   .category-card.selected,
   .emotion-card.selected {
     background-color: black !important;
@@ -966,9 +1075,6 @@ opacity: 0.5;
   .intensity-value,
   .selected-intensity-value {
     color: black !important;
-    background-image: none !important;
-    -webkit-background-clip: initial !important;
-    background-clip: initial !important;
   }
   
   .add-emotion-button {
@@ -976,85 +1082,4 @@ opacity: 0.5;
     color: white !important;
     border-color: black !important;
   }
-}
-
-.back-button{
-  font-size: 16px; 
-  padding: 12px;
-  border: 1px solid var(--color-border);
-  margin-bottom: 35px;
-  width: 150px;
-  background-color: transparent;
-  cursor: pointer;
-}
-
-.emotion-picker-footer {
-  margin-top: 20px;
-  padding-top: 20px;
-  border-top: 1px solid #e0e0e0;
-}
-
-.selected-summary {
-  margin-bottom: 15px;
-}
-
-.emotions-preview {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.preview-label {
-  font-weight: 500;
-  color: #666;
-}
-
-.preview-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.preview-chip {
-  background: #f0f0f0;
-  padding: 4px 12px;
-  border-radius: 16px;
-  font-size: 14px;
-}
-
-.no-emotions-text {
-  color: #999;
-  font-style: italic;
-}
-
-.footer-actions {
-  display: flex;
-  gap: 10px;
-  justify-content: flex-end;
-}
-
-.cancel-button {
-  padding: 8px 16px;
-  background: #f5f5f5;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.save-button {
-  padding: 8px 16px;
-  background: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.login-to-edit-button {
-  padding: 8px 16px;
-  background: #28a745;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
 }

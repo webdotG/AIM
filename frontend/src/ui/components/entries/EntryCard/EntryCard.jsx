@@ -53,23 +53,19 @@ const EntryCard = observer(({
 
   const typeConfig = {
     dream: {
-      icon: 'x',
-      colorClass: 'type-dream',
+      icon: 'D',
       label: t('entries.types.dream')
     },
     memory: {
-      icon: 'a',
-      colorClass: 'type-memory',
+      icon: 'M',
       label: t('entries.types.memory')
     },
     thought: {
-      icon: 'o',
-      colorClass: 'type-thought',
+      icon: 'T',
       label: t('entries.types.thought')
     },
     plan: {
-      icon: 'l',
-      colorClass: 'type-plan',
+      icon: 'P',
       label: t('entries.types.plan')
     }
   };
@@ -188,7 +184,6 @@ const EntryCard = observer(({
     }
   };
 
-  // Клики по бейджам
   const handleEmotionsClick = (e) => {
     e.stopPropagation();
     setShowEmotionPicker(true);
@@ -219,7 +214,7 @@ const EntryCard = observer(({
     compact ? 'compact' : '',
     isCompleted ? 'completed' : '',
     isOverdue ? 'overdue' : '',
-    config.colorClass
+    `type-${type}`
   ].filter(Boolean).join(' ');
 
   const hasBodyState = bodyState && (bodyState.hp > 0 || bodyState.energy > 0 || bodyState.location);
@@ -232,7 +227,7 @@ const EntryCard = observer(({
       >
         {isCompleted && (
           <div className="completed-badge" title={t('common.completed')}>
-            ✓
+            X
           </div>
         )}
 
@@ -261,7 +256,7 @@ const EntryCard = observer(({
                 onClick={handleEmotionsClick}
                 title={t('entries.detail.clickToEdit')}
               >
-                ⊕⊖ {emotions.length}
+                EM {emotions.length}
               </span>
             ) : (
               <button
@@ -269,7 +264,7 @@ const EntryCard = observer(({
                 onClick={handleEmotionsClick}
                 title={t('entries.detail.addEmotions')}
               >
-                +⊕⊖
+                +EM
               </button>
             )}
 
@@ -280,7 +275,7 @@ const EntryCard = observer(({
                 onClick={handleCircumstancesClick}
                 title={t('entries.detail.clickToEdit')}
               >
-                ☁☽⚡ {circumstances.length}
+                OB {circumstances.length}
               </span>
             ) : (
               <button
@@ -288,7 +283,7 @@ const EntryCard = observer(({
                 onClick={handleCircumstancesClick}
                 title={t('entries.detail.addCircumstances')}
               >
-                +☁☽
+                +OB
               </button>
             )}
 
@@ -318,7 +313,7 @@ const EntryCard = observer(({
                 onClick={handleSkillsClick}
                 title={t('entries.detail.clickToEdit')}
               >
-                💪🧠 {skills.length}
+                SK {skills.length}
               </span>
             ) : (
               <button
@@ -326,14 +321,14 @@ const EntryCard = observer(({
                 onClick={handleSkillsClick}
                 title={t('entries.detail.addSkills')}
               >
-                +💪
+                +SK
               </button>
             )}
             
             {/* Люди */}
             {people.length > 0 && (
               <span className="meta-badge">
-                👥 {people.length}
+                PE {people.length}
               </span>
             )}
             
@@ -351,7 +346,7 @@ const EntryCard = observer(({
                 onClick={handleRelationsClick}
                 title={t('entries.detail.clickToEdit')}
               >
-                ↔ {relationsCount}
+                RE {relationsCount}
               </span>
             ) : (
               <button
@@ -359,7 +354,7 @@ const EntryCard = observer(({
                 onClick={handleRelationsClick}
                 title={t('entries.detail.addRelations')}
               >
-                +↔
+                +RE
               </button>
             )}
 
@@ -382,7 +377,7 @@ const EntryCard = observer(({
                     : 'entries.detail.markAsComplete'
                   )}
                 >
-                  {isCompleted ? '↶' : '✓'}
+                  {isCompleted ? 'R' : 'X'}
                 </button>
               )}
               
@@ -391,7 +386,7 @@ const EntryCard = observer(({
                 onClick={handleEdit}
                 title={t('common.edit')}
               >
-                ✎
+                E
               </button>
               
               <button
@@ -399,7 +394,7 @@ const EntryCard = observer(({
                 onClick={handleDelete}
                 title={t('common.delete')}
               >
-                ×
+                D
               </button>
             </div>
           )}
@@ -481,7 +476,6 @@ const EntryCard = observer(({
         </div>
       </Modal>
 
-      {/* Модалка связей */}
       <Modal
         isOpen={showRelationPicker}
         onClose={() => setShowRelationPicker(false)}

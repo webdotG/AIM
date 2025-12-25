@@ -6,7 +6,8 @@ import { useLanguage } from '../../../layers/language/index.js';
 import EntryList from '../../components/entries/EntryList/EntryList.jsx';
 import EntryForm from '../../components/entries/EntryForm/EntryForm.jsx';
 import './AnalyticsTimelinePage.css';
-import Header  from '../../components/layout/Header.jsx';
+import Header from '../../components/layout/Header.jsx';
+
 const TimelinePage = observer(() => {
   const { theme } = useTheme(); 
   const { t } = useLanguage(); 
@@ -21,11 +22,9 @@ const TimelinePage = observer(() => {
 
   return (
     <div className="timeline-page" data-theme={theme}>
-      {/* Заголовок */}
+      
       <div className="timeline-header">
-        {/* <Header /> */}
-        {/* <h1 className="timeline-title">{t('entries.list.title')}</h1> */}
-        <p style={{textAlign:"center"}}className="timeline-subtitle">
+        <p className="timeline-subtitle">
           {totalEntries === 0 
             ? t('entries.list.emptyState')
             : t('common.entriesCount', { count: totalEntries })}
@@ -40,7 +39,7 @@ const TimelinePage = observer(() => {
           {/* Всего записей */}
           <div className="stat-card">
             <div className="stat-value stat-total">{totalEntries}</div>
-            <div className="stat-label">{t('common.total')}</div>
+            <div className="stat-label">{t('common.total').toUpperCase()}</div>
           </div>
 
           {/* Сны */}
@@ -48,7 +47,7 @@ const TimelinePage = observer(() => {
             <div className="stat-value stat-dreams">
               {dreamCount}
             </div>
-            <div className="stat-label">{t('entries.types.dream')}</div>
+            <div className="stat-label">{t('entries.types.dream').toUpperCase()}</div>
           </div>
 
           {/* Выполнено планов */}
@@ -56,7 +55,7 @@ const TimelinePage = observer(() => {
             <div className="stat-value stat-completed">
               {completedPlans}
             </div>
-            <div className="stat-label">{t('common.completed')}</div>
+            <div className="stat-label">{t('common.completed').toUpperCase()}</div>
           </div>
 
           {/* Просрочено планов */}
@@ -64,11 +63,10 @@ const TimelinePage = observer(() => {
             <div className="stat-value stat-overdue">
               {overduePlans}
             </div>
-            <div className="stat-label">{t('common.overdue')}</div>
+            <div className="stat-label">{t('common.overdue').toUpperCase()}</div>
           </div>
         </div>
       </div>
-
 
       {/* Основная сетка: форма и список */}
       <div className="timeline-grid">
@@ -76,8 +74,6 @@ const TimelinePage = observer(() => {
           <EntryList />
         </div>
       </div>
-
-
     </div>
   );
 });
