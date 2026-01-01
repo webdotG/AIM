@@ -75,3 +75,4 @@ class EmotionsService {
     }
 }
 exports.EmotionsService = EmotionsService;
+//# sourceMappingURL=EmotionsService.js.map

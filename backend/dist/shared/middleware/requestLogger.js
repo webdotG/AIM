@@ -21,3 +21,4 @@ const requestLogger = (req, res, next) => {
     next();
 };
 exports.requestLogger = requestLogger;
+//# sourceMappingURL=requestLogger.js.map

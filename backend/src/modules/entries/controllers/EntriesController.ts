@@ -1,9 +1,10 @@
-// ============================================
 // src/modules/entries/controllers/EntriesController.ts
-// ============================================
 import { Request, Response, NextFunction } from 'express';
 import { EntryService } from '../services/EntryService';
 import { EntriesRepository } from '../repositories/EntriesRepository';
+import { EntryEmotionsRepository } from '../repositories/EntryEmotionsRepository';
+import { EntryTagsRepository } from '../repositories/EntryTagsRepository';
+import { EntryPeopleRepository } from '../repositories/EntryPeopleRepository';
 import { pool } from '../../../db/pool';
 
 export class EntriesController {
@@ -11,7 +12,16 @@ export class EntriesController {
 
   constructor() {
     const entriesRepository = new EntriesRepository(pool);
-    this.entryService = new EntryService(entriesRepository);
+    const entryEmotionsRepository = new EntryEmotionsRepository(pool);
+    const entryTagsRepository = new EntryTagsRepository(pool);
+    const entryPeopleRepository = new EntryPeopleRepository(pool);
+    
+    this.entryService = new EntryService(
+      entriesRepository,
+      entryEmotionsRepository,
+      entryTagsRepository,
+      entryPeopleRepository
+    );
   }
 
   getAll = async (req: Request, res: Response, next: NextFunction) => {
@@ -64,6 +74,13 @@ export class EntriesController {
 
       const entry = await this.entryService.createEntry(entryData, userId);
 
+      console.log('=== IN CREATE CONTROLLER ===');
+      console.log('Controller req.userId:', req.userId);
+      console.log('Controller headers:', req.headers);
+      
+      console.log('Extracted userId:', userId, 'type:', typeof userId);
+      console.log('Entry data:', entryData);
+      
       res.status(201).json({
         success: true,
         data: entry
@@ -97,7 +114,59 @@ export class EntriesController {
 
       const result = await this.entryService.deleteEntry(id, userId);
 
-      res.status(200).json(result);
+      res.status(204).end();
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  // Добавьте эти методы для relationships:
+  addEmotion = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      const userId = req.userId!;
+      const { emotion_id, intensity } = req.body;
+
+      const result = await this.entryService.addEmotionToEntry(id, emotion_id, intensity, userId);
+
+      res.status(201).json({
+        success: true,
+        data: result
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  addTag = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      const userId = req.userId!;
+      const { tag_id } = req.body;
+
+      const result = await this.entryService.addTagToEntry(id, tag_id, userId);
+
+      res.status(201).json({
+        success: true,
+        data: result
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  addPerson = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      const userId = req.userId!;
+      const { person_id, role } = req.body;
+
+      const result = await this.entryService.addPersonToEntry(id, person_id, userId, role);
+
+      res.status(201).json({
+        success: true,
+        data: result
+      });
     } catch (error) {
       next(error);
     }

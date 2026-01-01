@@ -84,3 +84,4 @@ class PeopleController {
 }
 exports.PeopleController = PeopleController;
 exports.peopleController = new PeopleController();
+//# sourceMappingURL=PeopleController.js.map

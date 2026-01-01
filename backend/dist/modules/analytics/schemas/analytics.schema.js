@@ -46,3 +46,4 @@ exports.activityHeatmapSchema = zod_1.z.object({
 exports.streaksSchema = zod_1.z.object({
     query: zod_1.z.object({})
 });
+//# sourceMappingURL=analytics.schema.js.map

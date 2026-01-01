@@ -1,11 +1,4 @@
-import { Pool } from 'pg';
-import dotenv from 'dotenv';
-
-dotenv.config();
-
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-});
+import { pool } from './pool';
 
 export async function query<T = any>(sql: string, params: any[] = []): Promise<T[]> {
   try {

@@ -26,3 +26,4 @@ router.post('/:id/progress', (0, validator_middleware_1.validate)(skill_schema_1
 // GET /api/v1/skills/:id/progress - история прогресса
 router.get('/:id/progress', (0, validator_middleware_1.validate)(skill_schema_1.skillIdSchema), (0, validator_middleware_1.validate)(skill_schema_1.progressHistorySchema), SkillsController_1.skillsController.getProgressHistory);
 exports.default = router;
+//# sourceMappingURL=skills.routes.js.map

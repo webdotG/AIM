@@ -3,6 +3,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.entriesController = exports.EntriesController = void 0;
 const EntryService_1 = require("../services/EntryService");
 const EntriesRepository_1 = require("../repositories/EntriesRepository");
+const EntryEmotionsRepository_1 = require("../repositories/EntryEmotionsRepository");
+const EntryTagsRepository_1 = require("../repositories/EntryTagsRepository");
+const EntryPeopleRepository_1 = require("../repositories/EntryPeopleRepository");
 const pool_1 = require("../../../db/pool");
 class EntriesController {
     constructor() {
@@ -49,6 +52,11 @@ class EntriesController {
                 const userId = req.userId;
                 const entryData = req.body;
                 const entry = await this.entryService.createEntry(entryData, userId);
+                console.log('=== IN CREATE CONTROLLER ===');
+                console.log('Controller req.userId:', req.userId);
+                console.log('Controller headers:', req.headers);
+                console.log('Extracted userId:', userId, 'type:', typeof userId);
+                console.log('Entry data:', entryData);
                 res.status(201).json({
                     success: true,
                     data: entry
@@ -78,15 +86,65 @@ class EntriesController {
                 const { id } = req.params;
                 const userId = req.userId;
                 const result = await this.entryService.deleteEntry(id, userId);
-                res.status(200).json(result);
+                res.status(204).end();
+            }
+            catch (error) {
+                next(error);
+            }
+        };
+        // Добавьте эти методы для relationships:
+        this.addEmotion = async (req, res, next) => {
+            try {
+                const { id } = req.params;
+                const userId = req.userId;
+                const { emotion_id, intensity } = req.body;
+                const result = await this.entryService.addEmotionToEntry(id, emotion_id, intensity, userId);
+                res.status(201).json({
+                    success: true,
+                    data: result
+                });
+            }
+            catch (error) {
+                next(error);
+            }
+        };
+        this.addTag = async (req, res, next) => {
+            try {
+                const { id } = req.params;
+                const userId = req.userId;
+                const { tag_id } = req.body;
+                const result = await this.entryService.addTagToEntry(id, tag_id, userId);
+                res.status(201).json({
+                    success: true,
+                    data: result
+                });
+            }
+            catch (error) {
+                next(error);
+            }
+        };
+        this.addPerson = async (req, res, next) => {
+            try {
+                const { id } = req.params;
+                const userId = req.userId;
+                const { person_id, role } = req.body;
+                const result = await this.entryService.addPersonToEntry(id, person_id, userId, role);
+                res.status(201).json({
+                    success: true,
+                    data: result
+                });
             }
             catch (error) {
                 next(error);
             }
         };
         const entriesRepository = new EntriesRepository_1.EntriesRepository(pool_1.pool);
-        this.entryService = new EntryService_1.EntryService(entriesRepository);
+        const entryEmotionsRepository = new EntryEmotionsRepository_1.EntryEmotionsRepository(pool_1.pool);
+        const entryTagsRepository = new EntryTagsRepository_1.EntryTagsRepository(pool_1.pool);
+        const entryPeopleRepository = new EntryPeopleRepository_1.EntryPeopleRepository(pool_1.pool);
+        this.entryService = new EntryService_1.EntryService(entriesRepository, entryEmotionsRepository, entryTagsRepository, entryPeopleRepository);
     }
 }
 exports.EntriesController = EntriesController;
 exports.entriesController = new EntriesController();
+//# sourceMappingURL=EntriesController.js.map

@@ -34,3 +34,4 @@ class ConflictError extends AppError {
     }
 }
 exports.ConflictError = ConflictError;
+//# sourceMappingURL=AppError.js.map

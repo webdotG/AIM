@@ -209,3 +209,4 @@ class TagsController {
 }
 exports.TagsController = TagsController;
 exports.tagsController = new TagsController();
+//# sourceMappingURL=TagsController.js.map

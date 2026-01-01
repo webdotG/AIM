@@ -88,3 +88,4 @@ class BodyStatesController {
 }
 exports.BodyStatesController = BodyStatesController;
 exports.bodyStatesController = new BodyStatesController();
+//# sourceMappingURL=BodyStatesController.js.map

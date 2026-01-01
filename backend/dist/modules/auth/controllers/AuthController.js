@@ -168,7 +168,6 @@ class AuthController {
                 });
             }
         };
-        // силы пароля
         this.checkPasswordStrength = async (req, res) => {
             try {
                 const { password } = req.body;
@@ -198,7 +197,6 @@ class AuthController {
                 });
             }
         };
-        // рекомендации пароля
         this.generatePasswordRecommendation = async (req, res) => {
             try {
                 const recommendation = PasswordHasher_1.passwordHasher.generatePasswordRecommendation();
@@ -223,3 +221,4 @@ class AuthController {
 }
 exports.AuthController = AuthController;
 exports.authController = new AuthController();
+//# sourceMappingURL=AuthController.js.map

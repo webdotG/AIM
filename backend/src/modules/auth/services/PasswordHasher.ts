@@ -4,7 +4,7 @@ import crypto from 'crypto';
 import { subtle } from 'crypto';
 
 export class PasswordHasher {
-  // КРИТИЧНО: Pepper должен быть в env переменных, не в конфиге!
+
   private readonly pepper: string;
   private readonly saltRounds: number;
   private readonly minPasswordLength = 12;
@@ -20,11 +20,10 @@ export class PasswordHasher {
   };
 
   constructor() {
-    // Читаем из env, не из config файла!
+
     this.pepper = process.env.PASSWORD_PEPPER || '';
     this.saltRounds = parseInt(process.env.BCRYPT_ROUNDS || '12', 10);
-    
-    // Валидация при запуске
+
     if (!this.pepper || this.pepper.length < 32) {
       throw new Error('PASSWORD_PEPPER must be set and at least 32 characters');
     }
@@ -37,7 +36,7 @@ export class PasswordHasher {
   async hash(password: string): Promise<string> {
     this.validatePasswordLength(password);
     
-    // Pepper через HMAC для защиты от length extension attacks
+    // HMAC для защиты от length extension attacks
     const pepperedPassword = await this.applyPepper(password);
     return await bcrypt.hash(pepperedPassword, this.saltRounds);
   }
@@ -47,23 +46,21 @@ export class PasswordHasher {
       this.validatePasswordLength(password);
       const pepperedPassword = await this.applyPepper(password);
       
-      // bcrypt.compare уже защищён от timing attacks
       return await bcrypt.compare(pepperedPassword, hash);
     } catch (error) {
-      // Всегда возвращаем false при ошибке (constant-time)
+      // при ошибке constant-time
       return false;
     }
   }
 
-  // Улучшенная генерация backup кодов
+
   generateBackupCode(): string {
     // 16 байт = 128 бит энтропии
-    // В hex формате = 32 символа (легко читать и вводить)
+    // В hex формате = 32 символа 
     return crypto.randomBytes(16).toString('hex').toUpperCase();
   }
 
   async hashBackupCode(backupCode: string): Promise<string> {
-    // Используем тот же механизм что и для паролей
     return await bcrypt.hash(backupCode, this.saltRounds);
   }
 
@@ -85,7 +82,7 @@ export class PasswordHasher {
     const suggestions: string[] = [];
     let score = 0;
     
-    // Защита от DoS через очень длинные пароли
+    // от DoS через очень длинные пароли
     if (password.length > this.maxPasswordLength) {
       reasons.push(`Password must be less than ${this.maxPasswordLength} characters`);
       return { isStrong: false, score: 0, reasons, suggestions };
@@ -177,7 +174,7 @@ export class PasswordHasher {
     };
   }
 
-  // НОВОЕ: Проверка на слабые паттерны (расширенная)
+  // Проверка на слабые паттерны (расширенная)
   private hasWeakPatterns(str: string): boolean {
     const lowerStr = str.toLowerCase();
     
@@ -205,7 +202,7 @@ export class PasswordHasher {
     return allPatterns.some(pattern => lowerStr.includes(pattern));
   }
 
-  // НОВОЕ: Проверка на повторяющиеся символы
+  // Проверка на повторяющиеся символы
   private hasRepeatingChars(str: string): boolean {
     // Проверяем на 4+ одинаковых символа подряд
     if (/(.)\1{3,}/.test(str)) return true;
@@ -216,7 +213,7 @@ export class PasswordHasher {
     return false;
   }
 
-  // НОВОЕ: Упрощённая оценка энтропии
+  // Упрощённая оценка энтропии
   private estimateEntropy(password: string): number {
     let poolSize = 0;
     
@@ -235,7 +232,7 @@ export class PasswordHasher {
     return entropy * repetitionPenalty;
   }
 
-  // НОВОЕ: Безопасное применение pepper через HMAC
+  //  Безопасное применение pepper через HMAC
   private async applyPepper(password: string): Promise<string> {
     const encoder = new TextEncoder();
     const key = await subtle.importKey(
@@ -266,16 +263,16 @@ export class PasswordHasher {
     }
   }
 
-  // Улучшенная генерация рекомендаций
+  // генерация рекомендаций
   generatePasswordRecommendation(): string {
     const words = [
-      'Correct', 'Horse', 'Battery', 'Staple',
-      'Purple', 'Monkey', 'Telescope', 'Elephant',
-      'Giraffe', 'Kangaroo', 'Penguin', 'Dragon',
-      'Mountain', 'Ocean', 'Thunder', 'Crystal'
+      'Master', 'Horse', 'Battery', 'Life',
+      'Purple', 'Monkey', 'Sex', 'Elephant',
+      'Love', 'AndThisOver', 'Penguin', 'Dragon',
+      'Mountain', 'Ocean', 'Orgy', 'Crystal',
     ];
     
-    // Выбираем 4 случайных слова
+    // 4 случайных слова
     const selectedWords: string[] = [];
     const wordsCopy = [...words];
     
@@ -285,7 +282,7 @@ export class PasswordHasher {
       wordsCopy.splice(randomIndex, 1);
     }
     
-    // Добавляем случайное число и символ
+    // случайное число и символ
     const randomNumber = crypto.randomInt(10, 99);
     const symbols = '!@#$%^&*';
     const randomSymbol = symbols[crypto.randomInt(0, symbols.length)];

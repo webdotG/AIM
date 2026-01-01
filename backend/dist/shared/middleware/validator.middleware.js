@@ -23,3 +23,4 @@ const validate = (schema) => async (req, res, next) => {
     }
 };
 exports.validate = validate;
+//# sourceMappingURL=validator.middleware.js.map

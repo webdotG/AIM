@@ -97,3 +97,4 @@ class HCaptchaMiddleware {
 exports.HCaptchaMiddleware = HCaptchaMiddleware;
 // Экспортируем синглтон
 exports.hcaptchaMiddleware = new HCaptchaMiddleware();
+//# sourceMappingURL=hcaptcha.middleware.js.map

@@ -85,3 +85,4 @@ exports.progressHistorySchema = zod_1.z.object({
             .optional()
     })
 });
+//# sourceMappingURL=skill.schema.js.map

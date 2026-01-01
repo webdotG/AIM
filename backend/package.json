@@ -8,7 +8,18 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "migrate": "node dist/db/migrate.js",
-    "seed": "node dist/db/seed.js"
+    "seed": "node dist/db/seed.js",
+    "test": "jest --config jest.config.ts",
+    "test:watch": "jest --config jest.config.ts --watch",
+    "test:coverage": "jest --config jest.config.ts --coverage",
+    "test:auth": "jest --config jest.config.ts src/modules/auth/__tests__",
+    "test:entries": "jest --config jest.config.ts src/modules/entries/__tests__",
+    "test:all": "jest --config jest.config.ts",
+    "test:verbose": "jest --config jest.config.ts --verbose --detectOpenHandles",
+    "test:debug": "node --inspect-brk node_modules/.bin/jest --config jest.config.ts --runInBand --no-coverage",
+    "db:test:setup": "psql -U postgres -c 'CREATE DATABASE dream_journal_test;'",
+    "db:test:drop": "psql -U postgres -c 'DROP DATABASE IF EXISTS dream_journal_test;'",
+    "db:test:reset": "npm run db:test:drop && npm run db:test:setup"
   },
   "keywords": [
     "journal",
@@ -36,11 +47,17 @@
     "@types/bcrypt": "^5.0.1",
     "@types/cors": "^2.8.13",
     "@types/express": "^4.17.17",
+    "@types/jest": "^30.0.0",
     "@types/jsonwebtoken": "^9.0.10",
-    "@types/node": "^20.5.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^20.10.6",
     "@types/pg": "^8.10.7",
-    "nodemon": "^3.0.1",
-    "ts-node": "^10.9.1",
-    "typescript": "^5.1.6"
+    "@types/supertest": "^6.0.3",
+    "jest": "^30.2.0",
+    "nodemon": "^3.0.2",
+    "supertest": "^7.1.4",
+    "ts-jest": "^29.4.6",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
   }
 }

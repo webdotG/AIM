@@ -22,3 +22,4 @@ router.post('/', (0, validator_middleware_1.validate)(relation_schema_1.createRe
 // DELETE /api/v1/relations/:id - удалить связь
 router.delete('/:id', (0, validator_middleware_1.validate)(relation_schema_1.relationIdSchema), RelationsController_1.relationsController.delete);
 exports.default = router;
+//# sourceMappingURL=relations.routes.js.map

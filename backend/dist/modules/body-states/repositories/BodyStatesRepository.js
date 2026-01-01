@@ -277,3 +277,4 @@ class BodyStatesRepository extends BaseRepository_1.BaseRepository {
     }
 }
 exports.BodyStatesRepository = BodyStatesRepository;
+//# sourceMappingURL=BodyStatesRepository.js.map

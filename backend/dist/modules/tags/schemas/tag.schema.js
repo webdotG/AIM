@@ -93,3 +93,4 @@ exports.similarTagsSchema = zod_1.z.object({
             .default(1)
     })
 });
+//# sourceMappingURL=tag.schema.js.map

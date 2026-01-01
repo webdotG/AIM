@@ -5,17 +5,6 @@
 index.html → main.jsx → App.jsx
 ```
 
-### `index.html`
-- Подключает Telegram Web App SDK
-- Viewport для мобильных устройств
-- Корневой `<div id="root">`
-
-### `main.jsx`
-```javascript
-import './ok.css'; // Единственный глобальный CSS
-createRoot(document.getElementById('root')).render(<App />);
-```
-
 ### `App.jsx`
 ```javascript
 <StoreProvider>           // MobX хранилища

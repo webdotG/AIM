@@ -13,3 +13,4 @@ router.get('/emotion-distribution', (0, validator_middleware_1.validate)(analyti
 router.get('/activity-heatmap', (0, validator_middleware_1.validate)(analytics_schema_1.activityHeatmapSchema), AnalyticsController_1.analyticsController.getActivityHeatmap);
 router.get('/streaks', (0, validator_middleware_1.validate)(analytics_schema_1.streaksSchema), AnalyticsController_1.analyticsController.getStreaks);
 exports.default = router;
+//# sourceMappingURL=analytics.routes.js.map

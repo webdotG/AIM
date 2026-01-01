@@ -8,7 +8,7 @@ router.post('/register', hcaptchaMiddleware.verify, authController.register);
 router.post('/login', hcaptchaMiddleware.verify, authController.login);
 router.post('/recover', hcaptchaMiddleware.verify, authController.recover);
 
-// Эти endpoints не требуют hCaptcha
+// не требуют hCaptcha
 router.get('/verify', authController.verify);
 router.post('/check-password-strength', authController.checkPasswordStrength);
 router.get('/generate-password', authController.generatePasswordRecommendation);

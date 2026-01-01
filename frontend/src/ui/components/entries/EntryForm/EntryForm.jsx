@@ -265,13 +265,13 @@ const EntryForm = observer(() => {
       <div className="emotions-preview">
         {urlSyncStore.emotions.slice(0, 3).map((emotion, index) => (
           <div key={index} className="emotion-badge">
-            <span className="emotion-icon">
+            {/* <span className="emotion-icon">
               {emotion.emotion?.icon || emotion.category?.icon || ''}
-            </span>
+            </span> */}
             <span className="emotion-label">
               {emotion.emotion?.label || emotion.category?.label || 'Эмоция'}
             </span>
-            <span className="emotion-intensity">{emotion.intensity}%</span>
+            {/* <span className="emotion-intensity">{emotion.intensity}%</span> */}
           </div>
         ))}
         {urlSyncStore.emotions.length > 3 && (
@@ -321,7 +321,7 @@ const EntryForm = observer(() => {
         )}
         {location && location.trim() && (
           <div className="body-stat">
-            <span className="stat-icon">LOC</span>
+            {/* <span className="stat-icon">LOC</span> */}
             <span className="stat-value">{location}</span>
           </div>
         )}
@@ -409,9 +409,9 @@ const EntryForm = observer(() => {
             <div className="circumstances-preview">
               {urlSyncStore.circumstances.slice(0, 2).map((circ, index) => (
                 <div key={index} className="circumstance-badge">
-                  <span className="circumstance-icon">
+                  {/* <span className="circumstance-icon">
                     {circ.item?.icon || circ.category?.icon || ''}
-                  </span>
+                  </span> */}
                   <span className="circumstance-label">
                     {circ.item?.label || circ.category?.label || 'Обстоятельство'}
                   </span>
@@ -450,9 +450,9 @@ const EntryForm = observer(() => {
             <div className="skills-preview">
               {urlSyncStore.skills.slice(0, 2).map((skill, index) => (
                 <div key={index} className="skill-badge">
-                  <span className="skill-icon">
+                  {/* <span className="skill-icon">
                     {skill.skill?.icon || ''}
-                  </span>
+                  </span> */}
                   <span className="skill-label">
                     {skill.skill?.label || 'Навык'} - LVL {skill.level}
                   </span>
@@ -488,9 +488,9 @@ const EntryForm = observer(() => {
               <div className="relations-list">
                 {urlSyncStore.relations.slice(0, 2).map((rel, index) => (
                   <div key={index} className="relation-item">
-                    <span className="relation-icon">
+                    {/* <span className="relation-icon">
                       {rel.type?.icon || ''}
-                    </span>
+                    </span> */}
                     <span className="relation-description">
                       {rel.description?.slice(0, 30) || 'Связь'}...
                     </span>

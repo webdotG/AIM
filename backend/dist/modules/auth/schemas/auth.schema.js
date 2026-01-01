@@ -39,3 +39,4 @@ exports.recoverSchema = zod_1.z.object({
             .regex(/\d/, 'Password must contain number')
     })
 });
+//# sourceMappingURL=auth.schema.js.map

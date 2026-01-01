@@ -1,258 +1,257 @@
-import { Request, Response, NextFunction } from 'express';
-import { AuthService } from '../services/AuthService';
-import { UserRepository } from '../repositories/UserRepository';
-import { 
-  registerSchema, 
-  loginSchema, 
-  updatePasswordSchema,
-  RegisterInput,
-  LoginInput,
-  UpdatePasswordInput,
-} from '../validation/auth.schema';
-import logger from '../../../shared/utils/logger';
-import { passwordHasher } from '../services/PasswordHasher';
+  import { Request, Response, NextFunction } from 'express';
+  import { AuthService } from '../services/AuthService';
+  import { UserRepository } from '../repositories/UserRepository';
+  import { 
+    registerSchema, 
+    loginSchema, 
+    updatePasswordSchema,
+    RegisterInput,
+    LoginInput,
+    UpdatePasswordInput,
+  } from '../validation/auth.schema';
+  import logger from '../../../shared/utils/logger';
+  import { passwordHasher } from '../services/PasswordHasher';
 
-export class AuthController {
-  private authService: AuthService;
+  export class AuthController {
+    private authService: AuthService;
 
-  constructor() {
-    const userRepository = new UserRepository();
-    this.authService = new AuthService(userRepository);
-  }
+    constructor() {
+      const userRepository = new UserRepository();
+      this.authService = new AuthService(userRepository);
+    }
 
-  register = async (req: Request, res: Response): Promise<void> => {
-    try {
+    register = async (req: Request, res: Response): Promise<void> => {
+      try {
 
-      const { hcaptchaToken, ...userData } = req.body;
+        const { hcaptchaToken, ...userData } = req.body;
 
-      const input: RegisterInput = registerSchema.parse(userData);
-      const result = await this.authService.register(input);
+        const input: RegisterInput = registerSchema.parse(userData);
+        const result = await this.authService.register(input);
 
-      res.status(201).json({
-        success: true,
-        data: {
-          user: result.user,
-          token: result.token,
-          backupCode: result.backupCode,
-          message: 'SAVE THIS BACKUP CODE! You will need it to recover your password.',
-        },
-      });
-    } catch (error: any) {
-      logger.error('Registration error:', error);
-      
-      if (error.name === 'ZodError') {
+        res.status(201).json({
+          success: true,
+          data: {
+            user: result.user,
+            token: result.token,
+            backupCode: result.backupCode,
+            message: 'SAVE THIS BACKUP CODE! You will need it to recover your password.',
+          },
+        });
+      } catch (error: any) {
+        logger.error('Registration error:', error);
+        
+        if (error.name === 'ZodError') {
+          res.status(400).json({
+            success: false,
+            error: 'Validation error',
+            details: error.issues,
+          });
+          return;
+        }
+
         res.status(400).json({
           success: false,
-          error: 'Validation error',
-          details: error.issues,
+          error: error.message || 'Registration failed',
         });
-        return;
       }
+    };
 
-      res.status(400).json({
-        success: false,
-        error: error.message || 'Registration failed',
-      });
-    }
-  };
+    login = async (req: Request, res: Response): Promise<void> => {
+      try {
 
-  login = async (req: Request, res: Response): Promise<void> => {
-    try {
+        const input: LoginInput = loginSchema.parse(req.body);
 
-      const input: LoginInput = loginSchema.parse(req.body);
+        const result = await this.authService.login(input);
 
-      const result = await this.authService.login(input);
-
-      res.status(200).json({
-        success: true,
-        data: {
-          user: result.user,
-          token: result.token,
-        },
-      });
-    } catch (error: any) {
-      logger.error('Login error:', error);
-      
-      if (error.name === 'ZodError') {
-        res.status(400).json({
-          success: false,
-          error: 'Validation error',
-          details: error.issues,
+        res.status(200).json({
+          success: true,
+          data: {
+            user: result.user,
+            token: result.token,
+          },
         });
-        return;
-      }
+      } catch (error: any) {
+        logger.error('Login error:', error);
+        
+        if (error.name === 'ZodError') {
+          res.status(400).json({
+            success: false,
+            error: 'Validation error',
+            details: error.issues,
+          });
+          return;
+        }
 
-      res.status(401).json({
-        success: false,
-        error: error.message || 'Invalid credentials',
-      });
-    }
-  };
-
-  updatePassword = async (req: Request, res: Response): Promise<void> => {
-    try {
-      const input: UpdatePasswordInput = updatePasswordSchema.parse(req.body);
-
-      const result = await this.authService.updatePassword(input);
-
-      res.status(200).json({
-        success: true,
-        data: {
-          user: result.user,
-          token: result.token,
-          backupCode: result.backupCode,
-          message: 'Password updated successfully. Save your new backup code!',
-        },
-      });
-    } catch (error: any) {
-      logger.error('Update password error:', error);
-      
-      if (error.name === 'ZodError') {
-        res.status(400).json({
-          success: false,
-          error: 'Validation error',
-          details: error.issues,
-        });
-        return;
-      }
-
-      res.status(400).json({
-        success: false,
-        error: error.message || 'Failed to update password',
-      });
-    }
-  };
-
-  verify = async (req: Request, res: Response): Promise<void> => {
-    try {
-      const token = req.headers.authorization?.replace('Bearer ', '');
-      
-      if (!token) {
         res.status(401).json({
           success: false,
-          error: 'No token provided',
+          error: error.message || 'Invalid credentials',
         });
-        return;
       }
+    };
 
-      const user = await this.authService.validateToken(token);
-      
-      if (!user) {
+    updatePassword = async (req: Request, res: Response): Promise<void> => {
+      try {
+        const input: UpdatePasswordInput = updatePasswordSchema.parse(req.body);
+
+        const result = await this.authService.updatePassword(input);
+
+        res.status(200).json({
+          success: true,
+          data: {
+            user: result.user,
+            token: result.token,
+            backupCode: result.backupCode,
+            message: 'Password updated successfully. Save your new backup code!',
+          },
+        });
+      } catch (error: any) {
+        logger.error('Update password error:', error);
+        
+        if (error.name === 'ZodError') {
+          res.status(400).json({
+            success: false,
+            error: 'Validation error',
+            details: error.issues,
+          });
+          return;
+        }
+
+        res.status(400).json({
+          success: false,
+          error: error.message || 'Failed to update password',
+        });
+      }
+    };
+
+    verify = async (req: Request, res: Response): Promise<void> => {
+      try {
+        const token = req.headers.authorization?.replace('Bearer ', '');
+        
+        if (!token) {
+          res.status(401).json({
+            success: false,
+            error: 'No token provided',
+          });
+          return;
+        }
+
+        const user = await this.authService.validateToken(token);
+        
+        if (!user) {
+          res.status(401).json({
+            success: false,
+            error: 'Invalid token',
+          });
+          return;
+        }
+
+        res.status(200).json({
+          success: true,
+          data: {
+            user: {
+              id: user.id,
+              login: user.login,
+            },
+          },
+        });
+      } catch (error: any) {
+        logger.error('Token verification error:', error);
         res.status(401).json({
           success: false,
           error: 'Invalid token',
         });
-        return;
       }
+    };
 
-      res.status(200).json({
-        success: true,
-        data: {
-          user: {
-            id: user.id,
-            login: user.login,
+
+    recover = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+      try {
+        const { backup_code, new_password } = req.body; 
+        
+        const result = await this.authService.updatePassword({
+          backupCode: backup_code,
+          newPassword: new_password
+        });
+        
+        res.status(200).json({
+          success: true,
+          data: {
+            token: result.token,
+            backup_code: result.backupCode,
+            message: 'Password updated successfully',
           },
-        },
-      });
-    } catch (error: any) {
-      logger.error('Token verification error:', error);
-      res.status(401).json({
-        success: false,
-        error: 'Invalid token',
-      });
-    }
-  };
-
-
-  recover = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    try {
-      const { backup_code, new_password } = req.body; 
-      
-      const result = await this.authService.updatePassword({
-        backupCode: backup_code,
-        newPassword: new_password
-      });
-      
-      res.status(200).json({
-        success: true,
-        data: {
-          token: result.token,
-          backup_code: result.backupCode,
-          message: 'Password updated successfully',
-        },
-      });
-    } catch (error: any) {
-      logger.error('Password recovery error:', error);
-      
-      if (error.name === 'ZodError') {
+        });
+      } catch (error: any) {
+        logger.error('Password recovery error:', error);
+        
+        if (error.name === 'ZodError') {
+          res.status(400).json({
+            success: false,
+            error: 'Validation error',
+            details: error.issues,
+          });
+          return;
+        }
+        
         res.status(400).json({
           success: false,
-          error: 'Validation error',
-          details: error.issues,
+          error: error.message || 'Failed to recover password',
         });
-        return;
       }
-      
-      res.status(400).json({
-        success: false,
-        error: error.message || 'Failed to recover password',
-      });
-    }
-  };
-    // силы пароля
-  checkPasswordStrength = async (req: Request, res: Response): Promise<void> => {
-    try {
-      const { password } = req.body;
+    };
 
-      if (!password || typeof password !== 'string') {
-        res.status(400).json({
+    checkPasswordStrength = async (req: Request, res: Response): Promise<void> => {
+      try {
+        const { password } = req.body;
+
+        if (!password || typeof password !== 'string') {
+          res.status(400).json({
+            success: false,
+            error: 'Password is required',
+          });
+          return;
+        }
+
+        const strength = passwordHasher.checkStrength(password);
+
+        res.status(200).json({
+          success: true,
+          data: {
+            isStrong: strength.isStrong,
+            score: strength.score,
+            reasons: strength.reasons,
+            suggestions: strength.suggestions,
+          },
+        });
+      } catch (error: any) {
+        logger.error('Password strength check error:', error);
+        res.status(500).json({
           success: false,
-          error: 'Password is required',
+          error: 'Failed to check password strength',
         });
-        return;
       }
+    };
 
-      const strength = passwordHasher.checkStrength(password);
+    generatePasswordRecommendation = async (req: Request, res: Response): Promise<void> => {
+      try {
+        const recommendation = passwordHasher.generatePasswordRecommendation();
 
-      res.status(200).json({
-        success: true,
-        data: {
-          isStrong: strength.isStrong,
-          score: strength.score,
-          reasons: strength.reasons,
-          suggestions: strength.suggestions,
-        },
-      });
-    } catch (error: any) {
-      logger.error('Password strength check error:', error);
-      res.status(500).json({
-        success: false,
-        error: 'Failed to check password strength',
-      });
-    }
-  };
-
-  // рекомендации пароля
-  generatePasswordRecommendation = async (req: Request, res: Response): Promise<void> => {
-    try {
-      const recommendation = passwordHasher.generatePasswordRecommendation();
-
-      res.status(200).json({
-        success: true,
-        data: {
-          password: recommendation,
-        },
-      });
-    } catch (error: any) {
-      logger.error('Password generation error:', error);
-      res.status(500).json({
-        success: false,
-        error: 'Failed to generate password',
-      });
-    }
-  };
+        res.status(200).json({
+          success: true,
+          data: {
+            password: recommendation,
+          },
+        });
+      } catch (error: any) {
+        logger.error('Password generation error:', error);
+        res.status(500).json({
+          success: false,
+          error: 'Failed to generate password',
+        });
+      }
+    };
 
 
-}
+  }
 
-export const authController = new (AuthController as any)();
+  export const authController = new (AuthController as any)();

@@ -145,3 +145,4 @@ class EmotionsController {
 }
 exports.EmotionsController = EmotionsController;
 exports.emotionsController = new EmotionsController();
+//# sourceMappingURL=EmotionsController.js.map

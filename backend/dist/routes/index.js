@@ -8,3 +8,4 @@ const v1_1 = __importDefault(require("./v1"));
 const router = (0, express_1.Router)();
 router.use('/api/v1', v1_1.default);
 exports.default = router;
+//# sourceMappingURL=index.js.map

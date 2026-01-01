@@ -10,3 +10,4 @@ class BaseRepository {
     }
 }
 exports.BaseRepository = BaseRepository;
+//# sourceMappingURL=BaseRepository.js.map

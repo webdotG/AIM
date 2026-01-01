@@ -28,3 +28,4 @@ exports.authLimiter = (0, express_rate_limit_1.default)({
         error: 'Too many login attempts'
     }
 });
+//# sourceMappingURL=rateLimiter.middleware.js.map

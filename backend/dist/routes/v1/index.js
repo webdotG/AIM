@@ -26,3 +26,4 @@ router.use('/body-states', body_states_routes_1.default);
 router.use('/circumstances', circumstances_routes_1.default);
 router.use('/skills', skills_routes_1.default);
 exports.default = router;
+//# sourceMappingURL=index.js.map

@@ -131,3 +131,4 @@ class PeopleRepository extends BaseRepository_1.BaseRepository {
     }
 }
 exports.PeopleRepository = PeopleRepository;
+//# sourceMappingURL=PeopleRepository.js.map

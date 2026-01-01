@@ -1,3 +1,4 @@
+// src/routes/v1/entries.routes.ts
 import { Router } from 'express';
 import { entriesController } from '../../modules/entries/controllers/EntriesController';
 import { authenticate } from '../../shared/middleware/auth.middleware';
@@ -8,10 +9,14 @@ import {
   entryIdSchema, 
   getEntriesSchema 
 } from '../../modules/entries/schemas/entry.schema';
+import {
+  addEmotionSchema,
+  addTagSchema,
+  addPersonSchema
+} from '../../modules/entries/schemas/entry-relationships.schema';
 
 const router = Router();
 
-// Все роуты требуют аутентификации
 router.use(authenticate);
 
 // GET /api/v1/entries
@@ -28,5 +33,10 @@ router.put('/:id', validate(entryIdSchema), validate(updateEntrySchema), entries
 
 // DELETE /api/v1/entries/:id
 router.delete('/:id', validate(entryIdSchema), entriesController.delete);
+
+// Relationships endpoints
+router.post('/:id/emotions', validate(entryIdSchema), validate(addEmotionSchema), entriesController.addEmotion);
+router.post('/:id/tags', validate(entryIdSchema), validate(addTagSchema), entriesController.addTag);
+router.post('/:id/people', validate(entryIdSchema), validate(addPersonSchema), entriesController.addPerson);
 
 export default router;

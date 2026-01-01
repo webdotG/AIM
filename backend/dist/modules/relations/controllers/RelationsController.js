@@ -117,3 +117,4 @@ class RelationsController {
 }
 exports.RelationsController = RelationsController;
 exports.relationsController = new RelationsController();
+//# sourceMappingURL=RelationsController.js.map

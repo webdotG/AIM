@@ -14,3 +14,4 @@ router.post('/', (0, validator_middleware_1.validate)(person_schema_1.createPers
 router.put('/:id', (0, validator_middleware_1.validate)(person_schema_1.personIdSchema), (0, validator_middleware_1.validate)(person_schema_1.updatePersonSchema), PeopleController_1.peopleController.update);
 router.delete('/:id', (0, validator_middleware_1.validate)(person_schema_1.personIdSchema), PeopleController_1.peopleController.delete);
 exports.default = router;
+//# sourceMappingURL=people.routes.js.map

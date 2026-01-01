@@ -27,3 +27,4 @@ router.post('/entry/:entryId', (0, validator_middleware_1.validate)(emotion_sche
 // DELETE /api/v1/emotions/entry/:entryId - удалить эмоции
 router.delete('/entry/:entryId', (0, validator_middleware_1.validate)(emotion_schema_1.entryIdParamSchema), EmotionsController_1.emotionsController.detachFromEntry);
 exports.default = router;
+//# sourceMappingURL=emotions.routes.js.map

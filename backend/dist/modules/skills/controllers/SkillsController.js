@@ -147,3 +147,4 @@ class SkillsController {
 }
 exports.SkillsController = SkillsController;
 exports.skillsController = new SkillsController();
+//# sourceMappingURL=SkillsController.js.map

@@ -30,3 +30,4 @@ const authMiddleware = async (req, res, next) => {
     }
 };
 exports.authMiddleware = authMiddleware;
+//# sourceMappingURL=auth.js.map

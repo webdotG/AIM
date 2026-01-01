@@ -22,3 +22,4 @@ router.put('/:id', (0, validator_middleware_1.validate)(circumstance_schema_1.ci
 // DELETE /api/v1/circumstances/:id - удалить обстоятельство
 router.delete('/:id', (0, validator_middleware_1.validate)(circumstance_schema_1.circumstanceIdSchema), CircumstancesController_1.circumstancesController.delete);
 exports.default = router;
+//# sourceMappingURL=circumstances.routes.js.map

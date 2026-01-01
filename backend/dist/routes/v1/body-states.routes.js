@@ -18,3 +18,4 @@ router.put('/:id', (0, validator_middleware_1.validate)(body_state_schema_1.body
 // DELETE /api/v1/body-states/:id - удалить состояние
 router.delete('/:id', (0, validator_middleware_1.validate)(body_state_schema_1.bodyStateIdSchema), BodyStatesController_1.bodyStatesController.delete);
 exports.default = router;
+//# sourceMappingURL=body-states.routes.js.map

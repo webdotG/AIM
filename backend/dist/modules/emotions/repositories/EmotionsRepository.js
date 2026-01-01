@@ -170,3 +170,4 @@ class EmotionsRepository extends BaseRepository_1.BaseRepository {
     }
 }
 exports.EmotionsRepository = EmotionsRepository;
+//# sourceMappingURL=EmotionsRepository.js.map

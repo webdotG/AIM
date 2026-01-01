@@ -28,3 +28,4 @@ exports.default = {
         level: process.env.LOG_LEVEL || 'info'
     }
 };
+//# sourceMappingURL=index.js.map

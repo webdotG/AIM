@@ -87,10 +87,10 @@ class AuthService {
     }
     async updatePassword(input) {
         const { backupCode, newPassword } = input;
-        // Поиск пользователя по backup-коду
-        const users = await (0, query_1.query)(`
-      SELECT * FROM users WHERE backup_code_hash IS NOT NULL
-    `);
+        if (!backupCode || !newPassword) {
+            throw new Error('Backup code and new password are required');
+        }
+        const users = await (0, query_1.query)('SELECT * FROM users WHERE backup_code_hash IS NOT NULL');
         let foundUser = null;
         for (const user of users) {
             if (user.backup_code_hash) {
@@ -155,3 +155,4 @@ class AuthService {
     }
 }
 exports.AuthService = AuthService;
+//# sourceMappingURL=AuthService.js.map

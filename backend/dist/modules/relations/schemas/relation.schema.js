@@ -60,3 +60,4 @@ exports.graphSchema = zod_1.z.object({
             .default('all')
     })
 });
+//# sourceMappingURL=relation.schema.js.map

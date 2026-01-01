@@ -79,3 +79,4 @@ class BodyStatesService {
     }
 }
 exports.BodyStatesService = BodyStatesService;
+//# sourceMappingURL=BodyStatesService.js.map

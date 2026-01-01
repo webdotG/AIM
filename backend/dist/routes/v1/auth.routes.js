@@ -7,8 +7,9 @@ const router = (0, express_1.Router)();
 router.post('/register', hcaptcha_middleware_1.hcaptchaMiddleware.verify, AuthController_1.authController.register);
 router.post('/login', hcaptcha_middleware_1.hcaptchaMiddleware.verify, AuthController_1.authController.login);
 router.post('/recover', hcaptcha_middleware_1.hcaptchaMiddleware.verify, AuthController_1.authController.recover);
-// Эти endpoints не требуют hCaptcha
+// не требуют hCaptcha
 router.get('/verify', AuthController_1.authController.verify);
 router.post('/check-password-strength', AuthController_1.authController.checkPasswordStrength);
 router.get('/generate-password', AuthController_1.authController.generatePasswordRecommendation);
 exports.default = router;
+//# sourceMappingURL=auth.routes.js.map

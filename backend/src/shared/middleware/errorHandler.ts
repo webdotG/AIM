@@ -1,6 +1,7 @@
 // src/shared/middleware/errorHandler.ts
 import { Request, Response, NextFunction } from 'express';
 import logger from '../utils/logger';
+import { AppError } from '../errors/AppError';
 
 export const errorHandler = (
   error: any,
@@ -15,6 +16,16 @@ export const errorHandler = (
     method: req.method,
   });
 
+  // Обработка AppError (ДОБАВЬТЕ ЭТО!)
+  if (error instanceof AppError) {
+    res.status(error.statusCode).json({
+      success: false,
+      error: error.message,
+      ...(error && { details: error })
+    });
+    return;
+  }
+
   // Zod validation errors
   if (error.name === 'ZodError') {
     res.status(400).json({
@@ -25,21 +36,19 @@ export const errorHandler = (
     return;
   }
 
-  // Prisma errors
-  if (error.code?.startsWith('P')) {
-    // Database errors
-    res.status(500).json({
-      success: false,
-      error: 'Database error',
-    });
-    return;
-  }
-
   // JWT errors
   if (error.name === 'JsonWebTokenError') {
     res.status(401).json({
       success: false,
       error: 'Invalid token',
+    });
+    return;
+  }
+
+  if (error.name === 'TokenExpiredError') {
+    res.status(401).json({
+      success: false,
+      error: 'Token expired',
     });
     return;
   }

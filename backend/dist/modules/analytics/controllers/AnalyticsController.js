@@ -64,3 +64,4 @@ class AnalyticsController {
 }
 exports.AnalyticsController = AnalyticsController;
 exports.analyticsController = new AnalyticsController();
+//# sourceMappingURL=AnalyticsController.js.map

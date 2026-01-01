@@ -89,18 +89,18 @@ constructor(pool: Pool) {
     return result.rows;
   }
 
-  async findById(id: string, userId?: number) {
-    let query = `SELECT * FROM entries WHERE id = $1`;
-    const params: any[] = [id];
+async findById(id: string, userId?: number) {
+  let query = `SELECT * FROM entries WHERE id = $1`;
+  const params: any[] = [id];
 
-    if (userId) {
-      query += ` AND user_id = $2`;
-      params.push(userId);
-    }
-
-    const result = await this.pool.query(query, params);
-    return result.rows[0];
+  if (userId) {
+    query += ` AND user_id = $2`;
+    params.push(userId);
   }
+
+  const result = await this.pool.query(query, params);
+  return result.rows[0];
+}
 
   async create(entryData: EntryData) {
     const result = await this.pool.query(

@@ -30,3 +30,4 @@ class JWTService {
 }
 exports.JWTService = JWTService;
 exports.jwtService = new JWTService();
+//# sourceMappingURL=JWTService.js.map

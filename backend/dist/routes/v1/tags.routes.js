@@ -34,3 +34,4 @@ router.post('/entry/:entryId', (0, validator_middleware_1.validate)(tag_schema_1
 // DELETE /api/v1/tags/entry/:entryId - удалить теги
 router.delete('/entry/:entryId', (0, validator_middleware_1.validate)(tag_schema_1.entryIdParamSchema), TagsController_1.tagsController.detachFromEntry);
 exports.default = router;
+//# sourceMappingURL=tags.routes.js.map
