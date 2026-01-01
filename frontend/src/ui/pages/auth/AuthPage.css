@@ -204,6 +204,99 @@
   margin-top: var(--spacing-sm);
 }
 
+/* Backup Code Modal */
+.backup-code-modal {
+  max-width: 500px;
+}
+
+.backup-warning {
+  color: red;
+  font-weight: var(--font-weight-bold);
+  font-style: normal;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.backup-code-display {
+  margin: var(--spacing-lg) 0;
+  padding: var(--spacing-lg);
+  background-color: var(--color-background);
+  border: 3px solid var(--color-border);
+  position: relative;
+}
+
+.backup-code-display::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  right: 4px;
+  bottom: 4px;
+  border: 1px solid var(--color-border);
+  pointer-events: none;
+}
+
+.backup-code-text {
+  display: block;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  font-family: var(--font-mono);
+  text-align: center;
+  color: var(--color-text);
+  margin-bottom: var(--spacing-md);
+  padding: var(--spacing-md);
+  background-color: var(--color-background);
+  border: 2px solid var(--color-border);
+  letter-spacing: 3px;
+  word-break: break-all;
+  position: relative;
+}
+
+.backup-code-text::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  right: 4px;
+  bottom: 4px;
+  border: 1px solid var(--color-border);
+  pointer-events: none;
+}
+
+.backup-code-instructions {
+  margin: var(--spacing-lg) 0;
+  padding: var(--spacing-md);
+  background-color: var(--color-background);
+  border: 2px solid var(--color-border);
+  position: relative;
+}
+
+.backup-code-instructions::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  right: 4px;
+  bottom: 4px;
+  border: 1px solid var(--color-border);
+  pointer-events: none;
+}
+
+.backup-code-instructions p {
+  margin: var(--spacing-sm) 0;
+  font-size: var(--font-size-sm);
+  font-family: var(--font-serif);
+  line-height: 1.6;
+}
+
+.backup-code-instructions p:first-child {
+  margin-top: 0;
+}
+
+.backup-code-instructions p:last-child {
+  margin-bottom: 0;
+}
+
 /* Адаптивность */
 @media (max-width: 480px) {
   .auth-container {
@@ -217,11 +310,25 @@
   .auth-title {
     font-size: var(--font-size-xl);
   }
+
+  .backup-code-text {
+    font-size: var(--font-size-base);
+    letter-spacing: 2px;
+  }
 }
 
 /* Печать */
 @media print {
   .auth-page {
+    display: block;
+    background: white;
+  }
+
+  .backup-code-modal {
+    page-break-inside: avoid;
+  }
+
+  .backup-code-display button {
     display: none;
   }
 }

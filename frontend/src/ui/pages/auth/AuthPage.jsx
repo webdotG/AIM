@@ -22,6 +22,9 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [passwordStrength, setPasswordStrength] = useState(null);
+  const [showBackupCode, setShowBackupCode] = useState(false);
+  const [generatedBackupCode, setGeneratedBackupCode] = useState('');
+  const [copied, setCopied] = useState(false);
   
   const { theme } = useTheme();
   const { t } = useLanguage();
@@ -40,6 +43,25 @@ export default function AuthPage() {
   const handleCaptchaExpire = () => {
     setHcaptchaToken('');
     setError(t('auth.errors.captchaExpired'));
+  };
+
+  const handleCopyBackupCode = async () => {
+    try {
+      await navigator.clipboard.writeText(generatedBackupCode);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
+
+  const handleCloseBackupCode = () => {
+    setShowBackupCode(false);
+    setGeneratedBackupCode('');
+    setMode('login');
+    setPassword('');
+    setConfirmPassword('');
+    setLogin('');
   };
 
   const handleSubmit = async (e) => {
@@ -61,12 +83,17 @@ export default function AuthPage() {
           return;
         }
         
-        await authClient.login({
+        const result = await authClient.login({
           login,
           password,
           hcaptchaToken,
         });
 
+        // Сохраняем токен и юзера
+        localStorage.setItem('token', result.token);
+        localStorage.setItem('user', JSON.stringify(result.user));
+
+        // Редирект на главную
         navigate('/');
         
       } else if (mode === 'register') {
@@ -88,8 +115,8 @@ export default function AuthPage() {
           hcaptchaToken,
         });
 
-        alert(`${t('auth.success.registration')}\n\nВАЖНО: Сохраните ваш backup-код:\n\n${result.backupCode}\n\nОн понадобится для восстановления доступа!`);
-        setMode('login');
+        setGeneratedBackupCode(result.backupCode);
+        setShowBackupCode(true);
         setLoading(false);
         
       } else if (mode === 'recover') {
@@ -105,8 +132,8 @@ export default function AuthPage() {
           hcaptchaToken,
         });
 
-        alert(`${t('auth.success.passwordRecovered')}\n\nНовый backup-код:\n${result.backupCode}`);
-        setMode('login');
+        setGeneratedBackupCode(result.backupCode);
+        setShowBackupCode(true);
         setLoading(false);
       }
     } catch (err) {
@@ -119,6 +146,48 @@ export default function AuthPage() {
   
   if (loading) {
     return <Loader />;
+  }
+
+  if (showBackupCode) {
+    return (
+      <div className="auth-page">
+        <div className="auth-container backup-code-modal">
+          <div className="auth-header">
+            <h1 className="auth-title">🔑 {t('auth.backup_code.title')}</h1>
+            <p className="auth-subtitle backup-warning">
+              ⚠️ {t('auth.backup_code.warning')}
+            </p>
+          </div>
+
+          <div className="backup-code-display">
+            <code className="backup-code-text">{generatedBackupCode}</code>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={handleCopyBackupCode}
+              fullWidth
+            >
+              {copied ? '✓ ' + t('auth.backup_code.copied') : t('auth.backup_code.copy')}
+            </Button>
+          </div>
+
+          <div className="backup-code-instructions">
+            <p>📝 {t('auth.backup_code.instruction1')}</p>
+            <p>🔒 {t('auth.backup_code.instruction2')}</p>
+            <p>💾 {t('auth.backup_code.instruction3')}</p>
+          </div>
+
+          <Button
+            type="button"
+            variant="primary"
+            onClick={handleCloseBackupCode}
+            fullWidth
+          >
+            {t('auth.backup_code.understood')}
+          </Button>
+        </div>
+      </div>
+    );
   }
   
   const getTitle = () => {
