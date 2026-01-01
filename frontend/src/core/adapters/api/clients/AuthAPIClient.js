@@ -2,6 +2,8 @@ import { apiClient } from '../../config';
 import { AuthRepository } from '../../../repositories/AuthRepository';
 import { UserMapper } from '../mappers/UserMapper';
 
+const isDevelopment = () => process.env.NODE_ENV === 'development';
+
 export class AuthAPIClient extends AuthRepository {
 
   prepareCaptchaData(captchaToken) {
@@ -27,20 +29,28 @@ export class AuthAPIClient extends AuthRepository {
       ...captchaData,
     });
     
-    
-    if (response.token) {
+    // response уже является response.data из-за интерцептора
+    if (response.data && response.data.token) {
+      localStorage.setItem('auth_token', response.data.token);
+      localStorage.setItem('user_id', response.data.user.id);
+      return {
+        user: UserMapper.toDomain(response.data.user),
+        token: response.data.token
+      };
+    } else if (response.token) {
+      // Для обратной совместимости
       localStorage.setItem('auth_token', response.token);
       localStorage.setItem('user_id', response.user.id);
+      return {
+        user: UserMapper.toDomain(response.user),
+        token: response.token
+      };
     }
     
-    return {
-      user: UserMapper.toDomain(response.user),
-      token: response.token
-    };
+    throw new Error('Invalid response structure');
   }
 
   async register(userData) {
-
     const captchaData = this.prepareCaptchaData(userData.hcaptchaToken);
     
     const response = await apiClient.post('/auth/register', {
@@ -49,15 +59,23 @@ export class AuthAPIClient extends AuthRepository {
       ...captchaData,
     });
     
-    if (response.token) {
+    if (response.data && response.data.token) {
+      localStorage.setItem('auth_token', response.data.token);
+      localStorage.setItem('user_id', response.data.user.id);
+      return {
+        user: UserMapper.toDomain(response.data.user),
+        token: response.data.token
+      };
+    } else if (response.token) {
       localStorage.setItem('auth_token', response.token);
       localStorage.setItem('user_id', response.user.id);
+      return {
+        user: UserMapper.toDomain(response.user),
+        token: response.token
+      };
     }
     
-    return {
-      user: UserMapper.toDomain(response.user),
-      token: response.token
-    };
+    throw new Error('Invalid response structure');
   }
 
   async logout() {
@@ -68,12 +86,12 @@ export class AuthAPIClient extends AuthRepository {
 
   async getCurrentUser() {
     const response = await apiClient.get('/auth/me');
-    return UserMapper.toDomain(response);
+    return UserMapper.toDomain(response.data || response);
   }
 
   async updateProfile(userData) {
     const response = await apiClient.put('/auth/profile', userData);
-    return UserMapper.toDomain(response);
+    return UserMapper.toDomain(response.data || response);
   }
 
   async changePassword(passwordData) {
@@ -95,14 +113,14 @@ export class AuthAPIClient extends AuthRepository {
     await apiClient.post('/auth/verify-email', { token });
     return true;
   }
-    async checkPasswordStrength(password) {
+  
+  async checkPasswordStrength(password) {
     const response = await apiClient.post('/auth/check-password-strength', { password });
-    return response.data;
+    return response.data || response;
   }
 
   async generatePasswordRecommendation() {
     const response = await apiClient.get('/auth/generate-password');
-    return response.data.password;
+    return (response.data || response).password;
   }
-
 }
