@@ -7,6 +7,11 @@ export const requestLogger = (
   res: Response,
   next: NextFunction
 ): void => {
+  // Пропускаем логирование в тестах
+  if (process.env.NODE_ENV === 'test') {
+    return next();
+  }
+
   const start = Date.now();
 
   res.on('finish', () => {
@@ -18,7 +23,6 @@ export const requestLogger = (
       status: res.statusCode,
       duration: `${duration}ms`,
       userAgent: req.headers['user-agent'],
-      // НЕ логируем IP, user_id или другие идентифицирующие данные!
     });
   });
 

@@ -6,6 +6,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.requestLogger = void 0;
 const logger_1 = __importDefault(require("../utils/logger"));
 const requestLogger = (req, res, next) => {
+    // Пропускаем логирование в тестах
+    if (process.env.NODE_ENV === 'test') {
+        return next();
+    }
     const start = Date.now();
     res.on('finish', () => {
         const duration = Date.now() - start;
@@ -15,7 +19,6 @@ const requestLogger = (req, res, next) => {
             status: res.statusCode,
             duration: `${duration}ms`,
             userAgent: req.headers['user-agent'],
-            // НЕ логируем IP, user_id или другие идентифицирующие данные!
         });
     });
     next();

@@ -37,37 +37,37 @@ export class AnalyticsService {
     return result.rows;
   }
 
-  async getEmotionDistribution(userId: number, fromDate?: Date, toDate?: Date) {
-    let query = `
-      SELECT 
-        COALESCE(e.category, ee.emotion_category) as category,
-        COUNT(*) as count,
-        AVG(ee.intensity) as avg_intensity
-      FROM entry_emotions ee
-      JOIN entries ent ON ee.entry_id = ent.id
-      LEFT JOIN emotions e ON ee.emotion_id = e.id
-      WHERE ent.user_id = $1
-    `;
+async getEmotionDistribution(userId: number, fromDate?: Date, toDate?: Date) {
+  let query = `
+    SELECT 
+      e.category,
+      COUNT(*) as count,
+      AVG(ee.intensity) as avg_intensity
+    FROM entry_emotions ee
+    JOIN entries ent ON ee.entry_id = ent.id
+    JOIN emotions e ON ee.emotion_id = e.id
+    WHERE ent.user_id = $1
+  `;
 
-    const params: any[] = [userId];
-    let paramIndex = 2;
+  const params: any[] = [userId];
+  let paramIndex = 2;
 
-    if (fromDate) {
-      query += ` AND ent.created_at >= $${paramIndex}`;
-      params.push(fromDate);
-      paramIndex++;
-    }
-
-    if (toDate) {
-      query += ` AND ent.created_at <= $${paramIndex}`;
-      params.push(toDate);
-    }
-
-    query += ` GROUP BY category`;
-
-    const result = await this.pool.query(query, params);
-    return result.rows;
+  if (fromDate) {
+    query += ` AND ent.created_at >= $${paramIndex}`;
+    params.push(fromDate);
+    paramIndex++;
   }
+
+  if (toDate) {
+    query += ` AND ent.created_at <= $${paramIndex}`;
+    params.push(toDate);
+  }
+
+  query += ` GROUP BY e.category`;
+
+  const result = await this.pool.query(query, params);
+  return result.rows;
+}
 
   async getActivityHeatmap(userId: number, year: number) {
     const result = await this.pool.query(

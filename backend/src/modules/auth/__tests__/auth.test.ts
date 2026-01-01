@@ -3,11 +3,9 @@ import app from '../../../index';
 import { pool } from '../../../db/pool';
 
 describe('Auth Module - Complete Test Suite', () => {
-
   beforeEach(async () => {
     await pool.query("DELETE FROM users WHERE login LIKE 'test_%' OR login LIKE 'testuser%' OR login LIKE 'test-%'");
   });
-
 
   describe('POST /api/v1/auth/register - Success Cases', () => {
     it('should register a new user with strong password', async () => {

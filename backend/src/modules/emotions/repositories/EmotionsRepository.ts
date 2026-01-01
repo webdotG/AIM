@@ -1,17 +1,18 @@
+// src/modules/emotions/repositories/EmotionsRepository.ts
 import { Pool } from 'pg';
 import { BaseRepository } from '../../../shared/repositories/BaseRepository';
 
 interface EmotionAttachment {
   entry_id: string;
-  emotion_id?: number | null;
-  emotion_category?: string | null;
+  emotion_id: number; // Только emotion_id теперь обязателен
   intensity: number;
 }
 
 export class EmotionsRepository extends BaseRepository {
-constructor(pool: Pool) {
-  super(pool);
-}
+  constructor(pool: Pool) {
+    super(pool);
+  }
+
   // Получить все 27 эмоций из справочника
   async findAll() {
     const result = await this.pool.query(
@@ -44,13 +45,12 @@ constructor(pool: Pool) {
       `SELECT 
         ee.id,
         ee.emotion_id,
-        ee.emotion_category,
         ee.intensity,
         e.name_en,
         e.name_ru,
         e.category
       FROM entry_emotions ee
-      LEFT JOIN emotions e ON ee.emotion_id = e.id
+      JOIN emotions e ON ee.emotion_id = e.id
       WHERE ee.entry_id = $1
       ORDER BY ee.intensity DESC`,
       [entryId]
@@ -65,7 +65,7 @@ constructor(pool: Pool) {
     try {
       await client.query('BEGIN');
 
-      // Удаляем старые эмоции (если перезаписываем)
+      // Удаляем старые эмоции
       await client.query(
         `DELETE FROM entry_emotions WHERE entry_id = $1`,
         [entryId]
@@ -74,14 +74,9 @@ constructor(pool: Pool) {
       // Добавляем новые
       for (const emotion of emotions) {
         await client.query(
-          `INSERT INTO entry_emotions (entry_id, emotion_id, emotion_category, intensity)
-           VALUES ($1, $2, $3, $4)`,
-          [
-            entryId,
-            emotion.emotion_id || null,
-            emotion.emotion_category || null,
-            emotion.intensity
-          ]
+          `INSERT INTO entry_emotions (entry_id, emotion_id, intensity)
+           VALUES ($1, $2, $3)`,
+          [entryId, emotion.emotion_id, emotion.intensity]
         );
       }
 
@@ -117,7 +112,6 @@ constructor(pool: Pool) {
       JOIN entries ent ON ee.entry_id = ent.id
       JOIN emotions e ON ee.emotion_id = e.id
       WHERE ent.user_id = $1
-        AND ee.emotion_id IS NOT NULL
     `;
 
     const params: any[] = [userId];
@@ -153,7 +147,7 @@ constructor(pool: Pool) {
       FROM entry_emotions ee
       JOIN entries ent ON ee.entry_id = ent.id
       JOIN emotions e ON ee.emotion_id = e.id
-      WHERE ent.user_id = $1 AND ee.emotion_id IS NOT NULL
+      WHERE ent.user_id = $1
       GROUP BY e.id, e.name_en, e.name_ru, e.category
       ORDER BY count DESC
       LIMIT $2`,
@@ -162,16 +156,16 @@ constructor(pool: Pool) {
     return result.rows;
   }
 
-  // Распределение по категориям (positive/negative/neutral)
+  // Распределение по категориям
   async getCategoryDistribution(userId: number, fromDate?: Date, toDate?: Date) {
     let query = `
       SELECT 
-        COALESCE(e.category, ee.emotion_category) as category,
+        e.category,
         COUNT(*) as count,
         AVG(ee.intensity) as avg_intensity
       FROM entry_emotions ee
       JOIN entries ent ON ee.entry_id = ent.id
-      LEFT JOIN emotions e ON ee.emotion_id = e.id
+      JOIN emotions e ON ee.emotion_id = e.id
       WHERE ent.user_id = $1
     `;
 
@@ -190,13 +184,13 @@ constructor(pool: Pool) {
       paramIndex++;
     }
 
-    query += ` GROUP BY category ORDER BY count DESC`;
+    query += ` GROUP BY e.category ORDER BY count DESC`;
 
     const result = await this.pool.query(query, params);
     return result.rows;
   }
 
-  // Эмоции по времени (для графиков)
+  // Эмоции по времени
   async getEmotionTimeline(userId: number, fromDate: Date, toDate: Date, granularity: 'day' | 'week' | 'month' = 'day') {
     const dateFormat = {
       day: 'YYYY-MM-DD',
@@ -207,16 +201,16 @@ constructor(pool: Pool) {
     const result = await this.pool.query(
       `SELECT 
         TO_CHAR(ent.created_at, $4) as period,
-        COALESCE(e.category, ee.emotion_category) as category,
+        e.category,
         COUNT(*) as count,
         AVG(ee.intensity) as avg_intensity
       FROM entry_emotions ee
       JOIN entries ent ON ee.entry_id = ent.id
-      LEFT JOIN emotions e ON ee.emotion_id = e.id
+      JOIN emotions e ON ee.emotion_id = e.id
       WHERE ent.user_id = $1
         AND ent.created_at >= $2
         AND ent.created_at <= $3
-      GROUP BY period, category
+      GROUP BY period, e.category
       ORDER BY period ASC`,
       [userId, fromDate, toDate, dateFormat]
     );

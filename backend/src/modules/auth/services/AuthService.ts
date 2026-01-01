@@ -65,7 +65,7 @@ async register(input: RegisterInput): Promise<{
     login: user.login,
   });
 
-  console.log(`User registered: ${user.login} (ID: ${user.id})`);
+  // console.log(`User registered: ${user.login} (ID: ${user.id})`);
 
   return {
     user: {
@@ -101,7 +101,7 @@ async register(input: RegisterInput): Promise<{
         login: user.login,
       });
 
-      console.log(`User logged in: ${user.login} (ID: ${user.id})`);
+      // console.log(`User logged in: ${user.login} (ID: ${user.id})`);
 
       return {
         user: {
@@ -177,7 +177,7 @@ async register(input: RegisterInput): Promise<{
     login: foundUser.login,
   });
 
-  console.log(`Password updated for user: ${foundUser.login} (ID: ${foundUser.id})`);
+  // console.log(`Password updated for user: ${foundUser.login} (ID: ${foundUser.id})`);
 
   return {
     user: {

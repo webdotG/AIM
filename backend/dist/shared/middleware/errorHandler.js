@@ -7,13 +7,16 @@ exports.errorHandler = void 0;
 const logger_1 = __importDefault(require("../utils/logger"));
 const AppError_1 = require("../errors/AppError");
 const errorHandler = (error, req, res, next) => {
-    logger_1.default.error('Unhandled error:', {
-        error: error.message,
-        stack: error.stack,
-        path: req.path,
-        method: req.method,
-    });
-    // Обработка AppError (ДОБАВЬТЕ ЭТО!)
+    // Не логируем в тестовом окружении
+    if (process.env.NODE_ENV !== 'test') {
+        logger_1.default.error('Unhandled error:', {
+            error: error.message,
+            stack: error.stack,
+            path: req.path,
+            method: req.method,
+        });
+    }
+    // Обработка AppError
     if (error instanceof AppError_1.AppError) {
         res.status(error.statusCode).json({
             success: false,

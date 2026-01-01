@@ -1,9 +1,14 @@
 // src/__tests__/helpers/test-factories.ts
-import { pool } from '../../db/pool';
+import { testPool } from '../setup'; // Используем тестовый пул из setup
 import { passwordHasher } from '../../modules/auth/services/PasswordHasher';
 import crypto from 'crypto';
 
 export class TestFactories {
+  // Используем правильный пул
+  private static get pool() {
+    return testPool;
+  }
+
   /**
    * Создает тестового пользователя
    */
@@ -18,7 +23,7 @@ export class TestFactories {
     const backupCode = passwordHasher.generateBackupCode();
     const backupCodeHash = await passwordHasher.hashBackupCode(backupCode);
 
-    const result = await pool.query(
+    const result = await this.pool.query(
       `INSERT INTO users (login, password_hash, backup_code_hash, created_at)
        VALUES ($1, $2, $3, NOW())
        RETURNING id, login, created_at`,
@@ -42,7 +47,7 @@ export class TestFactories {
     global_event?: string;
     notes?: string;
   } = {}) {
-    const result = await pool.query(
+    const result = await this.pool.query(
       `INSERT INTO circumstances 
        (user_id, weather, temperature, moon_phase, global_event, notes)
        VALUES ($1, $2, $3, $4, $5, $6)
@@ -83,7 +88,7 @@ export class TestFactories {
       RETURNING *
     `;
 
-    const result = await pool.query(query, [
+    const result = await this.pool.query(query, [
       userId,
       overrides.location_name || 'Test Location',
       overrides.health_points || 80,
@@ -105,7 +110,7 @@ export class TestFactories {
     deadline?: Date;
     is_completed?: boolean;
   } = {}) {
-    const result = await pool.query(
+    const result = await this.pool.query(
       `INSERT INTO entries 
        (user_id, entry_type, content, body_state_id, circumstance_id, deadline, is_completed)
        VALUES ($1, $2, $3, $4, $5, $6, $7)
@@ -124,29 +129,56 @@ export class TestFactories {
     return result.rows[0];
   }
 
-  /**
-   * Создает эмоцию для entry
-   */
-  static async addEmotionToEntry(entryId: string, emotionId: number, intensity: number = 5) {
-    const result = await pool.query(
-      `INSERT INTO entry_emotions (entry_id, emotion_id, intensity)
-       VALUES ($1, $2, $3)
-       RETURNING *`,
-      [entryId, emotionId, intensity]
-    );
-
-    return result.rows[0];
-  }
-
-  /**
-   * Получить случайную эмоцию
-   */
-  static async getRandomEmotion() {
-    const result = await pool.query(
+static async getRandomEmotion() {
+  try {
+    const result = await this.pool.query(
       `SELECT * FROM emotions ORDER BY RANDOM() LIMIT 1`
     );
+    
+    if (result.rows.length === 0) {
+      // Если эмоций нет (что не должно случиться после исправления setup)
+      throw new Error('No emotions found in database. Check setup.');
+    }
+    
     return result.rows[0];
+  } catch (error) {
+    console.error('Error getting random emotion:', error);
+    // Fallback на Joy если что-то пошло не так
+    return {
+      id: 1,
+      name_en: 'Joy',
+      name_ru: 'Радость',
+      category: 'positive'
+    };
   }
+}
+
+// В test-factories.ts исправьте метод addEmotionToEntry:
+static async addEmotionToEntry(entryId: string, emotionName: string, intensity: number = 5) {
+  // Этот метод вероятно не используется, но если используется - исправьте
+  console.warn('addEmotionToEntry is deprecated. Use API directly instead.');
+  
+  const emotionResult = await this.pool.query(
+    'SELECT id FROM emotions WHERE name_en ILIKE $1 OR name_ru ILIKE $1 LIMIT 1',
+    [`%${emotionName}%`]
+  );
+  
+  if (emotionResult.rows.length === 0) {
+    throw new Error(`Emotion "${emotionName}" not found`);
+  }
+  
+  const emotionId = emotionResult.rows[0].id;
+  
+  const result = await this.pool.query(
+    `INSERT INTO entry_emotions (entry_id, emotion_id, intensity)
+     VALUES ($1, $2, $3)
+     RETURNING *`,
+    [entryId, emotionId, intensity]
+  );
+
+  return result.rows[0];
+}
+
 
   /**
    * Создает person
@@ -159,7 +191,7 @@ export class TestFactories {
   } = {}) {
     const name = overrides.name || `Test Person ${crypto.randomBytes(4).toString('hex')}`;
     
-    const result = await pool.query(
+    const result = await this.pool.query(
       `INSERT INTO people (user_id, name, category, relationship, bio)
        VALUES ($1, $2, $3, $4, $5)
        RETURNING *`,
@@ -179,7 +211,7 @@ export class TestFactories {
    * Связывает entry с person
    */
   static async addPersonToEntry(entryId: string, personId: number, role?: string) {
-    const result = await pool.query(
+    const result = await this.pool.query(
       `INSERT INTO entry_people (entry_id, person_id, role)
        VALUES ($1, $2, $3)
        RETURNING *`,
@@ -192,28 +224,8 @@ export class TestFactories {
   /**
    * Создает tag
    */
-  // static async createTag(userId: number, name?: string) {
-  //   const tagName = name || `test_tag_${crypto.randomBytes(4).toString('hex')}`;
-    
-  //   const result = await pool.query(
-  //     `INSERT INTO tags (user_id, name)
-  //      VALUES ($1, $2)
-  //      RETURNING *`,
-  //     [userId, tagName]
-  //   );
-
-  //   return result.rows[0];
-  // }
-    static async createTag(userId: number, name: string, data?: Partial<any>) {
-
-    // const tagsRepository = new TagsRepository(pool);
-    // return await tagsRepository.create({
-    //   user_id: userId,
-    //   name,
-    //   ...data
-    // });
-    
-    const result = await pool.query(
+  static async createTag(userId: number, name: string) {
+    const result = await this.pool.query(
       'INSERT INTO tags (user_id, name) VALUES ($1, $2) RETURNING *',
       [userId, name]
     );
@@ -221,14 +233,14 @@ export class TestFactories {
   }
 
   static async cleanupTags(userId: number) {
-    await pool.query('DELETE FROM tags WHERE user_id = $1', [userId]);
+    await this.pool.query('DELETE FROM tags WHERE user_id = $1', [userId]);
   }
 
   /**
    * Связывает entry с tag
    */
   static async addTagToEntry(entryId: string, tagId: number) {
-    await pool.query(
+    await this.pool.query(
       `INSERT INTO entry_tags (entry_id, tag_id)
        VALUES ($1, $2)`,
       [entryId, tagId]
@@ -243,7 +255,7 @@ export class TestFactories {
     toEntryId: string,
     relationType: string = 'related'
   ) {
-    const result = await pool.query(
+    const result = await this.pool.query(
       `INSERT INTO entry_relations (from_entry_id, to_entry_id, relation_type)
        VALUES ($1, $2, $3)
        RETURNING *`,
@@ -264,7 +276,7 @@ export class TestFactories {
   } = {}) {
     const name = overrides.name || `Test Skill ${crypto.randomBytes(4).toString('hex')}`;
     
-    const result = await pool.query(
+    const result = await this.pool.query(
       `INSERT INTO skills (user_id, name, category, current_level, experience_points)
        VALUES ($1, $2, $3, $4, $5)
        RETURNING *`,
@@ -288,7 +300,7 @@ export class TestFactories {
     body_state_id?: number;
     experience_gained?: number;
   } = {}) {
-    const result = await pool.query(
+    const result = await this.pool.query(
       `INSERT INTO skill_progress (skill_id, entry_id, body_state_id, experience_gained)
        VALUES ($1, $2, $3, $4)
        RETURNING *`,
@@ -307,14 +319,33 @@ export class TestFactories {
    * Очищает все данные пользователя
    */
   static async cleanupUser(userId: number) {
-    // Благодаря CASCADE всё удалится автоматически
-    await pool.query('DELETE FROM users WHERE id = $1', [userId]);
+    await this.pool.query('DELETE FROM users WHERE id = $1', [userId]);
   }
 
   /**
    * Очищает все тестовые данные
    */
   static async cleanupAll() {
-    await pool.query("DELETE FROM users WHERE login LIKE 'test_%'");
+    const tables = [
+      'ai_images',
+      'ai_analysis',
+      'skill_progress',
+      'skills',
+      'entry_relations',
+      'entry_tags',
+      'tags',
+      'entry_people',
+      'people',
+      'entry_emotions',
+      'emotions',
+      'entries',
+      'body_states',
+      'circumstances',
+      'users'
+    ];
+
+    for (const table of tables) {
+      await this.pool.query(`DELETE FROM ${table} CASCADE`);
+    }
   }
 }

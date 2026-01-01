@@ -9,14 +9,17 @@ export const errorHandler = (
   res: Response,
   next: NextFunction
 ): void => {
-  logger.error('Unhandled error:', {
-    error: error.message,
-    stack: error.stack,
-    path: req.path,
-    method: req.method,
-  });
+  // Не логируем в тестовом окружении
+  if (process.env.NODE_ENV !== 'test') {
+    logger.error('Unhandled error:', {
+      error: error.message,
+      stack: error.stack,
+      path: req.path,
+      method: req.method,
+    });
+  }
 
-  // Обработка AppError (ДОБАВЬТЕ ЭТО!)
+  // Обработка AppError
   if (error instanceof AppError) {
     res.status(error.statusCode).json({
       success: false,

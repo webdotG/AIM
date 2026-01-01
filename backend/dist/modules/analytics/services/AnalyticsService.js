@@ -31,15 +31,15 @@ class AnalyticsService {
     }
     async getEmotionDistribution(userId, fromDate, toDate) {
         let query = `
-      SELECT 
-        COALESCE(e.category, ee.emotion_category) as category,
-        COUNT(*) as count,
-        AVG(ee.intensity) as avg_intensity
-      FROM entry_emotions ee
-      JOIN entries ent ON ee.entry_id = ent.id
-      LEFT JOIN emotions e ON ee.emotion_id = e.id
-      WHERE ent.user_id = $1
-    `;
+    SELECT 
+      e.category,
+      COUNT(*) as count,
+      AVG(ee.intensity) as avg_intensity
+    FROM entry_emotions ee
+    JOIN entries ent ON ee.entry_id = ent.id
+    JOIN emotions e ON ee.emotion_id = e.id
+    WHERE ent.user_id = $1
+  `;
         const params = [userId];
         let paramIndex = 2;
         if (fromDate) {
@@ -51,7 +51,7 @@ class AnalyticsService {
             query += ` AND ent.created_at <= $${paramIndex}`;
             params.push(toDate);
         }
-        query += ` GROUP BY category`;
+        query += ` GROUP BY e.category`;
         const result = await this.pool.query(query, params);
         return result.rows;
     }

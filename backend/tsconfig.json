@@ -24,6 +24,8 @@
     },
     "types": ["node", "jest"]
   },
-  "include": ["src/**/*", "test-connection.js", "test-auth.js"],
-  "exclude": ["node_modules", "dist", "**/__tests__/**"]
+  // "include": ["src/**/*", "test-connection.js", "test-auth.js"],
+  // "exclude": ["node_modules", "dist", "**/__tests__/**"]
+   "include": ["src/**/*", "test-connection.js", "test-auth.js"],
+  "exclude": ["node_modules", "dist"] // УБЕРИ "**/__tests__/**"
 }

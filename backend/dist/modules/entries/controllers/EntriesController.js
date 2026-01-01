@@ -52,11 +52,11 @@ class EntriesController {
                 const userId = req.userId;
                 const entryData = req.body;
                 const entry = await this.entryService.createEntry(entryData, userId);
-                console.log('=== IN CREATE CONTROLLER ===');
-                console.log('Controller req.userId:', req.userId);
-                console.log('Controller headers:', req.headers);
-                console.log('Extracted userId:', userId, 'type:', typeof userId);
-                console.log('Entry data:', entryData);
+                // console.log('=== IN CREATE CONTROLLER ===');
+                // console.log('Controller req.userId:', req.userId);
+                // console.log('Controller headers:', req.headers);
+                // console.log('Extracted userId:', userId, 'type:', typeof userId);
+                // console.log('Entry data:', entryData);
                 res.status(201).json({
                     success: true,
                     data: entry

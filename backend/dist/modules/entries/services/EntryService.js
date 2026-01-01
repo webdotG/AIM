@@ -28,19 +28,19 @@ class EntryService {
         };
     }
     async getEntryById(id, userId) {
-        console.log('=== GET ENTRY BY ID ===');
-        console.log('Entry ID:', id);
-        console.log('User ID:', userId);
+        // console.log('=== GET ENTRY BY ID ===');
+        // console.log('Entry ID:', id);
+        // console.log('User ID:', userId);
         // Сначала ищем запись без проверки пользователя
         const entry = await this.entriesRepository.findById(id);
-        console.log('Found entry:', entry);
+        // console.log('Found entry:', entry);
         if (!entry) {
-            console.log('Entry not found, throwing 404');
+            // console.log('Entry not found, throwing 404');
             throw new AppError_1.AppError('Entry not found', 404);
         }
         // Проверяем права доступа
         if (entry.user_id !== userId) {
-            console.log('Access denied for user', userId, 'to entry of user', entry.user_id);
+            // console.log('Access denied for user', userId, 'to entry of user', entry.user_id);
             throw new AppError_1.AppError('Access denied', 403);
         }
         return entry;

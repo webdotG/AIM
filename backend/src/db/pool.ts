@@ -12,15 +12,15 @@ const getEnvFile = () => {
 };
 
 const envFile = getEnvFile();
-console.log(`Loading env file: ${envFile} (NODE_ENV: ${process.env.NODE_ENV})`);
+// console.log(`Loading env file: ${envFile} (NODE_ENV: ${process.env.NODE_ENV})`);
 
 // Загружаем правильный .env файл
 dotenv.config({ path: path.resolve(process.cwd(), envFile) });
 
 // Определяем имя базы данных в зависимости от окружения
 const getDatabaseName = () => {
-  console.log(`getDatabaseName - NODE_ENV: ${process.env.NODE_ENV}`);
-  console.log(`DB_NAME: ${process.env.DB_NAME}, DB_NAME_TEST: ${process.env.DB_NAME_TEST}`);
+  // console.log(`getDatabaseName - NODE_ENV: ${process.env.NODE_ENV}`);
+  // console.log(`DB_NAME: ${process.env.DB_NAME}, DB_NAME_TEST: ${process.env.DB_NAME_TEST}`);
   
   if (process.env.NODE_ENV === 'test') {
     // В тестах используем DB_NAME_TEST или DB_NAME
@@ -44,11 +44,11 @@ if (missingVars.length > 0) {
 
 const databaseName = getDatabaseName();
 
-console.log('Конфигурация базы данных:');
-console.log(`   База данных: ${databaseName}`);
-console.log(`   Пользователь: ${process.env.DB_USER}`);
-console.log(`   Хост: ${process.env.DB_HOST || 'localhost'}:${process.env.DB_PORT || '5432'}`);
-console.log(`   Окружение: ${process.env.NODE_ENV || 'development'}`);
+// console.log('Конфигурация базы данных:');
+// console.log(`   База данных: ${databaseName}`);
+// console.log(`   Пользователь: ${process.env.DB_USER}`);
+// console.log(`   Хост: ${process.env.DB_HOST || 'localhost'}:${process.env.DB_PORT || '5432'}`);
+// console.log(`   Окружение: ${process.env.NODE_ENV || 'development'}`);
 
 export const pool = new Pool({
   host: process.env.DB_HOST || 'localhost',
@@ -70,7 +70,7 @@ export const pool = new Pool({
 
 // Мониторинг событий пула
 pool.on('connect', () => {
-  console.log(`Установлено новое соединение с базой данных: ${databaseName}`);
+  // console.log(`Установлено новое соединение с базой данных: ${databaseName}`);
 });
 
 pool.on('error', (err) => {
@@ -82,16 +82,16 @@ pool.on('error', (err) => {
 
 // Функция для тестирования подключения при старте
 export const initializeDatabase = async (): Promise<boolean> => {
-  console.log('\nИнициализация подключения к базе данных...');
+  // console.log('\nИнициализация подключения к базе данных...');
   
   let client;
   try {
     client = await pool.connect();
     const result = await client.query('SELECT NOW() as time, current_database() as db');
     
-    console.log('База данных подключена успешно');
-    console.log(`   База данных: ${result.rows[0].db}`);
-    console.log(`   Время сервера: ${result.rows[0].time}`);
+    // console.log('База данных подключена успешно');
+    // console.log(`   База данных: ${result.rows[0].db}`);
+    // console.log(`   Время сервера: ${result.rows[0].time}`);
     
     return true;
   } catch (error: any) {

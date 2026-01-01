@@ -2,8 +2,7 @@ import { Pool } from 'pg';
 import { BaseRepository } from '../../../shared/repositories/BaseRepository';
 interface EmotionAttachment {
     entry_id: string;
-    emotion_id?: number | null;
-    emotion_category?: string | null;
+    emotion_id: number;
     intensity: number;
 }
 export declare class EmotionsRepository extends BaseRepository {

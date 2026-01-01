@@ -1,4 +1,4 @@
-# ⚡ команды  тестирования
+# ⚡ Команды тестирования
 
 ## Основные команды
 
@@ -16,7 +16,11 @@ npm test
 npm run test:auth        # Auth тесты
 npm run test:entries     # Entries тесты
 npm run test:emotions    # Emotions тесты
-# и т.д.
+npm run test:tags        # Tags тесты  
+npm run test:people      # People тесты
+npm run test:skills      # Skills тесты
+npm run test:analytics   # Analytics тесты
+npm run test:relations   # Relations тесты
 
 # Запустить все модули последовательно
 npm run test:all
@@ -29,6 +33,9 @@ npm run test:coverage
 
 # С подробным выводом
 npm run test:verbose
+
+# Debug режим (в браузере)
+npm run test:debug
 ```
 
 ---
@@ -60,7 +67,7 @@ psql -U postgres -d dream_journal_test -c "SELECT COUNT(*) FROM users;"
 
 ---
 
-## 🔍 Отладка тестов
+## Отладка тестов
 
 ```bash
 # Запустить конкретный тест по названию

@@ -26,13 +26,12 @@ class EmotionsRepository extends BaseRepository_1.BaseRepository {
         const result = await this.pool.query(`SELECT 
         ee.id,
         ee.emotion_id,
-        ee.emotion_category,
         ee.intensity,
         e.name_en,
         e.name_ru,
         e.category
       FROM entry_emotions ee
-      LEFT JOIN emotions e ON ee.emotion_id = e.id
+      JOIN emotions e ON ee.emotion_id = e.id
       WHERE ee.entry_id = $1
       ORDER BY ee.intensity DESC`, [entryId]);
         return result.rows;
@@ -42,17 +41,12 @@ class EmotionsRepository extends BaseRepository_1.BaseRepository {
         const client = await this.pool.connect();
         try {
             await client.query('BEGIN');
-            // Удаляем старые эмоции (если перезаписываем)
+            // Удаляем старые эмоции
             await client.query(`DELETE FROM entry_emotions WHERE entry_id = $1`, [entryId]);
             // Добавляем новые
             for (const emotion of emotions) {
-                await client.query(`INSERT INTO entry_emotions (entry_id, emotion_id, emotion_category, intensity)
-           VALUES ($1, $2, $3, $4)`, [
-                    entryId,
-                    emotion.emotion_id || null,
-                    emotion.emotion_category || null,
-                    emotion.intensity
-                ]);
+                await client.query(`INSERT INTO entry_emotions (entry_id, emotion_id, intensity)
+           VALUES ($1, $2, $3)`, [entryId, emotion.emotion_id, emotion.intensity]);
             }
             await client.query('COMMIT');
         }
@@ -83,7 +77,6 @@ class EmotionsRepository extends BaseRepository_1.BaseRepository {
       JOIN entries ent ON ee.entry_id = ent.id
       JOIN emotions e ON ee.emotion_id = e.id
       WHERE ent.user_id = $1
-        AND ee.emotion_id IS NOT NULL
     `;
         const params = [userId];
         let paramIndex = 2;
@@ -112,22 +105,22 @@ class EmotionsRepository extends BaseRepository_1.BaseRepository {
       FROM entry_emotions ee
       JOIN entries ent ON ee.entry_id = ent.id
       JOIN emotions e ON ee.emotion_id = e.id
-      WHERE ent.user_id = $1 AND ee.emotion_id IS NOT NULL
+      WHERE ent.user_id = $1
       GROUP BY e.id, e.name_en, e.name_ru, e.category
       ORDER BY count DESC
       LIMIT $2`, [userId, limit]);
         return result.rows;
     }
-    // Распределение по категориям (positive/negative/neutral)
+    // Распределение по категориям
     async getCategoryDistribution(userId, fromDate, toDate) {
         let query = `
       SELECT 
-        COALESCE(e.category, ee.emotion_category) as category,
+        e.category,
         COUNT(*) as count,
         AVG(ee.intensity) as avg_intensity
       FROM entry_emotions ee
       JOIN entries ent ON ee.entry_id = ent.id
-      LEFT JOIN emotions e ON ee.emotion_id = e.id
+      JOIN emotions e ON ee.emotion_id = e.id
       WHERE ent.user_id = $1
     `;
         const params = [userId];
@@ -142,11 +135,11 @@ class EmotionsRepository extends BaseRepository_1.BaseRepository {
             params.push(toDate);
             paramIndex++;
         }
-        query += ` GROUP BY category ORDER BY count DESC`;
+        query += ` GROUP BY e.category ORDER BY count DESC`;
         const result = await this.pool.query(query, params);
         return result.rows;
     }
-    // Эмоции по времени (для графиков)
+    // Эмоции по времени
     async getEmotionTimeline(userId, fromDate, toDate, granularity = 'day') {
         const dateFormat = {
             day: 'YYYY-MM-DD',
@@ -155,16 +148,16 @@ class EmotionsRepository extends BaseRepository_1.BaseRepository {
         }[granularity];
         const result = await this.pool.query(`SELECT 
         TO_CHAR(ent.created_at, $4) as period,
-        COALESCE(e.category, ee.emotion_category) as category,
+        e.category,
         COUNT(*) as count,
         AVG(ee.intensity) as avg_intensity
       FROM entry_emotions ee
       JOIN entries ent ON ee.entry_id = ent.id
-      LEFT JOIN emotions e ON ee.emotion_id = e.id
+      JOIN emotions e ON ee.emotion_id = e.id
       WHERE ent.user_id = $1
         AND ent.created_at >= $2
         AND ent.created_at <= $3
-      GROUP BY period, category
+      GROUP BY period, e.category
       ORDER BY period ASC`, [userId, fromDate, toDate, dateFormat]);
         return result.rows;
     }
