@@ -1,37 +1,35 @@
-// src/ui/components/layout/UserProfile/UserProfile.jsx
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/layers/language';
+import { useAuthStore } from '@/store';
 import Button from '@/ui/components/common/Button/Button';
 import './UserProfile.css';
 
 const UserProfile = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
+  const authStore = useAuthStore();
   
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
-  const isAuthenticated = !!localStorage.getItem('token');
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+  const handleLogout = async () => {
+    await authStore.logout();
     navigate('/login');
   };
 
-  if (!isAuthenticated) {
+  if (!authStore.isAuthenticated) {
     return null;
   }
 
   return (
     <div className="user-profile">
-      <span className="user-profile-login">{user.login}</span>
+      <span className="user-profile-login">{authStore.user?.login || 'User'}</span>
       <Button
         variant="secondary"
         size="small"
         onClick={handleLogout}
         className="user-profile-logout"
+        disabled={authStore.isLoading}
       >
-        {t('auth.logout')}
+        {authStore.isLoading ? t('common.loading') : t('auth.logout')}
       </Button>
     </div>
   );

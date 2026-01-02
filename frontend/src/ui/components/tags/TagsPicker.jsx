@@ -13,13 +13,12 @@ const TagsPicker = ({
   const [inputValue, setInputValue] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const inputRef = useRef(null);
 
-  // Основные теги (предложения)
+  // Основные теги (предложения) - без ! в конце
   const commonTags = [
-    'важно!', 'работа!', 'личное!', 'здоровье!', 'учёба!',
-    'путешествие!', 'семья!', 'друзья!', 'творчество!', 'финансы!',
-    'спорт!', 'еда!', 'книги!', 'фильмы!', 'музыка!',
-    'программирование!', 'дизайн!', 'бизнес!', 'медитация!', 'сон!'
+    'работа', 'здоровье', 'личное', 'проект', 'важное',
+    'идея', 'задача', 'встреча', 'обучение', 'отдых'
   ];
 
   // Ref для очистки URL
@@ -72,16 +71,11 @@ const TagsPicker = ({
     const value = e.target.value;
     setInputValue(value);
     
-    // Если ввели восклицательный знак в конце
-    if (value.endsWith('!')) {
-      addTag(value.slice(0, -1)); // Убираем !
-      return;
-    }
-    
     // Показываем предложения
     if (value.trim()) {
       const filtered = commonTags.filter(tag => 
-        tag.toLowerCase().includes(value.toLowerCase())
+        tag.toLowerCase().includes(value.toLowerCase()) &&
+        !selectedTags.includes(tag) // Не показывать уже выбранные
       );
       setSuggestions(filtered);
       setShowSuggestions(true);
@@ -92,12 +86,12 @@ const TagsPicker = ({
 
   // Добавление тега
   const addTag = (tagText) => {
-    const tag = tagText.trim();
+    const tag = tagText.trim().toLowerCase();
     
     if (!tag) return;
     
     if (selectedTags.length >= maxTags) {
-      alert(`Максимум ${maxTags} тегов`);
+      alert(t('tags.max_reached', { max: maxTags }));
       return;
     }
     
@@ -112,6 +106,7 @@ const TagsPicker = ({
     
     setInputValue('');
     setShowSuggestions(false);
+    inputRef.current?.focus();
   };
 
   // Удаление тега
@@ -128,18 +123,35 @@ const TagsPicker = ({
 
   // Выбор тега из предложений
   const handleSuggestionClick = (suggestion) => {
-    addTag(suggestion.slice(0, -1)); // Убираем ! из предложения
+    addTag(suggestion);
   };
 
   // Обработка клавиш
   const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && inputValue.trim() && !inputValue.endsWith('!')) {
+    if (e.key === 'Enter' && inputValue.trim()) {
       e.preventDefault();
       addTag(inputValue);
     } else if (e.key === 'Escape') {
       setShowSuggestions(false);
+    } else if (e.key === 'Backspace' && !inputValue && selectedTags.length > 0) {
+      // Удалить последний тег при пустом инпуте и нажатии Backspace
+      const newTags = [...selectedTags];
+      newTags.pop();
+      onChange(newTags);
     }
   };
+
+  // Клик вне предложений
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (showSuggestions && !e.target.closest('.tags-picker')) {
+        setShowSuggestions(false);
+      }
+    };
+    
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [showSuggestions]);
 
   return (
     <div className="tags-picker">
@@ -148,10 +160,14 @@ const TagsPicker = ({
         <div className="selected-tags-section">
           <div className="selected-header">
             <span className="selected-count">
-              Выбрано: {selectedTags.length} / {maxTags}
+              {t('tags.selected')}: {selectedTags.length} / {maxTags}
             </span>
-            <button className="clear-all-button" onClick={clearAllTags}>
-              Очистить все
+            <button 
+              className="clear-all-button btn-secondary" 
+              onClick={clearAllTags}
+              disabled={selectedTags.length === 0}
+            >
+              {t('common.clear_all')}
             </button>
           </div>
           
@@ -162,7 +178,8 @@ const TagsPicker = ({
                 <button
                   className="remove-tag-button"
                   onClick={() => removeTag(index)}
-                  title="Удалить тег"
+                  title={t('tags.remove')}
+                  aria-label={t('tags.remove')}
                 >
                   ×
                 </button>
@@ -176,36 +193,38 @@ const TagsPicker = ({
       <div className="tag-input-section">
         <div className="input-wrapper">
           <input
+            ref={inputRef}
             type="text"
             className="tag-input"
-            placeholder="Введите тег и поставьте ! в конце (например: работа!)"
+            placeholder={t('tags.input_placeholder')}
             value={inputValue}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
             autoFocus
+            aria-label={t('tags.input_label')}
           />
-          {inputValue && !inputValue.endsWith('!') && (
+          {inputValue.trim() && (
             <div className="input-hint">
-              Поставьте <span className="hint-example">!</span> в конце для добавления
+              {t('tags.press_enter')}
             </div>
           )}
         </div>
         
         {/* Быстрые теги */}
         <div className="quick-tags-section">
-          <h4 className="quick-tags-title">Популярные теги:</h4>
+          <h4 className="quick-tags-title">{t('tags.popular')}:</h4>
           <div className="quick-tags-grid">
-            {commonTags.map((tag, index) => (
+            {commonTags
+              .filter(tag => !selectedTags.includes(tag)) // Не показывать выбранные
+              .map((tag, index) => (
               <button
                 key={index}
-                className={`quick-tag ${selectedTags.includes(tag.slice(0, -1)) ? 'selected' : ''}`}
-                onClick={() => handleSuggestionClick(tag)}
-                disabled={selectedTags.includes(tag.slice(0, -1))}
+                className="quick-tag"
+                onClick={() => addTag(tag)}
+                disabled={selectedTags.includes(tag)}
+                title={t('tags.add_tag', { tag })}
               >
-                #{tag.slice(0, -1)}
-                {selectedTags.includes(tag.slice(0, -1)) && (
-                  <span className="quick-tag-check"></span>
-                )}
+                #{tag}
               </button>
             ))}
           </div>
@@ -214,15 +233,19 @@ const TagsPicker = ({
         {/* Предложения при вводе */}
         {showSuggestions && suggestions.length > 0 && (
           <div className="suggestions-dropdown">
+            <div className="suggestions-header">
+              {t('tags.suggestions')}
+            </div>
             {suggestions.map((suggestion, index) => (
-              <div
+              <button
                 key={index}
                 className="suggestion-item"
                 onClick={() => handleSuggestionClick(suggestion)}
+                type="button"
               >
-                <span className="suggestion-text">#{suggestion.slice(0, -1)}</span>
-                <span className="suggestion-hint">Нажмите или введите !</span>
-              </div>
+                <span className="suggestion-text">#{suggestion}</span>
+                <span className="suggestion-hint">{t('tags.click_to_add')}</span>
+              </button>
             ))}
           </div>
         )}
@@ -230,13 +253,13 @@ const TagsPicker = ({
         {/* Инструкция */}
         <div className="instructions">
           <p className="instruction-item">
-            • Введите тег и поставьте <strong>!</strong> в конце для добавления
+            • {t('tags.instruction_enter')}
           </p>
           <p className="instruction-item">
-            • Или нажмите на тег из списка популярных
+            • {t('tags.instruction_backspace')}
           </p>
           <p className="instruction-item">
-            • Максимум тегов: <strong>{maxTags}</strong>
+            • {t('tags.instruction_max', { max: maxTags })}
           </p>
         </div>
       </div>

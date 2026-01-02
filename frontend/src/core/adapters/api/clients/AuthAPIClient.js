@@ -21,7 +21,7 @@ export class AuthAPIClient extends AuthRepository {
     return { hcaptchaToken: captchaToken };
   }
 
-  async login(credentials) {
+   async login(credentials) {
     const captchaData = this.prepareCaptchaData(credentials.hcaptchaToken);
     const response = await apiClient.post('/auth/login', {
       login: credentials.login,
@@ -32,15 +32,14 @@ export class AuthAPIClient extends AuthRepository {
     // response уже является response.data из-за интерцептора
     if (response.data && response.data.token) {
       localStorage.setItem('auth_token', response.data.token);
-      localStorage.setItem('user_id', response.data.user.id);
+      localStorage.setItem('user', JSON.stringify(response.data.user)); 
       return {
         user: UserMapper.toDomain(response.data.user),
         token: response.data.token
       };
     } else if (response.token) {
-      // Для обратной совместимости
       localStorage.setItem('auth_token', response.token);
-      localStorage.setItem('user_id', response.user.id);
+      localStorage.setItem('user', JSON.stringify(response.user));
       return {
         user: UserMapper.toDomain(response.user),
         token: response.token
@@ -48,6 +47,40 @@ export class AuthAPIClient extends AuthRepository {
     }
     
     throw new Error('Invalid response structure');
+  }
+
+  async register(userData) {
+    const captchaData = this.prepareCaptchaData(userData.hcaptchaToken);
+    
+    const response = await apiClient.post('/auth/register', {
+      login: userData.login,
+      password: userData.password,
+      ...captchaData,
+    });
+    
+    if (response.data && response.data.token) {
+      localStorage.setItem('auth_token', response.data.token);
+      localStorage.setItem('user', JSON.stringify(response.data.user));
+      return {
+        user: UserMapper.toDomain(response.data.user),
+        token: response.data.token
+      };
+    } else if (response.token) {
+      localStorage.setItem('auth_token', response.token);
+      localStorage.setItem('user', JSON.stringify(response.user));
+      return {
+        user: UserMapper.toDomain(response.user),
+        token: response.token
+      };
+    }
+    
+    throw new Error('Invalid response structure');
+  }
+
+  async logout() {
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('user'); 
+    await apiClient.post('/auth/logout');
   }
 
   async register(userData) {

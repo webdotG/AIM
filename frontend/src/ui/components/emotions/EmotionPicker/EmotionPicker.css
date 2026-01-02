@@ -5,27 +5,14 @@
   gap: var(--spacing-lg);
   padding: var(--spacing-lg);
   background-color: var(--color-background);
-  border: 3px solid var(--color-border);
+
   position: relative;
   font-family: var(--font-serif);
 }
 
-.emotion-picker::before {
-  content: '';
-  position: absolute;
-  top: 4px;
-  left: 4px;
-  right: 4px;
-  bottom: 4px;
-  border: 1px solid var(--color-border);
-  pointer-events: none;
-}
-
-/* Tabs - Газетный стиль */
 .emotion-tabs {
   display: flex;
   gap: 0;
-  border-bottom: 3px double var(--color-border);
   position: relative;
 }
 
@@ -75,23 +62,10 @@
 .emotion-content {
   padding: var(--spacing-xl);
   background: var(--color-background);
-  border: 3px solid var(--color-border);
   min-height: 400px;
   position: relative;
 }
 
-.emotion-content::before {
-  content: '';
-  position: absolute;
-  top: 4px;
-  left: 4px;
-  right: 4px;
-  bottom: 4px;
-  border: 1px solid var(--color-border);
-  pointer-events: none;
-}
-
-/* Categories Grid */
 .categories-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));

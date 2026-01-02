@@ -309,7 +309,7 @@ const BodyStatePicker = ({
     return (
       <div className="body-summary">
         <div className="summary-header">
-          <span className="summary-title">Текущее состояние</span>
+          <span className="summary-title">Выбрано</span>
           <button 
             className="clear-all-summary-button"
             onClick={handleClearAll}

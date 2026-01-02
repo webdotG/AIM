@@ -1,0 +1,674 @@
+/* SkillProgressPicker.css - Газетный стиль */
+
+.skill-progress-picker {
+  font-family: var(--font-serif);
+}
+
+/* Выбранный прогресс */
+.selected-progress-section {
+  background: var(--color-background);
+  border: 3px solid var(--color-border);
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
+  position: relative;
+}
+
+.selected-progress-section::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  right: 4px;
+  bottom: 4px;
+  border: 1px solid var(--color-border);
+  pointer-events: none;
+}
+
+.selected-progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+  padding-bottom: var(--spacing-sm);
+  border-bottom: 2px solid var(--color-border);
+}
+
+.progress-stats {
+  display: flex;
+  gap: var(--spacing-md);
+}
+
+.stats-item {
+  font-size: var(--font-size-xs);
+  color: var(--color-text);
+  font-weight: var(--font-weight-bold);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.progress-actions-header {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.selected-progress-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.progress-item {
+  border: 2px solid var(--color-border);
+  padding: var(--spacing-md);
+  background: var(--color-background);
+  position: relative;
+}
+
+.progress-item::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  right: 4px;
+  bottom: 4px;
+  border: 1px solid var(--color-border);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--transition-fast) var(--ease-in-out);
+}
+
+.progress-item:hover::before {
+  opacity: 1;
+}
+
+.progress-item:hover {
+  background-color: var(--color-text);
+  color: var(--color-background);
+}
+
+.progress-item:hover .progress-skill-name,
+.progress-item:hover .progress-skill-level,
+.progress-item:hover .experience-amount,
+.progress-item:hover .progress-description {
+  color: var(--color-background);
+}
+
+.progress-item-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-sm);
+}
+
+.progress-skill-info {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.progress-skill-icon {
+  font-size: var(--font-size-xl);
+  font-family: var(--font-mono);
+  font-weight: var(--font-weight-bold);
+}
+
+.progress-skill-details {
+  flex: 1;
+}
+
+.progress-skill-name {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
+  font-family: var(--font-serif);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: var(--spacing-xs);
+  transition: color var(--transition-fast) var(--ease-in-out);
+}
+
+.progress-skill-level {
+  font-size: var(--font-size-xs);
+  color: var(--color-text);
+  font-family: var(--font-mono);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: color var(--transition-fast) var(--ease-in-out);
+}
+
+.progress-experience {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.experience-amount {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
+  font-family: var(--font-mono);
+  letter-spacing: 2px;
+  transition: color var(--transition-fast) var(--ease-in-out);
+}
+
+.temp-badge,
+.url-badge {
+  font-size: var(--font-size-xs);
+  color: var(--color-text);
+  padding: 2px var(--spacing-sm);
+  border: 1px solid var(--color-border);
+  font-weight: var(--font-weight-bold);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  background: var(--color-background);
+  transition: all var(--transition-fast) var(--ease-in-out);
+}
+
+.progress-item:hover .temp-badge,
+.progress-item:hover .url-badge {
+  color: var(--color-background);
+  border-color: var(--color-background);
+}
+
+.progress-description {
+  font-size: var(--font-size-sm);
+  color: var(--color-text);
+  font-style: italic;
+  margin-bottom: var(--spacing-md);
+  line-height: 1.4;
+  font-family: var(--font-serif);
+  transition: color var(--transition-fast) var(--ease-in-out);
+}
+
+.progress-item-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.progress-edit-input {
+  flex: 1;
+  max-width: 100px;
+}
+
+/* Основной контент пикера */
+.progress-picker-content {
+  background: var(--color-background);
+  border: 3px solid var(--color-border);
+  position: relative;
+}
+
+.progress-picker-content::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  right: 4px;
+  bottom: 4px;
+  border: 1px solid var(--color-border);
+  pointer-events: none;
+}
+
+.progress-step-content {
+  padding: var(--spacing-lg);
+}
+
+.progress-step-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.progress-step-title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
+  margin: 0;
+  font-family: var(--font-serif);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.progress-search-container {
+  flex: 1;
+}
+
+.progress-search-input {
+  width: 100%;
+}
+
+/* Сетка навыков */
+.skills-progress-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: var(--spacing-md);
+  margin: var(--spacing-lg) 0;
+}
+
+.skill-progress-card {
+  border: 2px solid var(--color-border);
+  padding: var(--spacing-lg);
+  cursor: pointer;
+  transition: all var(--transition-fast) var(--ease-in-out);
+  background: var(--color-background);
+  position: relative;
+}
+
+.skill-progress-card::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  right: 4px;
+  bottom: 4px;
+  border: 1px solid var(--color-border);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--transition-fast) var(--ease-in-out);
+}
+
+.skill-progress-card:hover::before {
+  opacity: 1;
+}
+
+.skill-progress-card:hover {
+  background-color: var(--color-text);
+  color: var(--color-background);
+  border-width: 3px;
+}
+
+.skill-progress-card:hover .skill-name,
+.skill-progress-card:hover .skill-description,
+.skill-progress-card:hover .skill-level,
+.skill-progress-card:hover .skill-usage {
+  color: var(--color-background);
+}
+
+.skill-progress-card.has-progress {
+  border-color: var(--color-primary);
+}
+
+.skill-progress-card.has-progress::before {
+  border-color: var(--color-primary);
+}
+
+.skill-card-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+}
+
+.skill-category-icon {
+  font-size: var(--font-size-lg);
+  font-family: var(--font-mono);
+  font-weight: var(--font-weight-bold);
+}
+
+.skill-name {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
+  font-family: var(--font-serif);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: color var(--transition-fast) var(--ease-in-out);
+}
+
+.skill-progress-badge {
+  margin-left: auto;
+  padding: 2px var(--spacing-sm);
+  background: var(--color-primary);
+  color: var(--color-background);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.skill-description {
+  font-size: var(--font-size-sm);
+  color: var(--color-text);
+  margin-bottom: var(--spacing-sm);
+  line-height: 1.4;
+  font-family: var(--font-serif);
+  transition: color var(--transition-fast) var(--ease-in-out);
+}
+
+.skill-meta {
+  display: flex;
+  justify-content: space-between;
+}
+
+.skill-level,
+.skill-usage {
+  font-size: var(--font-size-xs);
+  color: var(--color-text);
+  font-family: var(--font-mono);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: color var(--transition-fast) var(--ease-in-out);
+}
+
+.existing-progress-note {
+  font-size: var(--font-size-xs);
+  color: var(--color-text);
+  font-style: italic;
+  margin-top: var(--spacing-sm);
+  font-family: var(--font-serif);
+}
+
+/* Ввод прогресса */
+.selected-skill-info {
+  background: var(--color-background);
+  border: 2px solid var(--color-border);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+  position: relative;
+}
+
+.selected-skill-info::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  right: 4px;
+  bottom: 4px;
+  border: 1px solid var(--color-border);
+  pointer-events: none;
+}
+
+.selected-skill-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-xs);
+}
+
+.skill-icon {
+  font-size: var(--font-size-2xl);
+  font-family: var(--font-mono);
+  font-weight: var(--font-weight-bold);
+}
+
+.selected-skill-level {
+  font-size: var(--font-size-sm);
+  color: var(--color-text);
+  font-family: var(--font-serif);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.progress-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+  margin: var(--spacing-lg) 0;
+}
+
+.section-title {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
+  margin-bottom: var(--spacing-md);
+  font-family: var(--font-serif);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-bottom: 2px solid var(--color-border);
+  padding-bottom: var(--spacing-xs);
+}
+
+.experience-levels {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-lg);
+}
+
+.experience-level {
+  padding: var(--spacing-md);
+  border: 2px solid var(--color-border);
+  background: var(--color-background);
+  cursor: pointer;
+  transition: all var(--transition-fast) var(--ease-in-out);
+  text-align: center;
+  position: relative;
+}
+
+.experience-level::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  right: 4px;
+  bottom: 4px;
+  border: 1px solid var(--color-border);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--transition-fast) var(--ease-in-out);
+}
+
+.experience-level:hover::before {
+  opacity: 1;
+}
+
+.experience-level:hover {
+  background-color: var(--color-text);
+  color: var(--color-background);
+}
+
+.experience-level:hover .level-icon,
+.experience-level:hover .level-label {
+  color: var(--color-background);
+}
+
+.experience-level.selected {
+  background-color: var(--color-text);
+  color: var(--color-background);
+  border-width: 3px;
+}
+
+.experience-level.selected .level-icon,
+.experience-level.selected .level-label {
+  color: var(--color-background);
+}
+
+.level-icon {
+  font-size: var(--font-size-xl);
+  font-family: var(--font-mono);
+  font-weight: var(--font-weight-bold);
+  display: block;
+  margin-bottom: var(--spacing-xs);
+  transition: color var(--transition-fast) var(--ease-in-out);
+}
+
+.level-label {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
+  font-family: var(--font-serif);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: color var(--transition-fast) var(--ease-in-out);
+}
+
+.custom-experience {
+  max-width: 200px;
+}
+
+.description-hint {
+  font-size: var(--font-size-xs);
+  color: var(--color-text);
+  margin-top: var(--spacing-xs);
+  font-style: italic;
+  font-family: var(--font-serif);
+}
+
+/* Предпросмотр */
+.progress-preview {
+  background: var(--color-background);
+  border: 2px solid var(--color-border);
+  padding: var(--spacing-lg);
+  margin: var(--spacing-lg) 0;
+  position: relative;
+}
+
+.progress-preview::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  right: 4px;
+  bottom: 4px;
+  border: 1px solid var(--color-border);
+  pointer-events: none;
+}
+
+.preview-title {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
+  margin-bottom: var(--spacing-md);
+  font-family: var(--font-serif);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: var(--spacing-xs);
+}
+
+.preview-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.preview-skill {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
+  font-family: var(--font-serif);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.preview-experience {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
+  font-family: var(--font-mono);
+  letter-spacing: 2px;
+}
+
+.preview-description {
+  font-size: var(--font-size-sm);
+  color: var(--color-text);
+  font-style: italic;
+  line-height: 1.4;
+  font-family: var(--font-serif);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .skills-progress-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .experience-levels {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .selected-progress-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-md);
+  }
+  
+  .progress-actions-header {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .progress-step-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+  }
+  
+  .progress-search-container {
+    width: 100%;
+  }
+  
+  .experience-levels {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Печать */
+@media print {
+  .skill-progress-picker,
+  .selected-progress-section,
+  .progress-item,
+  .skill-progress-card,
+  .selected-skill-info,
+  .progress-preview {
+    border-color: black !important;
+  }
+  
+  .selected-progress-section::before,
+  .progress-item::before,
+  .skill-progress-card::before,
+  .selected-skill-info::before,
+  .progress-preview::before {
+    border-color: black !important;
+  }
+  
+  .selected-progress-header {
+    border-bottom-color: black !important;
+  }
+  
+  .section-title {
+    border-bottom-color: black !important;
+  }
+  
+  .skill-name,
+  .skill-description,
+  .skill-level,
+  .skill-usage,
+  .progress-skill-name,
+  .progress-skill-level,
+  .experience-amount,
+  .progress-description,
+  .preview-skill,
+  .preview-experience,
+  .preview-description,
+  .stats-item,
+  .selected-skill-level,
+  .section-title,
+  .level-label,
+  .description-hint {
+    color: black !important;
+  }
+  
+  .skill-progress-badge,
+  .temp-badge,
+  .url-badge {
+    border-color: black !important;
+    color: black !important;
+  }
+  
+  .experience-level {
+    border-color: black !important;
+  }
+  
+  .experience-level::before {
+    border-color: black !important;
+  }
+}

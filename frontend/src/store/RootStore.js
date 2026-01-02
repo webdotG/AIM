@@ -6,6 +6,7 @@ import { SkillsStore } from './stores/SkillsStore';
 import { UIStore } from './stores/UIStore';
 import UrlSyncStore from './stores/UrlSyncStore';
 import { RelationsStore } from './stores/RelationsStore';
+import { SkillProgressStore } from './stores/SkillProgressStore';
 
 export default class RootStore {
   constructor() {
@@ -16,6 +17,7 @@ export default class RootStore {
     this.skillsStore = new SkillsStore(this);
     this.uiStore = new UIStore(this);
     this.urlSyncStore = new UrlSyncStore();
-    
+    this.relationsStore = new RelationsStore();
+    this.skillProgressStore = new SkillProgressStore();
   }
 }

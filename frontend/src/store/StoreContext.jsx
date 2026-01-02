@@ -47,6 +47,10 @@ export const useRelationsStore = () => {
   return useStores().relationsStore;
 };
 
+export const useSkillProgressStore = () => {
+  return useRootStore().skillProgressStore;
+};
+
 export const StoreProvider = ({ children }) => {
   return (
     <StoreContext.Provider value={rootStoreInstance}>

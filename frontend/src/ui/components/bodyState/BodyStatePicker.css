@@ -1,17 +1,14 @@
 /* Общие стили для всех пикеров - импортируют EmotionPicker.css */
-/* CircumstancesPicker.css, BodyStatePicker.css, SkillsPicker.css */
 
 @import '../emotions/EmotionPicker/EmotionPicker.css';
-
-/* Дополнительные стили для BodyStatePicker */
 
 .body-picker .body-stat-section {
   margin-bottom: var(--spacing-xl);
   padding: var(--spacing-lg);
-  border: 3px solid var(--color-border);
   background: var(--color-background);
   position: relative;
   font-family: var(--font-serif);
+  border: 3px solid var(--color-border);
 }
 
 .body-picker .body-stat-section::before {
@@ -64,6 +61,90 @@
   padding: 2px var(--spacing-sm);
   border: 2px solid var(--color-border);
   font-weight: var(--font-weight-bold);
+}
+
+/* Управление статистикой */
+.stat-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.clear-stat-button {
+  background: var(--color-background);
+  border: 2px solid var(--color-danger);
+  color: var(--color-danger);
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  position: relative;
+  transition: all var(--transition-fast) var(--ease-in-out);
+  font-family: var(--font-serif);
+  font-weight: var(--font-weight-bold);
+}
+
+.clear-stat-button::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  right: 2px;
+  bottom: 2px;
+  border: 1px solid var(--color-danger);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--transition-fast) var(--ease-in-out);
+}
+
+.clear-stat-button:hover::before {
+  opacity: 1;
+}
+
+.clear-stat-button:hover {
+  background-color: var(--color-danger);
+  color: var(--color-background);
+}
+
+.clear-location-button {
+  background: var(--color-background);
+  border: 2px solid var(--color-warning);
+  color: var(--color-warning);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  cursor: pointer;
+  font-size: var(--font-size-xs);
+  font-family: var(--font-serif);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: var(--font-weight-bold);
+  position: relative;
+  transition: all var(--transition-fast) var(--ease-in-out);
+}
+
+.clear-location-button::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  right: 2px;
+  bottom: 2px;
+  border: 1px solid var(--color-warning);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--transition-fast) var(--ease-in-out);
+}
+
+.clear-location-button:hover::before {
+  opacity: 1;
+}
+
+.clear-location-button:hover {
+  background-color: var(--color-warning);
+  color: var(--color-background);
 }
 
 .body-picker .location-input-container {
@@ -170,14 +251,17 @@
   pointer-events: none;
 }
 
-.body-picker .summary-header {
+.summary-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: var(--spacing-sm);
   padding-bottom: var(--spacing-xs);
   border-bottom: 2px solid var(--color-border);
   position: relative;
 }
 
-.body-picker .summary-header::after {
+.summary-header::after {
   content: '';
   position: absolute;
   bottom: 4px;
@@ -196,6 +280,46 @@
   letter-spacing: 1px;
 }
 
+.clear-all-summary-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-background);
+  border: 2px solid var(--color-border);
+  color: var(--color-text);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  cursor: pointer;
+  font-size: var(--font-size-xs);
+  font-family: var(--font-serif);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: var(--font-weight-bold);
+  position: relative;
+  transition: all var(--transition-fast) var(--ease-in-out);
+}
+
+.clear-all-summary-button::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  right: 2px;
+  bottom: 2px;
+  border: 1px solid var(--color-border);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--transition-fast) var(--ease-in-out);
+}
+
+.clear-all-summary-button:hover::before {
+  opacity: 1;
+}
+
+.clear-all-summary-button:hover {
+  background-color: var(--color-text);
+  color: var(--color-background);
+}
+
 .body-picker .summary-stats {
   display: flex;
   gap: var(--spacing-md);
@@ -210,6 +334,7 @@
   border: 2px solid var(--color-border);
   background: var(--color-background);
   position: relative;
+  transition: all var(--transition-fast) var(--ease-in-out);
 }
 
 .body-picker .summary-stat::before {
@@ -257,10 +382,37 @@
   transition: color var(--transition-fast) var(--ease-in-out);
 }
 
+.remove-summary-stat {
+  background: none;
+  border: none;
+  color: var(--color-border);
+  cursor: pointer;
+  font-size: var(--font-size-base);
+  padding: 0 var(--spacing-xs);
+  transition: color var(--transition-fast) var(--ease-in-out);
+  font-family: var(--font-serif);
+  font-weight: var(--font-weight-bold);
+}
+
+.remove-summary-stat:hover {
+  color: var(--color-danger);
+}
+
+/* Для нулевых значений в слайдере */
+.intensity-mark[data-value="0"] {
+  opacity: 0.5;
+  font-style: italic;
+}
+
+.intensity-value:empty::before {
+  content: "—";
+  opacity: 0.5;
+}
+
 /* Дополнительные стили для SkillsPicker */
 
 .custom-card {
-  border-style: dashed !important;
+  border: 3px dashed var(--color-border) !important;
   position: relative;
 }
 
@@ -309,6 +461,16 @@
   .body-picker .stat-label {
     align-self: flex-start;
   }
+  
+  .summary-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+  }
+  
+  .clear-all-summary-button {
+    align-self: flex-start;
+  }
 }
 
 @media (max-width: 480px) {
@@ -352,11 +514,17 @@
     background-color: black !important;
   }
   
-  .body-picker .location-input {
+  .body-picker .location-input,
+  .clear-stat-button,
+  .clear-location-button,
+  .clear-all-summary-button {
     border-color: black !important;
   }
   
-  .body-picker .location-input::before {
+  .body-picker .location-input::before,
+  .clear-stat-button::before,
+  .clear-location-button::before,
+  .clear-all-summary-button::before {
     border-color: black !important;
   }
   
@@ -372,103 +540,38 @@
   .body-picker .stat-label,
   .body-picker .summary-title,
   .body-picker .summary-stat-label,
-  .body-picker .summary-stat-value {
+  .body-picker .summary-stat-value,
+  .clear-stat-button,
+  .clear-location-button,
+  .clear-all-summary-button,
+  .remove-summary-stat {
     color: black !important;
   }
 }
 
-.stat-controls {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.clear-stat-button {
-  background: none;
-  border: 1px solid #ff6b6b;
-  color: #ff6b6b;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  cursor: pointer;
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-}
-
-.clear-stat-button:hover {
-  background-color: #ff6b6b;
+/* Темные темы поддержка */
+[data-theme="dark"] .clear-stat-button,
+[data-theme="dark"] .clear-location-button,
+[data-theme="dark"] .clear-all-summary-button,
+[data-theme="dark"] .remove-summary-stat {
+  border-color: white;
   color: white;
 }
 
-.clear-location-button {
-  background: none;
-  border: 1px solid #ffa726;
-  color: #ffa726;
-  padding: 4px 8px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 12px;
+[data-theme="darling"] .clear-stat-button,
+[data-theme="darling"] .clear-location-button,
+[data-theme="darling"] .clear-all-summary-button {
+  border-color: red;
+  color: red;
 }
 
-.clear-location-button:hover {
-  background-color: #ffa726;
-  color: white;
+[data-theme="darling"] .clear-stat-button:hover,
+[data-theme="darling"] .clear-location-button:hover,
+[data-theme="darling"] .clear-all-summary-button:hover {
+  background-color: red;
+  color: black;
 }
 
-.summary-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.clear-all-summary-button {
-  background: none;
-  border: 1px solid #ccc;
-  color: #666;
-  padding: 4px 8px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 12px;
-}
-
-.clear-all-summary-button:hover {
-  background-color: #f0f0f0;
-}
-
-.summary-stat {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 10px;
-  background: #f8f9fa;
-  border-radius: 6px;
-  margin-bottom: 5px;
-}
-
-.remove-summary-stat {
-  background: none;
-  border: none;
-  color: #999;
-  cursor: pointer;
-  font-size: 16px;
-  padding: 0 4px;
-}
-
-.remove-summary-stat:hover {
-  color: #ff6b6b;
-}
-
-/* Для нулевых значений в слайдере */
-.intensity-mark[data-value="0"] {
-  color: #999;
-  font-style: italic;
-}
-
-.intensity-value:empty::before {
-  content: "—";
-  color: #999;
+[data-theme="darling"] .remove-summary-stat:hover {
+  color: red;
 }
