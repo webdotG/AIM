@@ -1,5 +1,7 @@
+// store/stores/EntriesStore.js
 import { makeAutoObservable, runInAction } from 'mobx';
 import { EntriesAPIClient } from '../../core/adapters/api/clients/EntriesAPIClient';
+import apiClient from '../../core/adapters/config';
 
 export class EntriesStore {
   entries = [];
@@ -61,43 +63,38 @@ export class EntriesStore {
     }
   }
 
-  // async createEntry(entryData) {
-  //   this.isLoading = true;
-  //   this.error = null;
-    
-  //   try {
-  //     const entry = await this.repository.create(entryData);
-      
-  //     runInAction(() => {
-  //       this.entries.unshift(entry); // Добавляем в начало
-  //       this.isLoading = false;
-  //     });
-      
-  //     return entry;
-  //   } catch (error) {
-  //     runInAction(() => {
-  //       this.error = error.error || 'Failed to create entry';
-  //       this.isLoading = false;
-  //     });
-  //     throw error;
-  //   }
-  // }
-  // ИЩИ ЭТУ ФУНКЦИЮ:
   async createEntry(entryData) {
-    console.log('=== EntriesStore.createEntry ВЫЗВАН ===');
-    console.log('Полученные данные:', entryData);
+    this.isLoading = true;
+    this.error = null;
     
     try {
-      this.setLoading(true);
-      // Здесь должен быть вызов репозитория
-      const createdEntry = await EntriesRepository.createEntry(entryData);
-      console.log('Ответ от репозитория:', createdEntry);
+      // Проверяем структуру данных перед отправкой
+      console.log('EntriesStore.createEntry данные:', entryData);
+      
+      // Должны быть: entry_type, content, deadline (опционально)
+      const validData = {
+        entry_type: entryData.entry_type,
+        content: entryData.content,
+        ...(entryData.deadline && { deadline: entryData.deadline }),
+        ...(entryData.body_state_id && { body_state_id: entryData.body_state_id }),
+        ...(entryData.circumstance_id && { circumstance_id: entryData.circumstance_id }),
+        is_completed: false
+      };
+      
+      const createdEntry = await this.repository.create(validData);
+      
+      runInAction(() => {
+        this.entries.unshift(createdEntry);
+        this.isLoading = false;
+      });
+      
       return createdEntry;
     } catch (error) {
-      console.error('Ошибка в EntriesStore:', error);
+      runInAction(() => {
+        this.error = error.error || 'Failed to create entry';
+        this.isLoading = false;
+      });
       throw error;
-    } finally {
-      this.setLoading(false);
     }
   }
 
@@ -171,24 +168,79 @@ export class EntriesStore {
     }
   }
 
+  // МЕТОДЫ ДЛЯ СВЯЗЕЙ
+
+  async addEmotionsToEntry(entryId, emotionsData) {
+    try {
+      const formattedEmotions = Array.isArray(emotionsData) 
+        ? emotionsData.map(emotion => ({
+            emotion_id: emotion.id || emotion.emotion_id,
+            intensity: emotion.intensity || 5
+          }))
+        : [];
+      
+      const response = await apiClient.post(`/entries/${entryId}/emotions`, {
+        emotions: formattedEmotions
+      });
+      
+      return response;
+    } catch (error) {
+      console.error('Failed to add emotions to entry:', error);
+      throw error;
+    }
+  }
+
+  async addTagsToEntry(entryId, tagsData) {
+    try {
+      const tagNames = Array.isArray(tagsData)
+        ? tagsData.map(tag => typeof tag === 'string' ? tag : tag.name)
+        : [];
+      
+      const response = await apiClient.post(`/entries/${entryId}/tags`, {
+        tags: tagNames
+      });
+      
+      return response;
+    } catch (error) {
+      console.error('Failed to add tags to entry:', error);
+      throw error;
+    }
+  }
+
+  async addPeopleToEntry(entryId, peopleData) {
+    try {
+      const response = await apiClient.post(`/entries/${entryId}/people`, {
+        people: peopleData
+      });
+      
+      return response;
+    } catch (error) {
+      console.error('Failed to add people to entry:', error);
+      throw error;
+    }
+  }
+
   // Computed
   get dreamEntries() {
-    return this.entries.filter(e => e.isDream());
+    return this.entries.filter(e => e.type === 'dream');
   }
 
   get memoryEntries() {
-    return this.entries.filter(e => e.isMemory());
+    return this.entries.filter(e => e.type === 'memory');
   }
 
   get thoughtEntries() {
-    return this.entries.filter(e => e.isThought());
+    return this.entries.filter(e => e.type === 'thought');
   }
 
   get planEntries() {
-    return this.entries.filter(e => e.isPlan());
+    return this.entries.filter(e => e.type === 'plan');
   }
 
   get overduePlans() {
-    return this.entries.filter(e => e.isOverdue());
+    return this.entries.filter(e => {
+      if (e.type !== 'plan' || !e.deadline) return false;
+      return new Date(e.deadline) < new Date() && !e.isCompleted;
+    });
   }
 }

@@ -43,6 +43,10 @@ export const useUrlSyncStore = () => {
   return useStores().urlSyncStore;
 };
 
+export const useRelationsStore = () => {
+  return useStores().relationsStore;
+};
+
 export const StoreProvider = ({ children }) => {
   return (
     <StoreContext.Provider value={rootStoreInstance}>

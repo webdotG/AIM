@@ -11,19 +11,20 @@ const Header = () => {
         
         <div className="header-brand">
           <h1 className="header-title">AIM</h1>
-          <span className="header-version">v0.1.0</span>
+
+           <UserProfile />
         </div>
-                <div className="header-right">
-        <UserProfile />
+        <SearchBar />          
+        <div className="header-right">
         <ThemeSwitcher />
         <LanguageSwitcher />
+       </div>
+
+      {/* <div className="header-left">
+      </div> */}
 
 
-      <div className="header-left">
-      </div>
-        <SearchBar />
-
-      </div>
+   
     </header>
   );
 };

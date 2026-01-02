@@ -9,25 +9,25 @@ const EntryTypePicker = observer(() => {
 
   const typeConfig = {
     dream: { 
-      icon: 'DRE', 
+      icon: '', 
       label: t('entries.types.dream') || 'Сон',
       description: t('entries.types.dreamDesc') || 'Запись о сне',
       color: 'purple'
     },
     memory: { 
-      icon: 'MEM', 
+      icon: '', 
       label: t('entries.types.memory') || 'Воспоминание',
       description: t('entries.types.memoryDesc') || 'Воспоминание из прошлого',
       color: 'blue'
     },
     thought: { 
-      icon: 'THO', 
+      icon: '', 
       label: t('entries.types.thought') || 'Мысль',
       description: t('entries.types.thoughtDesc') || 'Текущая мысль или идея',
       color: 'green'
     },
     plan: { 
-      icon: 'PLA', 
+      icon: '', 
       label: t('entries.types.plan') || 'План',
       description: t('entries.types.planDesc') || 'План на будущее',
       color: 'red'

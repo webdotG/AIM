@@ -3,10 +3,10 @@ import { observer } from 'mobx-react-lite';
 import { useLanguage } from '@/layers/language';
 import { usePlatform } from '@/layers/platform';
 import { useTheme } from '@/layers/theme';
-// import { useSecurity } from '@/layers/security';
 import { useEntriesStore, useUIStore, useUrlSyncStore } from '@/store/StoreContext';
+import { useBodyStatesStore, useCircumstancesStore } from '@/store/StoreContext';
+import { useRelationsStore } from '@/store/StoreContext';
 
-// Компоненты пикеров
 import Modal from '../../common/Modal/Modal';
 import Button from '../../common/Button/Button';
 import Input from '../../common/Input/Input';
@@ -20,6 +20,7 @@ import RelationGraph from '../../relation/RelationGraph';
 import TagsPicker from '@/ui/components/tags/TagsPicker';
 import EntryTypePicker from '../../entries/EntryType/EntryTypePicker';
 
+import './EntryForm.css';
 
 const ENTRY_TYPES = {
   DREAM: 'dream',
@@ -27,27 +28,6 @@ const ENTRY_TYPES = {
   THOUGHT: 'thought',
   PLAN: 'plan',
 };
-
-// import  validateEntry  from '@/security/validators/schemas/entrySchema';
-const validateEntry = (entryData) => {
-  const errors = [];
-  
-  if (!entryData.content || entryData.content.trim().length === 0) {
-    errors.push('Содержание обязательно');
-  }
-  
-  if (entryData.type === ENTRY_TYPES.PLAN && !entryData.deadline) {
-    errors.push('Для плана требуется срок выполнения');
-  }
-  
-  return {
-    isValid: errors.length === 0,
-    errors
-  };
-};
-
-import './EntryForm.css';
-import { useErrorBoundary } from '../../common/ErrorBoundary/ErrorBoundary';
 
 const EntryForm = observer(() => {
   const { t } = useLanguage();
@@ -58,7 +38,6 @@ const EntryForm = observer(() => {
   const uiStore = useUIStore();
   const urlSyncStore = useUrlSyncStore();
   
-  const showNotification = useErrorBoundary();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const [modals, setModals] = useState({
@@ -72,6 +51,11 @@ const EntryForm = observer(() => {
     tags: false,
   });
   
+  const bodyStatesStore = useBodyStatesStore();
+  const circumstancesStore = useCircumstancesStore();
+  
+  const relationsStore = useRelationsStore();
+
   const openModal = useCallback((modalName) => {
     if (isTelegram && utils.hapticFeedback) {
       utils.hapticFeedback('light');
@@ -83,7 +67,6 @@ const EntryForm = observer(() => {
     setModals(prev => ({ ...prev, [modalName]: false }));
   }, []);
   
-
   const createPickerHandler = useCallback((setterName, hapticType = 'success') => 
     (data) => {
       if (urlSyncStore && urlSyncStore[setterName]) {
@@ -95,7 +78,6 @@ const EntryForm = observer(() => {
     },
   [urlSyncStore, isTelegram, utils]);
   
-
   const handleEmotionsChange = createPickerHandler('setEmotions');
   const handleCircumstancesChange = createPickerHandler('setCircumstances');
   const handleBodyStateChange = createPickerHandler('setBodyState');
@@ -103,6 +85,15 @@ const EntryForm = observer(() => {
   const handleRelationsChange = createPickerHandler('setRelations');
   const handleTagsChange = createPickerHandler('setTags');
   const handleSkillProgressChange = createPickerHandler('setSkillProgress');
+  
+  // Функция уведомлений
+  const showNotification = useCallback((message, type = 'info') => {
+    console.log(`[${type.toUpperCase()}] ${message}`);
+    // TODO: Подключить нормальную систему уведомлений
+    if (type === 'error') {
+      alert(message);
+    }
+  }, []);
   
   // === ПОИСК ДЛЯ ГРАФА ===
   const searchGraphs = useCallback(async (params) => {
@@ -118,12 +109,75 @@ const EntryForm = observer(() => {
     }
   }, [entriesStore]);
   
-
+  // === ВЫЧИСЛЯЕМЫЕ ЗНАЧЕНИЯ ===
+  const hasBodyState = useMemo(() => {
+    if (!urlSyncStore || !urlSyncStore.bodyState) return false;
+    
+    const { hp, energy, location } = urlSyncStore.bodyState;
+    return (
+      (hp !== undefined && hp !== null && hp > 0) ||
+      (energy !== undefined && energy !== null && energy > 0) ||
+      (location && location.trim().length > 0)
+    );
+  }, [urlSyncStore?.bodyState]);
+  
+  // === ФУНКЦИИ ПРЕОБРАЗОВАНИЯ ДАННЫХ ===
+  const convertBodyStateForAPI = useCallback((pickerData) => {
+    if (!pickerData || (!pickerData.hp && !pickerData.energy && !pickerData.location)) {
+      return null;
+    }
+    
+    return {
+      timestamp: new Date().toISOString(),
+      location_point: null,
+      location_name: pickerData.location || null,
+      location_address: null,
+      location_precision: null,
+      health_points: pickerData.hp > 0 ? pickerData.hp : null,
+      energy_points: pickerData.energy > 0 ? pickerData.energy : null,
+      circumstance_id: null
+    };
+  }, []);
+  
+  const convertCircumstancesForAPI = useCallback((pickerData) => {
+    if (!pickerData || pickerData.length === 0) return null;
+    
+    const result = {
+      timestamp: new Date().toISOString(),
+      weather: null,
+      temperature: null,
+      moon_phase: null,
+      global_event: null,
+      notes: null
+    };
+    
+    pickerData.forEach(circ => {
+      if (circ.category?.id === 'weather') {
+        result.weather = circ.item?.id || null;
+        if (circ.isTemperature) {
+          result.temperature = circ.intensity;
+        }
+      } else if (circ.category?.id === 'moon') {
+        result.moon_phase = circ.item?.id || null;
+      } else if (circ.category?.id === 'events') {
+        result.global_event = circ.item?.label || null;
+      }
+    });
+    
+    if (!result.weather && !result.temperature && !result.moon_phase && !result.global_event) {
+      return null;
+    }
+    
+    return result;
+  }, []);
+  
+  // === SUBMIT HANDLER ===
   const handleSubmit = useCallback(async (e) => {
     e.preventDefault();
     e.stopPropagation();
     
-    if (!urlSyncStore || !urlSyncStore.content || !urlSyncStore.content.trim()) {
+    // ВАЛИДАЦИЯ
+    if (!urlSyncStore?.content?.trim()) {
       showNotification(t('common.requiredContent') || 'Заполните содержание', 'error');
       return;
     }
@@ -140,34 +194,101 @@ const EntryForm = observer(() => {
     }
     
     try {
-      const entryData = {
-        type: urlSyncStore.type || ENTRY_TYPES.NOTE,
+      let bodyStateId = null;
+      let circumstanceId = null;
+      
+      // 1. СОЗДАНИЕ СОСТОЯНИЯ ТЕЛА (если есть)
+      if (urlSyncStore.bodyState && hasBodyState) {
+        try {
+          const bodyStateData = convertBodyStateForAPI(urlSyncStore.bodyState);
+          if (bodyStateData) {
+            const createdBodyState = await bodyStatesStore.createBodyState(bodyStateData);
+            bodyStateId = createdBodyState.id;
+          }
+        } catch (error) {
+          console.warn('Failed to create body state:', error);
+        }
+      }
+      
+      // 2. СОЗДАНИЕ ОБСТОЯТЕЛЬСТВ (если есть)
+      if (urlSyncStore.circumstances?.length > 0) {
+        try {
+          const circumstanceData = convertCircumstancesForAPI(urlSyncStore.circumstances);
+          if (circumstanceData) {
+            const createdCircumstance = await circumstancesStore.createCircumstance(circumstanceData);
+            circumstanceId = createdCircumstance.id;
+          }
+        } catch (error) {
+          console.warn('Failed to create circumstance:', error);
+        }
+      }
+      
+      // 3. СОЗДАНИЕ ОСНОВНОЙ ЗАПИСИ
+      const entryDto = {
+        entry_type: urlSyncStore.type,
         content: urlSyncStore.content.trim(),
-        ...(urlSyncStore.eventDate && { eventDate: new Date(urlSyncStore.eventDate) }),
-        ...(urlSyncStore.deadline && { deadline: new Date(urlSyncStore.deadline) }),
-        emotions: urlSyncStore.emotions || [],
-        circumstances: urlSyncStore.circumstances || [],
-        bodyState: urlSyncStore.bodyState || {},
-        skills: urlSyncStore.skills || [],
-        relations: urlSyncStore.relations || [],
-        tags: urlSyncStore.tags || [],
-        skillProgress: urlSyncStore.skillProgress || [],
-        theme: themeData.name || 'light',
-        platform: isTelegram ? 'telegram' : 'web',
-        createdAt: new Date().toISOString()
+        is_completed: false,
+        deadline: urlSyncStore.deadline || null,
+        ...(bodyStateId && { body_state_id: bodyStateId }),
+        ...(circumstanceId && { circumstance_id: circumstanceId })
       };
       
-      const validation = validateEntry(entryData);
-      if (!validation.isValid) {
-        throw new Error(validation.errors?.join(', ') || 'Некорректные данные');
+      console.log('Creating entry with data:', entryDto);
+      
+      const createdEntry = await entriesStore.createEntry(entryDto);
+      const entryId = createdEntry.id;
+      
+      // 4. ДОБАВЛЕНИЕ ЭМОЦИЙ (если есть)
+      if (urlSyncStore.emotions?.length > 0) {
+        try {
+          await entriesStore.addEmotionsToEntry(entryId, urlSyncStore.emotions);
+        } catch (error) {
+          console.warn('Failed to add emotions:', error);
+        }
       }
-
-      await entriesStore.createEntry(entryData);
-
+      
+      // 5. ДОБАВЛЕНИЕ ТЕГОВ (если есть)
+      if (urlSyncStore.tags?.length > 0) {
+        try {
+          await entriesStore.addTagsToEntry(entryId, urlSyncStore.tags);
+        } catch (error) {
+          console.warn('Failed to add tags:', error);
+        }
+      }
+      
+      // 6. СОЗДАНИЕ СВЯЗЕЙ 
+      if (urlSyncStore.relations?.length > 0) {
+        try {
+          for (const relation of urlSyncStore.relations) {
+            if (relation.needsCreation) {
+              // Создаем новую запись для связи
+              const newEntry = await entriesStore.createEntry({
+                entry_type: 'thought',
+                content: relation.targetEntry.content,
+                is_completed: false
+              });
+              
+              // Создаем связь с новой записью
+              await relationsStore.createRelationForEntry(entryId, {
+                ...relation,
+                targetEntry: { ...relation.targetEntry, id: newEntry.id }
+              });
+            } else {
+              // Связь с существующей записью
+              await relationsStore.createRelationForEntry(entryId, relation);
+            }
+          }
+        } catch (error) {
+          console.warn('Failed to create relations:', error);
+        }
+      }
+      
+      // 7. ОЧИСТКА ФОРМЫ
       if (urlSyncStore.reset) {
         urlSyncStore.reset();
       }
       
+      // УВЕДОМЛЕНИЕ ОБ УСПЕХЕ
       showNotification(
         t('common.entryCreated') || 'Запись успешно создана!', 
         'success'
@@ -177,7 +298,7 @@ const EntryForm = observer(() => {
         utils.hapticFeedback('success');
       }
       
-      if (uiStore && uiStore.clearError) {
+      if (uiStore?.clearError) {
         uiStore.clearError();
       }
       
@@ -191,65 +312,43 @@ const EntryForm = observer(() => {
         utils.hapticFeedback('error');
       }
       
-      if (uiStore && uiStore.setError) {
+      if (uiStore?.setError) {
         uiStore.setError(error);
       }
     } finally {
-      // ЗАВЕРШЕНИЕ
       setIsSubmitting(false);
     }
   }, [
-    urlSyncStore, t, entriesStore, showNotification, 
-    isTelegram, utils, themeData, uiStore
+    urlSyncStore, t, entriesStore, bodyStatesStore, circumstancesStore, 
+    showNotification, isTelegram, utils, hasBodyState, uiStore,
+    convertBodyStateForAPI, convertCircumstancesForAPI
   ]);
   
-  // === ВЫЧИСЛЯЕМЫЕ ЗНАЧЕНИЯ ===
-  const hasBodyState = useMemo(() => {
-    if (!urlSyncStore || !urlSyncStore.bodyState) return false;
-    
-    const { hp, energy, location } = urlSyncStore.bodyState;
-    return (
-      (hp !== undefined && hp !== null && hp > 0) ||
-      (energy !== undefined && energy !== null && energy > 0) ||
-      (location && location.trim().length > 0)
-    );
-  }, [urlSyncStore?.bodyState]);
-  
-  const formStyle = useMemo(() => ({
-    maxWidth: isTelegram ? '100%' : '400px',
-    margin: isTelegram ? '10px' : '0 auto',
-    padding: isTelegram ? '15px' : '20px',
-    backgroundColor: themeData.colors?.['--bg-secondary'],
-    borderRadius: '12px',
-    boxShadow: isTelegram ? 'none' : '0 4px 12px rgba(0, 0, 0, 0.1)',
-    border: isTelegram ? '1px solid var(--border-color, #ddd)' : 'none'
-  }), [isTelegram, themeData]);
-  
-  const renderPickerSection = useCallback(({
-    label,
-    icon,
-    modalName,
-    value,
-    previewComponent,
-    buttonText
+  // === ФУНКЦИЯ РЕНДЕРА СЕКЦИЙ ===
+  const renderPickerSection = useCallback(({ 
+    label, 
+    icon, 
+    modalName, 
+    value, 
+    buttonText, 
+    previewComponent 
   }) => (
-    <div className="form-group">
-      <div className="picker-header">
-        <label className="form-label">
-          {/* <span className="picker-icon">{icon}</span> */}
-          <span className="picker-label">{label}</span>
-        </label>
-        <Button
-          variant={value ? 'secondary' : 'primary'}
-          onClick={() => openModal(modalName)}
-          disabled={isSubmitting}
-          haptic={true}
-          size="small"
-        >
-          {buttonText}
-        </Button>
-      </div>
-      {value && previewComponent && (
+    <div className="form-group picker-section">
+      <label className="picker-label">
+        {icon && <span className="picker-icon">{icon}</span>}
+        {label}
+      </label>
+      <Button
+        type="button"
+        variant={value ? 'secondary' : 'ghost'}
+        onClick={() => openModal(modalName)}
+        disabled={isSubmitting}
+        size="medium"
+        fullWidth
+      >
+        {buttonText}
+      </Button>
+      {previewComponent && (
         <div className="picker-preview">
           {previewComponent}
         </div>
@@ -265,13 +364,9 @@ const EntryForm = observer(() => {
       <div className="emotions-preview">
         {urlSyncStore.emotions.slice(0, 3).map((emotion, index) => (
           <div key={index} className="emotion-badge">
-            {/* <span className="emotion-icon">
-              {emotion.emotion?.icon || emotion.category?.icon || ''}
-            </span> */}
             <span className="emotion-label">
               {emotion.emotion?.label || emotion.category?.label || 'Эмоция'}
             </span>
-            {/* <span className="emotion-intensity">{emotion.intensity}%</span> */}
           </div>
         ))}
         {urlSyncStore.emotions.length > 3 && (
@@ -309,19 +404,16 @@ const EntryForm = observer(() => {
       <div className="body-state-preview">
         {hp > 0 && (
           <div className="body-stat">
-            <span className="stat-icon">HP</span>
             <span className="stat-value">HP: {hp}%</span>
           </div>
         )}
         {energy > 0 && (
           <div className="body-stat">
-            <span className="stat-icon">EN</span>
             <span className="stat-value">Energy: {energy}%</span>
           </div>
         )}
         {location && location.trim() && (
           <div className="body-stat">
-            {/* <span className="stat-icon">LOC</span> */}
             <span className="stat-value">{location}</span>
           </div>
         )}
@@ -333,12 +425,10 @@ const EntryForm = observer(() => {
   return (
     <>
       <form 
-        className={`entry-form ${isTelegram ? 'telegram' : 'web'}` } //${isTelegram ? 'telegram' : 'web'}
+        className={`entry-form ${isTelegram ? 'telegram' : 'web'}`}
         onSubmit={handleSubmit}
-        style={formStyle}
         noValidate
       >
-
         <h3 className="form-title">
           {t('entries.form.title') || 'Создать запись'}
         </h3>
@@ -371,7 +461,6 @@ const EntryForm = observer(() => {
             />
           </div>
           
-          {/* {urlSyncStore?.type === ENTRY_TYPES.PLAN && ( */}
           {urlSyncStore?.type === 'plan' && !urlSyncStore?.deadline && (
             <div className="form-group">
               <Input
@@ -409,9 +498,6 @@ const EntryForm = observer(() => {
             <div className="circumstances-preview">
               {urlSyncStore.circumstances.slice(0, 2).map((circ, index) => (
                 <div key={index} className="circumstance-badge">
-                  {/* <span className="circumstance-icon">
-                    {circ.item?.icon || circ.category?.icon || ''}
-                  </span> */}
                   <span className="circumstance-label">
                     {circ.item?.label || circ.category?.label || 'Обстоятельство'}
                   </span>
@@ -450,9 +536,6 @@ const EntryForm = observer(() => {
             <div className="skills-preview">
               {urlSyncStore.skills.slice(0, 2).map((skill, index) => (
                 <div key={index} className="skill-badge">
-                  {/* <span className="skill-icon">
-                    {skill.skill?.icon || ''}
-                  </span> */}
                   <span className="skill-label">
                     {skill.skill?.label || 'Навык'} - LVL {skill.level}
                   </span>
@@ -488,9 +571,6 @@ const EntryForm = observer(() => {
               <div className="relations-list">
                 {urlSyncStore.relations.slice(0, 2).map((rel, index) => (
                   <div key={index} className="relation-item">
-                    {/* <span className="relation-icon">
-                      {rel.type?.icon || ''}
-                    </span> */}
                     <span className="relation-description">
                       {rel.description?.slice(0, 30) || 'Связь'}...
                     </span>
@@ -543,10 +623,6 @@ const EntryForm = observer(() => {
           )
         })}
         
-        {/* <div className="form-group">
-          <UrlStatusBar />
-        </div> */}
-        
         <div className="form-actions">
           <Button
             type="submit"
@@ -569,11 +645,9 @@ const EntryForm = observer(() => {
             ! {t('common.planDeadlineRequired') || 'Для плана требуется срок выполнения'}
           </div>
         )}
-
       </form>
       
       {/* === ВСЕ МОДАЛКИ === */}
-
       <Modal
         isOpen={modals.emotion}
         onClose={() => closeModal('emotion')}
@@ -587,7 +661,6 @@ const EntryForm = observer(() => {
         />
       </Modal>
       
-
       <Modal
         isOpen={modals.circumstances}
         onClose={() => closeModal('circumstances')}
@@ -601,7 +674,6 @@ const EntryForm = observer(() => {
         />
       </Modal>
       
-
       <Modal
         isOpen={modals.bodyState}
         onClose={() => closeModal('bodyState')}

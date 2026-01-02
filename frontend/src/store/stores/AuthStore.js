@@ -1,3 +1,4 @@
+// stores/AuthStore.js
 import { makeAutoObservable, runInAction } from 'mobx';
 import { AuthAPIClient } from '../../core/adapters/api/clients/AuthAPIClient';
 
@@ -5,25 +6,21 @@ export class AuthStore {
   user = null;
   isLoading = false;
   error = null;
-  isAuthenticated = false;
+  token = localStorage.getItem('token'); // Токен храним тут
 
   repository = new AuthAPIClient();
 
   constructor() {
     makeAutoObservable(this);
-    this.checkAuth(); // Проверяем авторизацию при создании
+    if (this.token) this.fetchCurrentUser();
   }
 
-  // Используем реализованный метод isAuthenticated из AuthAPIClient
-  checkAuth() {
-    this.isAuthenticated = this.repository.isAuthenticated();
-    if (this.isAuthenticated) {
-      this.fetchCurrentUser();
-    }
+  get isAuthenticated() {
+    return !!this.token;
   }
 
   async fetchCurrentUser() {
-    if (!this.isAuthenticated) return;
+    if (!this.token) return;
     
     this.isLoading = true;
     this.error = null;
@@ -38,21 +35,23 @@ export class AuthStore {
       runInAction(() => {
         this.error = error.error || 'Failed to fetch user';
         this.isLoading = false;
-        this.logout(); // Если не удалось получить пользователя - выходим
+        this.logout();
       });
     }
   }
 
-  async login(login, password) {
+  async login(login, password, hcaptchaToken) {
     this.isLoading = true;
     this.error = null;
     
     try {
-      const result = await this.repository.login(login, password);
+      const result = await this.repository.login(login, password, hcaptchaToken);
       
       runInAction(() => {
         this.user = result.user;
-        this.isAuthenticated = true;
+        this.token = result.token;
+        localStorage.setItem('token', result.token);
+        localStorage.setItem('user', JSON.stringify(result.user));
         this.isLoading = false;
       });
       
@@ -61,22 +60,24 @@ export class AuthStore {
       runInAction(() => {
         this.error = error.error || 'Login failed';
         this.isLoading = false;
-        this.isAuthenticated = false;
+        this.token = null;
       });
       throw error;
     }
   }
 
-  async register(login, password) {
+  async register(login, password, hcaptchaToken) {
     this.isLoading = true;
     this.error = null;
     
     try {
-      const result = await this.repository.register(login, password);
+      const result = await this.repository.register(login, password, hcaptchaToken);
       
       runInAction(() => {
         this.user = result.user;
-        this.isAuthenticated = true;
+        this.token = result.token;
+        localStorage.setItem('token', result.token);
+        localStorage.setItem('user', JSON.stringify(result.user));
         this.isLoading = false;
       });
       
@@ -85,30 +86,7 @@ export class AuthStore {
       runInAction(() => {
         this.error = error.error || 'Registration failed';
         this.isLoading = false;
-        this.isAuthenticated = false;
-      });
-      throw error;
-    }
-  }
-
-  async recover(login, backupCode, newPassword) {
-    this.isLoading = true;
-    this.error = null;
-    
-    try {
-      const result = await this.repository.recover(login, backupCode, newPassword);
-      
-      runInAction(() => {
-        this.user = result.user;
-        this.isAuthenticated = true;
-        this.isLoading = false;
-      });
-      
-      return result;
-    } catch (error) {
-      runInAction(() => {
-        this.error = error.error || 'Recovery failed';
-        this.isLoading = false;
+        this.token = null;
       });
       throw error;
     }
@@ -124,14 +102,12 @@ export class AuthStore {
     } finally {
       runInAction(() => {
         this.user = null;
-        this.isAuthenticated = false;
+        this.token = null;
         this.error = null;
         this.isLoading = false;
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
       });
     }
-  }
-
-  clearError() {
-    this.error = null;
   }
 }

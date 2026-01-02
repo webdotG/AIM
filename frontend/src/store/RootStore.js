@@ -5,8 +5,9 @@ import { EntriesStore } from './stores/EntriesStore';
 import { SkillsStore } from './stores/SkillsStore';
 import { UIStore } from './stores/UIStore';
 import UrlSyncStore from './stores/UrlSyncStore';
+import { RelationsStore } from './stores/RelationsStore';
 
-class RootStore {
+export default class RootStore {
   constructor() {
     this.authStore = new AuthStore(this);
     this.bodyStatesStore = new BodyStatesStore(this);
@@ -15,7 +16,6 @@ class RootStore {
     this.skillsStore = new SkillsStore(this);
     this.uiStore = new UIStore(this);
     this.urlSyncStore = new UrlSyncStore();
+    
   }
 }
-
-export default RootStore;

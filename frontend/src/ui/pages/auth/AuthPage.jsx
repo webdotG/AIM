@@ -7,10 +7,8 @@ import PasswordInput from '@/ui/components/auth/PasswordInput/PasswordInput';
 import HCaptcha from '@/ui/components/auth/HCaptcha/HCaptcha';
 import Button from '@/ui/components/common/Button/Button';
 import Loader from '@/ui/components/common/Loader/Loader';
-import { AuthAPIClient } from '@/core/adapters/api/clients/AuthAPIClient';
+import { useAuthStore } from '@/store';
 import './AuthPage.css';
-
-const authClient = new AuthAPIClient();
 
 export default function AuthPage() {
   const [mode, setMode] = useState('login');
@@ -29,6 +27,7 @@ export default function AuthPage() {
   const { theme } = useTheme();
   const { t } = useLanguage();
   const navigate = useNavigate();
+  const authStore = useAuthStore();
 
   const handleCaptchaVerify = (token) => {
     setHcaptchaToken(token);
@@ -77,23 +76,8 @@ export default function AuthPage() {
     
     try {
       if (mode === 'login') {
-        if (!login.trim() || !password.trim()) {
-          setError(t('auth.errors.fillAllFields'));
-          setLoading(false);
-          return;
-        }
-        
-        const result = await authClient.login({
-          login,
-          password,
-          hcaptchaToken,
-        });
-
-        // Сохраняем токен и юзера
-        localStorage.setItem('token', result.token);
-        localStorage.setItem('user', JSON.stringify(result.user));
-
-        // Редирект на главную
+        // Используем authStore для логина
+        await authStore.login({ login, password, hcaptchaToken });
         navigate('/');
         
       } else if (mode === 'register') {
@@ -109,15 +93,11 @@ export default function AuthPage() {
           return;
         }
         
-        const result = await authClient.register({
-          login,
-          password,
-          hcaptchaToken,
-        });
-
+        // Используем authStore для регистрации
+        const result = await authStore.register({ login, password, hcaptchaToken });
+        
         setGeneratedBackupCode(result.backupCode);
         setShowBackupCode(true);
-        setLoading(false);
         
       } else if (mode === 'recover') {
         if (!backupCode.trim() || !password.trim()) {
@@ -126,24 +106,28 @@ export default function AuthPage() {
           return;
         }
         
-        const result = await authClient.recover({
-          backupCode,
-          newPassword: password,
-          hcaptchaToken,
+        // Используем authStore для восстановления
+        const result = await authStore.recover({ 
+          backupCode, 
+          newPassword: password, 
+          hcaptchaToken 
         });
-
+        
         setGeneratedBackupCode(result.backupCode);
         setShowBackupCode(true);
-        setLoading(false);
       }
     } catch (err) {
       console.error('Auth error:', err);
-      setError(err.response?.data?.error || err.message || t('auth.errors.genericError'));
-      setLoading(false);
+      // Берем ошибку из стора или API
+      const errorMessage = authStore.error || err.response?.data?.error || err.message || t('auth.errors.genericError');
+      setError(errorMessage);
       setHcaptchaToken('');
+    } finally {
+      setLoading(false);
     }
   };
   
+  // Используем loading из локального состояния, а не authStore.isLoading
   if (loading) {
     return <Loader />;
   }
@@ -153,9 +137,9 @@ export default function AuthPage() {
       <div className="auth-page">
         <div className="auth-container backup-code-modal">
           <div className="auth-header">
-            <h1 className="auth-title">🔑 {t('auth.backup_code.title')}</h1>
+            <h1 className="auth-title">{t('auth.backup_code.title')}</h1>
             <p className="auth-subtitle backup-warning">
-              ⚠️ {t('auth.backup_code.warning')}
+              {t('auth.backup_code.warning')}
             </p>
           </div>
 
@@ -172,9 +156,9 @@ export default function AuthPage() {
           </div>
 
           <div className="backup-code-instructions">
-            <p>📝 {t('auth.backup_code.instruction1')}</p>
-            <p>🔒 {t('auth.backup_code.instruction2')}</p>
-            <p>💾 {t('auth.backup_code.instruction3')}</p>
+            <p>{t('auth.backup_code.instruction1')}</p>
+            <p>{t('auth.backup_code.instruction2')}</p>
+            <p>{t('auth.backup_code.instruction3')}</p>
           </div>
 
           <Button
