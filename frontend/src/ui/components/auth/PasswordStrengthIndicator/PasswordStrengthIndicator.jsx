@@ -48,21 +48,6 @@ export default function PasswordStrengthIndicator({
         </div>
       )}
 
-      {/* Suggestions */}
-      {suggestions.length > 0 && (
-        <div className="strength-suggestions">
-          <div className="suggestions-title">Рекомендации:</div>
-          <ul className="suggestions-list">
-            {suggestions.map((suggestion, index) => (
-              <li key={index} className="suggestion-item">
-                <span className="suggestion-icon">!</span>
-                {suggestion}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
       {/* Success Message */}
       {isStrong && (
         <div className="strength-success">
