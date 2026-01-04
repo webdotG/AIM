@@ -9,7 +9,7 @@ export class AuthRepository extends BaseRepository {
     throw new Error('Not implemented');
   }
 
-  async recover(login, backupCode, newPassword) {
+  async recover(backupCode, newPassword, hcaptchaToken) {
     throw new Error('Not implemented');
   }
 

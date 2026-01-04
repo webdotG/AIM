@@ -9,6 +9,7 @@ import Button from '@/ui/components/common/Button/Button';
 import Loader from '@/ui/components/common/Loader/Loader';
 import { useAuthStore } from '@/store';
 import './AuthPage.css';
+import BackupCodeModal from '@/ui/components/auth/BackupCodeModal/BackupCodeModal';
 
 export default function AuthPage() {
   const [mode, setMode] = useState('login');
@@ -54,78 +55,86 @@ export default function AuthPage() {
     }
   };
 
-  const handleCloseBackupCode = () => {
-    setShowBackupCode(false);
-    setGeneratedBackupCode('');
-    setMode('login');
-    setPassword('');
-    setConfirmPassword('');
-    setLogin('');
-  };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  setError('');
 
-    if (!hcaptchaToken) {
-      setError(t('auth.errors.captchaRequired'));
-      setLoading(false);
-      return;
-    }
-    
-    try {
-      if (mode === 'login') {
-        // Используем authStore для логина
-        await authStore.login({ login, password, hcaptchaToken });
-        navigate('/');
-        
-      } else if (mode === 'register') {
-        if (password !== confirmPassword) {
-          setError(t('auth.errors.passwordsNotMatch'));
-          setLoading(false);
-          return;
-        }
-        
-        if (passwordStrength && !passwordStrength.isStrong) {
-          setError(t('auth.errors.passwordNotStrong'));
-          setLoading(false);
-          return;
-        }
-        
-        // Используем authStore для регистрации
-        const result = await authStore.register({ login, password, hcaptchaToken });
-        
-        setGeneratedBackupCode(result.backupCode);
-        setShowBackupCode(true);
-        
-      } else if (mode === 'recover') {
-        if (!backupCode.trim() || !password.trim()) {
-          setError(t('auth.errors.fillAllFields'));
-          setLoading(false);
-          return;
-        }
-        
-        // Используем authStore для восстановления
-        const result = await authStore.recover({ 
-          backupCode, 
-          newPassword: password, 
-          hcaptchaToken 
-        });
-        
-        setGeneratedBackupCode(result.backupCode);
-        setShowBackupCode(true);
+  if (!hcaptchaToken) {
+    setError(t('auth.errors.captchaRequired'));
+    setLoading(false);
+    return;
+  }
+  
+  try {
+    if (mode === 'register') {
+      if (password !== confirmPassword) {
+        setError(t('auth.errors.passwordsNotMatch'));
+        setLoading(false);
+        return;
       }
-    } catch (err) {
-      console.error('Auth error:', err);
-      // Берем ошибку из стора или API
-      const errorMessage = authStore.error || err.response?.data?.error || err.message || t('auth.errors.genericError');
-      setError(errorMessage);
-      setHcaptchaToken('');
-    } finally {
-      setLoading(false);
+      
+      if (passwordStrength && !passwordStrength.isStrong) {
+        setError(t('auth.errors.passwordNotStrong'));
+        setLoading(false);
+        return;
+      }
+      
+      const result = await authStore.register({ login, password, hcaptchaToken });
+      
+      // Не редиректим сразу! Ждем пока пользователь сохранит backup code
+      // Просто показываем модалку
+      if (result.backupCode) {
+        setGeneratedBackupCode(result.backupCode);
+        setShowBackupCode(true);
+        // НЕ делаем navigate('/') здесь!
+      } else {
+        // Если нет backup code (хотя должен быть), редиректим
+        navigate('/');
+      }
+    } else if (mode === 'login') {
+      await authStore.login({ login, password, hcaptchaToken });
+      navigate('/'); // Логин - сразу редирект
+    } else if (mode === 'recover') {
+      const result = await authStore.recover({ 
+        backupCode, 
+        newPassword: password, 
+        hcaptchaToken 
+      });
+      
+      if (result.backupCode) {
+        setGeneratedBackupCode(result.backupCode);
+        setShowBackupCode(true);
+      } else {
+        navigate('/auth'); // Возвращаем на страницу логина
+      }
     }
-  };
+  } catch (err) {
+    // ... обработка ошибки
+  } finally {
+    setLoading(false);
+  }
+};
+
+// В handleCloseBackupCode добавляем редирект:
+const handleCloseBackupCode = () => {
+  setShowBackupCode(false);
+  setGeneratedBackupCode('');
+  
+  // После закрытия модалки - редирект
+  if (mode === 'register') {
+    navigate('/'); // на главную
+  } else if (mode === 'recover') {
+    navigate('/auth'); // на страницу логина
+  }
+  
+  // Сброс полей
+  setMode('login');
+  setPassword('');
+  setConfirmPassword('');
+  setLogin('');
+};
   
   // Используем loading из локального состояния, а не authStore.isLoading
   if (loading) {
@@ -134,43 +143,13 @@ export default function AuthPage() {
 
   if (showBackupCode) {
     return (
-      <div className="auth-page">
-        <div className="auth-container backup-code-modal">
-          <div className="auth-header">
-            <h1 className="auth-title">{t('auth.backup_code.title')}</h1>
-            <p className="auth-subtitle backup-warning">
-              {t('auth.backup_code.warning')}
-            </p>
-          </div>
-
-          <div className="backup-code-display">
-            <code className="backup-code-text">{generatedBackupCode}</code>
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={handleCopyBackupCode}
-              fullWidth
-            >
-              {copied ? '✓ ' + t('auth.backup_code.copied') : t('auth.backup_code.copy')}
-            </Button>
-          </div>
-
-          <div className="backup-code-instructions">
-            <p>{t('auth.backup_code.instruction1')}</p>
-            <p>{t('auth.backup_code.instruction2')}</p>
-            <p>{t('auth.backup_code.instruction3')}</p>
-          </div>
-
-          <Button
-            type="button"
-            variant="primary"
-            onClick={handleCloseBackupCode}
-            fullWidth
-          >
-            {t('auth.backup_code.understood')}
-          </Button>
-        </div>
-      </div>
+      <BackupCodeModal
+        isOpen={true}
+        onClose={handleCloseBackupCode}
+        backupCode={generatedBackupCode}
+        title="код восстановления"
+        warning="Без него учетную запись не восстановить"
+      />
     );
   }
   

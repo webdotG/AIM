@@ -1,10 +1,8 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import Input from '../../common/Input/Input';
 import PasswordStrengthIndicator from '../PasswordStrengthIndicator/PasswordStrengthIndicator';
-import { AuthAPIClient } from '@/core/adapters/api/clients/AuthAPIClient';
+import { useAuthStore } from '@/store';
 import './PasswordInput.css';
-
-const authClient = new AuthAPIClient();
 
 function useDebounce(value, delay) {
   const [debouncedValue, setDebouncedValue] = useState(value);
@@ -41,9 +39,9 @@ export default function PasswordInput({
   });
   const [isChecking, setIsChecking] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-
-  // для проверки пароля (500ms задержка)
   
+  const authStore = useAuthStore();
+
   const debouncedPassword = useDebounce(value, 500);
 
   // Проверка силы пароля
@@ -63,7 +61,8 @@ export default function PasswordInput({
 
       setIsChecking(true);
       try {
-        const result = await authClient.checkPasswordStrength(debouncedPassword);
+        const result = await authStore.checkPasswordStrength(debouncedPassword);
+        console.log('Check strength result:', result);
         setStrength(result);
         if (onStrengthChange) onStrengthChange(result);
       } catch (error) {
@@ -76,13 +75,13 @@ export default function PasswordInput({
     if (showStrengthIndicator) {
       checkStrength();
     }
-  }, [debouncedPassword, showStrengthIndicator, onStrengthChange]);
+  }, [debouncedPassword, showStrengthIndicator, onStrengthChange, authStore]);
 
-  // Генерация рекомендуемого пароля
   const handleGeneratePassword = async () => {
     try {
-      const generatedPassword = await authClient.generatePasswordRecommendation();
-      onChange(generatedPassword);
+      const password = await authStore.generatePassword();
+      console.log('Generated password:', password);
+      onChange(password);
     } catch (error) {
       console.error('Failed to generate password:', error);
     }

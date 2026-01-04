@@ -8,152 +8,74 @@ export class AuthAPIClient extends AuthRepository {
 
   prepareCaptchaData(captchaToken) {
     if (isDevelopment()) {
-      // В режиме разработки используем специальный токен
-      return {
-        hcaptchaToken: 'dev-mode-bypass-token',
-      };
-    // return {
-    //   hcaptchaToken: captchaToken,
-    //   devMode: true,
-    // };
+      return { hcaptchaToken: 'dev-mode-bypass-token' };
     }
-    // production требуем реальный токен
     return { hcaptchaToken: captchaToken };
   }
 
-   async login(credentials) {
+  async login(credentials) {
     const captchaData = this.prepareCaptchaData(credentials.hcaptchaToken);
-    const response = await apiClient.post('/auth/login', {
+    const data = await apiClient.post('/auth/login', {
       login: credentials.login,
       password: credentials.password,
       ...captchaData,
     });
     
-    // response уже является response.data из-за интерцептора
-    if (response.data && response.data.token) {
-      localStorage.setItem('auth_token', response.data.token);
-      localStorage.setItem('user', JSON.stringify(response.data.user)); 
-      return {
-        user: UserMapper.toDomain(response.data.user),
-        token: response.data.token
-      };
-    } else if (response.token) {
-      localStorage.setItem('auth_token', response.token);
-      localStorage.setItem('user', JSON.stringify(response.user));
-      return {
-        user: UserMapper.toDomain(response.user),
-        token: response.token
-      };
-    }
-    
-    throw new Error('Invalid response structure');
+    return {
+      user: UserMapper.toDomain(data.user),
+      token: data.token
+    };
+  }
+
+  async logout() {
+    return Promise.resolve();
   }
 
   async register(userData) {
     const captchaData = this.prepareCaptchaData(userData.hcaptchaToken);
-    
-    const response = await apiClient.post('/auth/register', {
+    const data = await apiClient.post('/auth/register', {
       login: userData.login,
       password: userData.password,
       ...captchaData,
     });
     
-    if (response.data && response.data.token) {
-      localStorage.setItem('auth_token', response.data.token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-      return {
-        user: UserMapper.toDomain(response.data.user),
-        token: response.data.token
-      };
-    } else if (response.token) {
-      localStorage.setItem('auth_token', response.token);
-      localStorage.setItem('user', JSON.stringify(response.user));
-      return {
-        user: UserMapper.toDomain(response.user),
-        token: response.token
-      };
-    }
-    
-    throw new Error('Invalid response structure');
+    return {
+      user: UserMapper.toDomain(data.user),
+      token: data.token
+    };
   }
 
-  async logout() {
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('user'); 
-    await apiClient.post('/auth/logout');
-  }
-
-  async register(userData) {
-    const captchaData = this.prepareCaptchaData(userData.hcaptchaToken);
-    
-    const response = await apiClient.post('/auth/register', {
-      login: userData.login,
-      password: userData.password,
-      ...captchaData,
-    });
-    
-    if (response.data && response.data.token) {
-      localStorage.setItem('auth_token', response.data.token);
-      localStorage.setItem('user_id', response.data.user.id);
-      return {
-        user: UserMapper.toDomain(response.data.user),
-        token: response.data.token
-      };
-    } else if (response.token) {
-      localStorage.setItem('auth_token', response.token);
-      localStorage.setItem('user_id', response.user.id);
-      return {
-        user: UserMapper.toDomain(response.user),
-        token: response.token
-      };
-    }
-    
-    throw new Error('Invalid response structure');
-  }
-
-  async logout() {
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('user_id');
-    await apiClient.post('/auth/logout');
-  }
-
-  async getCurrentUser() {
-    const response = await apiClient.get('/auth/me');
-    return UserMapper.toDomain(response.data || response);
-  }
-
-  async updateProfile(userData) {
-    const response = await apiClient.put('/auth/profile', userData);
-    return UserMapper.toDomain(response.data || response);
-  }
-
-  async changePassword(passwordData) {
-    await apiClient.post('/auth/change-password', passwordData);
-    return true;
-  }
-
-  async requestPasswordReset(email) {
-    await apiClient.post('/auth/forgot-password', { email });
-    return true;
-  }
-
-  async resetPassword(token, newPassword) {
-    await apiClient.post('/auth/reset-password', { token, newPassword });
-    return true;
-  }
-
-  async verifyEmail(token) {
-    await apiClient.post('/auth/verify-email', { token });
-    return true;
-  }
+async recover(backupCode, newPassword, hcaptchaToken) {
+  const captchaData = this.prepareCaptchaData(hcaptchaToken);
+  // data уже response.data!
+  const data = await apiClient.post('/auth/recover', {
+    backupCode,
+    newPassword,
+    ...captchaData,
+  });
   
-  async checkPasswordStrength(password) {
-    const response = await apiClient.post('/auth/check-password-strength', { password });
-    return response.data || response;
-  }
+  return {
+    user: UserMapper.toDomain(data.user),
+    token: data.token,
+    backupCode: data.backupCode || data.newBackupCode
+  };
+}
 
-  async generatePasswordRecommendation() {
-    const response = await apiClient.get('/auth/generate-password');
-    return (response.data || response).password;
+async checkPasswordStrength(password) {
+  const data = await apiClient.post('/auth/check-password-strength', { password });
+  // data = { isStrong: true, score: 85, reasons: [], suggestions: [] }
+  return data;
+}
+
+async generatePasswordRecommendation() {
+  const data = await apiClient.get('/auth/generate-password');
+  // data = { success: true, data: { password: "..." } }
+  if (data.data && data.data.password) {
+    return { 
+      success: true, 
+      data: { password: data.data.password } 
+    };
   }
+  throw new Error('Invalid password response structure');
+}
 }

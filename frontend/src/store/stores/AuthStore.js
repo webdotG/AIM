@@ -1,6 +1,6 @@
-// stores/AuthStore.js
 import { makeAutoObservable, runInAction } from 'mobx';
 import { AuthAPIClient } from '../../core/adapters/api/clients/AuthAPIClient';
+import { UserMapper } from '../../core/adapters/api/mappers/UserMapper';
 
 export class AuthStore {
   user = JSON.parse(localStorage.getItem('user') || 'null');
@@ -12,51 +12,33 @@ export class AuthStore {
 
   constructor() {
     makeAutoObservable(this);
-    console.log('AuthStore token on init:', this.token);
-    if (this.token) this.fetchCurrentUser();
+    // При инициализации читаем из localStorage
   }
 
   get isAuthenticated() {
     return !!this.token;
   }
 
-  async fetchCurrentUser() {
-    if (!this.token) return;
-    
+  async login({ login, password, hcaptchaToken }) {
     this.isLoading = true;
     this.error = null;
     
     try {
-      const user = await this.repository.getCurrentUser();
-      runInAction(() => {
-        this.user = user;
-        this.isLoading = false;
-      });
-    } catch (error) {
-      runInAction(() => {
-        this.error = error.message || 'Failed to fetch user';
-        this.isLoading = false;
-        // this.logout();
-      });
-    }
-  }
-
-  async login(login, password, hcaptchaToken) {
-    this.isLoading = true;
-    this.error = null;
-    
-    try {
-      const result = await this.repository.login(login, password, hcaptchaToken);
+      const data = await this.repository.login({ login, password, hcaptchaToken });
       
       runInAction(() => {
-        this.user = result.user;
-        this.token = result.token;
-        localStorage.setItem('auth_token', result.token); 
-        localStorage.setItem('user', JSON.stringify(result.user));
+        // Сохраняем в MobX состояние
+        this.user = UserMapper.toDomain(data.user);
+        this.token = data.token;
+        
+        // Сохраняем в localStorage
+        localStorage.setItem('auth_token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        
         this.isLoading = false;
       });
       
-      return result;
+      return data;
     } catch (error) {
       runInAction(() => {
         this.error = error.message || 'Login failed';
@@ -67,22 +49,94 @@ export class AuthStore {
     }
   }
 
-  async logout() {
-    this.isLoading = true;
+async register({ login, password, hcaptchaToken }) { 
+  this.isLoading = true;
+  this.error = null;
+  
+  try {
+    const data = await this.repository.register({ login, password, hcaptchaToken });
     
+    runInAction(() => {
+      this.user = UserMapper.toDomain(data.user);
+      this.token = data.token;
+      
+      localStorage.setItem('auth_token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      
+      this.isLoading = false;
+    });
+    
+    return data;
+  } catch (error) {
+    runInAction(() => {
+      this.error = error.message || 'Registration failed';
+      this.isLoading = false;
+      this.token = null;
+    });
+    throw error;
+  }
+}
+
+    async recover({ backupCode, newPassword, hcaptchaToken }) {
+      this.isLoading = true;
+      this.error = null;
+      
+      try {
+        const data = await this.repository.recover(backupCode, newPassword, hcaptchaToken);
+
+        runInAction(() => {
+          this.user = UserMapper.toDomain(data.user);
+          this.token = data.token;
+          
+          localStorage.setItem('auth_token', data.token);
+          localStorage.setItem('user', JSON.stringify(data.user));
+          
+          this.isLoading = false;
+        });
+        
+        return data;
+      } catch (error) {
+        runInAction(() => {
+          this.error = error.message || 'Password recovery failed';
+          this.isLoading = false;
+        });
+        throw error;
+      }
+    }
+
+  async logout() {
+    runInAction(() => {
+      this.user = null;
+      this.token = null;
+      this.error = null;
+      this.isLoading = false;
+      
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('user');
+    });
+    
+    window.location.href = '/auth';
+  }
+
+  async checkPasswordStrength(password) {
     try {
-      await this.repository.logout();
+      const result = await this.repository.checkPasswordStrength(password);
+      // result = { success: true, data: { isStrong: true, ... } }
+      return result.data || result;
     } catch (error) {
-      console.error('Logout error:', error);
-    } finally {
-      runInAction(() => {
-        this.user = null;
-        this.token = null;
-        this.error = null;
-        this.isLoading = false;
-        localStorage.removeItem('auth_token'); 
-        localStorage.removeItem('user');
-      });
+      this.error = error.message || 'Password check failed';
+      throw error;
     }
   }
+
+async generatePassword() {
+  try {
+    const result = await this.repository.generatePasswordRecommendation();
+    // result = { success: true, data: { password: "..." } }
+    return result.data.password;
+  } catch (error) {
+    this.error = error.message || 'Failed to generate password';
+    throw error;
+  }
+}
 }
