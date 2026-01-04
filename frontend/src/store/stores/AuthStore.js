@@ -1,6 +1,7 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 import { AuthAPIClient } from '../../core/adapters/api/clients/AuthAPIClient';
 import { UserMapper } from '../../core/adapters/api/mappers/UserMapper';
+import { apiClient } from '../../core/adapters/config'; 
 
 export class AuthStore {
   user = JSON.parse(localStorage.getItem('user') || 'null');
@@ -12,7 +13,6 @@ export class AuthStore {
 
   constructor() {
     makeAutoObservable(this);
-    // При инициализации читаем из localStorage
   }
 
   get isAuthenticated() {
@@ -27,11 +27,9 @@ export class AuthStore {
       const data = await this.repository.login({ login, password, hcaptchaToken });
       
       runInAction(() => {
-        // Сохраняем в MobX состояние
         this.user = UserMapper.toDomain(data.user);
         this.token = data.token;
         
-        // Сохраняем в localStorage
         localStorage.setItem('auth_token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
         
@@ -66,7 +64,11 @@ async register({ login, password, hcaptchaToken }) {
       this.isLoading = false;
     });
     
-    return data;
+    return {
+      user: data.user,
+      token: data.token,
+      backupCode: data.backupCode
+    };
   } catch (error) {
     runInAction(() => {
       this.error = error.message || 'Registration failed';
@@ -77,32 +79,49 @@ async register({ login, password, hcaptchaToken }) {
   }
 }
 
-    async recover({ backupCode, newPassword, hcaptchaToken }) {
-      this.isLoading = true;
-      this.error = null;
-      
-      try {
-        const data = await this.repository.recover(backupCode, newPassword, hcaptchaToken);
+  async recover({ backupCode, newPassword, hcaptchaToken }) {
+    this.isLoading = true;
+    this.error = null;
+    
+    try {
+      const data = await this.repository.recover(backupCode, newPassword, hcaptchaToken);
+      // data = { token, backupCode, message }
 
-        runInAction(() => {
-          this.user = UserMapper.toDomain(data.user);
-          this.token = data.token;
-          
-          localStorage.setItem('auth_token', data.token);
-          localStorage.setItem('user', JSON.stringify(data.user));
-          
-          this.isLoading = false;
-        });
-        
-        return data;
-      } catch (error) {
-        runInAction(() => {
-          this.error = error.message || 'Password recovery failed';
-          this.isLoading = false;
-        });
-        throw error;
-      }
+      runInAction(() => {
+        this.token = data.token;
+        localStorage.setItem('auth_token', data.token);
+        this.isLoading = false;
+      });
+
+      // user после установки токена
+      await this.fetchCurrentUser();
+      
+      return {
+        message: data.message,
+        backupCode: data.backupCode
+      };
+    } catch (error) {
+      runInAction(() => {
+        this.error = error.message || 'Password recovery failed';
+        this.isLoading = false;
+      });
+      throw error;
     }
+  }
+
+  async fetchCurrentUser() {
+    try {
+      const response = await apiClient.get('/auth/verify');
+      
+      runInAction(() => {
+        this.user = UserMapper.toDomain(response.data.user);
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+      });
+    } catch (error) {
+      console.error('Failed to fetch user:', error);
+      this.logout();
+    }
+  }
 
   async logout() {
     runInAction(() => {
@@ -118,25 +137,26 @@ async register({ login, password, hcaptchaToken }) {
     window.location.href = '/auth';
   }
 
-  async checkPasswordStrength(password) {
-    try {
-      const result = await this.repository.checkPasswordStrength(password);
-      // result = { success: true, data: { isStrong: true, ... } }
-      return result.data || result;
-    } catch (error) {
-      this.error = error.message || 'Password check failed';
-      throw error;
-    }
+async checkPasswordStrength(password) {
+  try {
+    const result = await this.repository.checkPasswordStrength(password);
+    // result = { isStrong, score, reasons, suggestions }
+    return result;
+  } catch (error) {
+    this.error = error.message || 'Password check failed';
+    throw error;
   }
+}
 
 async generatePassword() {
   try {
-    const result = await this.repository.generatePasswordRecommendation();
-    // result = { success: true, data: { password: "..." } }
-    return result.data.password;
+    const password = await this.repository.generatePasswordRecommendation();
+    // password = "Generated-Pass123" (строка)
+    return password;
   } catch (error) {
     this.error = error.message || 'Failed to generate password';
     throw error;
   }
 }
+
 }
