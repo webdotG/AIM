@@ -8,11 +8,11 @@ export default function PasswordStrengthIndicator({
   suggestions = [] 
 }) {
   const getStrengthLevel = () => {
-    if (score >= 80) return { text: 'Сильный', class: 'strong' };
-    if (score >= 60) return { text: 'Хороший', class: 'good' };
-    if (score >= 40) return { text: 'Средний', class: 'medium' };
-    if (score >= 20) return { text: 'Слабый', class: 'weak' };
-    return { text: 'Очень слабый', class: 'very-weak' };
+    if (score >= 80) return { text: 'Кажется ОК', class: 'strong' };
+    if (score >= 60) return { text: 'Уже почти', class: 'good' };
+    if (score >= 40) return { text: 'НУЖНО лучше', class: 'medium' };
+    if (score >= 20) return { text: 'Такое себе', class: 'weak' };
+    return { text: 'Оч слабо', class: 'very-weak' };
   };
 
   const level = getStrengthLevel();
@@ -22,7 +22,8 @@ export default function PasswordStrengthIndicator({
       {/* Progress Bar */}
       <div className="strength-header">
         <span className="strength-label">Сила пароля:</span>
-        <span className={`strength-value ${level.class}`}>{level.text}</span>
+        {/* <span className={`strength-value ${level.class}`}>{level.text}</span> */}
+        <span className={`strength-value`}>{level.text}</span>
       </div>
       
       <div className="strength-bar">
@@ -65,8 +66,7 @@ export default function PasswordStrengthIndicator({
       {/* Success Message */}
       {isStrong && (
         <div className="strength-success">
-          <span className="success-icon">✓</span>
-          Отличный пароль! Все требования выполнены.
+          Все требования выполнены
         </div>
       )}
     </div>
