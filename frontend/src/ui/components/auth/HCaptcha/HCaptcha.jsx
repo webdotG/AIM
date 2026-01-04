@@ -195,18 +195,18 @@ export default function HCaptcha({
       />
       
       {/* Кастомные подсказки */}
-      <div style={{
-        fontSize: '11px',
-        color: '#666',
-        marginTop: '8px',
-        textAlign: 'center',
-        display: 'flex',
-        justifyContent: 'center',
-        gap: '15px'
-      }}>
-        <span>Security check</span>
-        {isDevMode && <span style={{color: 'BLACK'}}> Dev bypass active</span>}
-      </div>
+        {/* <div style={{
+          fontSize: '11px',
+          color: '#666',
+          marginTop: '8px',
+          textAlign: 'center',
+          display: 'flex',
+          justifyContent: 'center',
+          gap: '15px'
+        }}>
+          <span>Security check</span>
+          {isDevMode && <span style={{color: 'BLACK'}}> Dev bypass active</span>}
+        </div> */}
     </div>
   );
 }

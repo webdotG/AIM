@@ -35,7 +35,6 @@
   color: var(--color-text);
   outline: none;
   font-family: var(--font-serif);
-  text-transform: uppercase;
   letter-spacing: 1px;
   position: relative;
 }

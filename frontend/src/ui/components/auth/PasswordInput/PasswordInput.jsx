@@ -114,7 +114,7 @@ export default function PasswordInput({
             className="password-generate"
             onClick={handleGeneratePassword}
           >
-            Сгенерировать
+            Придумать
           </button>
         )}
       </div>

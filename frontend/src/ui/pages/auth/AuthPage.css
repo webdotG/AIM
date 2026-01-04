@@ -63,8 +63,7 @@
   font-size: var(--font-size-sm);
   color: var(--color-text);
   margin: 0;
-  font-family: var(--font-serif);
-  font-style: italic;
+
 }
 
 .auth-form {

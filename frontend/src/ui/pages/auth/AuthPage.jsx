@@ -215,7 +215,7 @@ const handleCloseBackupCode = () => {
               autoFocus={mode === 'login'}
             />
           )}
-          
+
           {mode === 'register' ? (
             <PasswordInput
               value={password}
@@ -228,16 +228,29 @@ const handleCloseBackupCode = () => {
               required
             />
           ) : mode === 'recover' ? (
+            <>
+            <Input
+              label={t('auth.backup_code.label')}
+              type="text"
+              value={backupCode}
+              onChange={setBackupCode}
+              placeholder={t('auth.backup_code.placeholder')}
+              required
+              autoFocus
+              maxLength={32}
+            />
             <PasswordInput
               value={password}
               onChange={setPassword}
-              label={t('auth.password.label')}
-              placeholder={t('auth.password.placeholder')}
+              label={t('auth.new-password.label')}
+              placeholder={t('auth.new-password.placeholder')}
               showStrengthIndicator={true}
               showGenerateButton={false}
               onStrengthChange={setPasswordStrength}
               required
             />
+            </>
+
           ) : (
             <Input
               label={t('auth.password.label')}
@@ -260,19 +273,7 @@ const handleCloseBackupCode = () => {
               required
             />
           )}
-          
-          {mode === 'recover' && (
-            <Input
-              label={t('auth.backup_code.label')}
-              type="text"
-              value={backupCode}
-              onChange={setBackupCode}
-              placeholder={t('auth.backup_code.placeholder')}
-              required
-              autoFocus
-              maxLength={32}
-            />
-          )}
+        
 
           <HCaptcha
             onVerify={handleCaptchaVerify}
@@ -291,12 +292,12 @@ const handleCloseBackupCode = () => {
             {getButtonText()}
           </Button>
           
-          {mode === 'register' && (
+          {/* {mode === 'register' && (
             <div className="auth-hint">
               <span className="hint-icon">i</span>
               <span>{t('auth.register.backupCodeInfo')}</span>
             </div>
-          )}
+          )} */}
         </form>
         
         <div className="auth-footer">

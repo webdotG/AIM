@@ -54,7 +54,7 @@ export default function PasswordStrengthIndicator({
           <ul className="suggestions-list">
             {suggestions.map((suggestion, index) => (
               <li key={index} className="suggestion-item">
-                <span className="suggestion-icon">💡</span>
+                <span className="suggestion-icon">!</span>
                 {suggestion}
               </li>
             ))}
