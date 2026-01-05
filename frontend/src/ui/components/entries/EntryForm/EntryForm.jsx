@@ -5,7 +5,7 @@ import { useLanguage } from '@/layers/language';
 import { usePlatform } from '@/layers/platform';
 import { useTheme } from '@/layers/theme';
 import { 
-  useEntryDraftStore, // ИМЕННО ЭТОТ СТОР!
+  useEntryDraftStore,
   useEntriesStore, 
   useUIStore,
   useBodyStatesStore, 
@@ -112,17 +112,17 @@ const EntryForm = observer(() => {
   }, [entriesStore]);
   
   // === ВЫЧИСЛЯЕМЫЕ ЗНАЧЕНИЯ ===
-  const hasBodyState = useMemo(() => {
-    const bodyState = entryDraftStore.currentDraft.bodyState;
-    if (!bodyState) return false;
-    
-    const { hp, energy, location } = bodyState;
-    return (
-      (hp !== undefined && hp !== null && hp > 0) ||
-      (energy !== undefined && energy !== null && energy > 0) ||
-      (location && location.trim().length > 0)
-    );
-  }, [entryDraftStore.currentDraft.bodyState]);
+const hasBodyState = useMemo(() => {
+  const bodyState = entryDraftStore.currentDraft.bodyState;
+  if (!bodyState) return false;
+  
+  const { hp, energy, location } = bodyState;
+  return (
+    (hp !== undefined && hp !== null && hp > 0) ||
+    (energy !== undefined && energy !== null && energy > 0) ||
+    (location && typeof location === 'string' && location.trim().length > 0)
+  );
+}, [entryDraftStore.currentDraft.bodyState]);
   
   // === ФУНКЦИИ ПРЕОБРАЗОВАНИЯ ДАННЫХ ===
   const convertBodyStateForAPI = useCallback((pickerData) => {
@@ -174,12 +174,12 @@ const EntryForm = observer(() => {
     return result;
   }, []);
   
-  // НОВЫЙ МЕТОД ДЛЯ СОХРАНЕНИЯ ИЗ ЧЕРНОВИКА
+  //ДЛЯ СОХРАНЕНИЯ ИЗ ЧЕРНОВИКА
   const saveEntryFromDraft = useCallback(async () => {
     const draft = entryDraftStore.currentDraft;
     
     // ВАЛИДАЦИЯ
-    if (!draft.content?.trim()) {
+    if (!draft.content || typeof draft.content !== 'string' || !draft.content.trim()) {
       throw new Error(t('common.requiredContent') || 'Заполните содержание');
     }
     
@@ -464,7 +464,7 @@ const EntryForm = observer(() => {
         <div className="form-group">
           <TextArea
             value={draft.content || ''}
-            onChange={(value) => entryDraftStore.updateDraft({ content: value })}
+            onChange={(e) => entryDraftStore.updateDraft({ content: e.target.value })}
             label={t('entries.form.contentLabel') || 'Содержание'}
             placeholder={t('entries.form.contentPlaceholder') || 'Опишите что произошло...'}
             required
@@ -652,7 +652,7 @@ const EntryForm = observer(() => {
             type="submit"
             variant="primary"
             size="large"
-            disabled={isSubmitting || !draft.content?.trim()}
+            disabled={isSubmitting || !draft.content || typeof draft.content !== 'string' || !draft.content.trim()}
             haptic={true}
             fullWidth
             loading={isSubmitting}

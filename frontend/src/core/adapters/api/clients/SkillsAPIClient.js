@@ -3,13 +3,10 @@ import { SkillsRepository } from '../../../repositories/SkillsRepository';
 import { SkillMapper } from '../mappers/SkillMapper';
 
 export class SkillsAPIClient extends SkillsRepository {
-  async getAll(filters = {}) {
-    const response = await apiClient.get('/skills', { params: filters });
-    return {
-      skills: SkillMapper.toDomainArray(response.data.skills),
-      pagination: response.data.pagination,
-    };
-  }
+async getAll(filters = {}) {
+  const response = await apiClient.get('/skills', { params: filters });
+  return response.data.skills || []; 
+}
 
   async getById(id) {
     const response = await apiClient.get(`/skills/${id}`);

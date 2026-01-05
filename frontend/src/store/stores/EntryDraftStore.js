@@ -136,7 +136,8 @@ export class EntryDraftStore {
 
   // Проверка валидности
   get isValid() {
-    return this.currentDraft.content.trim().length > 0;
+    const content = this.currentDraft.content;
+    return content && typeof content === 'string' && content.trim().length > 0;
   }
 
   get hasBodyState() {

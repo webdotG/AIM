@@ -39,24 +39,25 @@ export class SkillsStore {
 
   // ==================== ВЗАИМОДЕЙСТВИЕ ====================
 
-  async fetchSkills(params = {}) {
-    this.isLoading = true;
-    this.error = null;
+async fetchSkills(params = {}) {
+  this.isLoading = true;
+  this.error = null;
+  
+  try {
+    const skills = await this.repository.getAll(params);
     
-    try {
-      const response = await this.repository.getAll(params);
-      
-      runInAction(() => {
-        this.skills = response;
-        this.isLoading = false;
-      });
-    } catch (error) {
-      runInAction(() => {
-        this.error = error.message || 'Failed to fetch skills';
-        this.isLoading = false;
-      });
-    }
+    runInAction(() => {
+      this.skills = Array.isArray(skills) ? skills : [];
+      this.isLoading = false;
+    });
+  } catch (error) {
+    runInAction(() => {
+      this.error = error.message || 'Failed to fetch skills';
+      this.skills = []; 
+      this.isLoading = false;
+    });
   }
+}
 
   async fetchCategories() {
     try {
@@ -190,6 +191,10 @@ async addProgress(skillId, progressData) {
   // ==================== ВЫЧИСЛЯЕМЫЕ СВОЙСТВА ====================
 
   get filteredSkills() {
+    if (!Array.isArray(this.skills)) {
+      return [];
+    }
+
     let result = [...this.skills];
     
     if (this.filters.categoryId) {
