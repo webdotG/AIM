@@ -10,13 +10,20 @@ export {
   useCircumstancesStore,
   useSkillsStore,
   useUIStore,
+  useRelationsStore, 
+  useSkillProgressStore, 
+  useTagsStore, 
+  useEmotionsStore,
 } from './StoreContext';
 
 
 export { AuthStore } from './stores/AuthStore';
-export { EntriesStore } from './stores/EntriesStore';
 export { BodyStatesStore } from './stores/BodyStatesStore';
 export { CircumstancesStore } from './stores/CircumstancesStore';
-export { SkillsStore } from './stores/SkillsStore';
-export { UIStore } from './stores/UIStore';
+export { EntriesStore } from './stores/EntriesStore';
 export { RelationsStore } from './stores/RelationsStore';
+export { SkillProgressStore } from './stores/SkillProgressStore';
+export { SkillsStore } from './stores/SkillsStore';
+export { TagsStore } from './stores/TagsStore';
+export { UIStore } from './stores/UIStore';
+export { EmotionsStore } from './stores/EmotionsStore';

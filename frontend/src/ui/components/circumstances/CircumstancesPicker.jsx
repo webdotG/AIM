@@ -1,15 +1,33 @@
-import React, { useState, useEffect, useRef } from 'react';
+// ~/aProject/AIM/frontend/src/ui/components/circumstances/CircumstancesPicker.jsx
+import React, { useState, useEffect, useCallback } from 'react';
+import { observer } from 'mobx-react-lite';
 import { useLanguage } from '@/layers/language';
 import './CircumstancesPicker.css';
 
-const CircumstancesPicker = ({ 
+const CircumstancesPicker = observer(({ 
+  // Режим 1: Автономный (для переиспользования)
   selectedCircumstances = [], 
   onChange,
-  maxCircumstances = 5,
-  onClose
+  onClose,
+  
+  // Режим 2: Интегрированный с черновиком (для EntryForm)
+  draftStore,
+  draftField = 'circumstances',
+  
+  // Общие пропсы
+  maxCircumstances = 5
 }) => {
   const { t } = useLanguage();
   
+  // Определяем режим работы
+  const isDraftMode = !!draftStore && !!draftField;
+  
+  // Получаем текущие данные
+  const currentSelection = isDraftMode 
+    ? draftStore.currentDraft[draftField] || []
+    : selectedCircumstances || [];
+  
+  // Локальное состояние UI
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
   const [intensity, setIntensity] = useState(50);
@@ -18,152 +36,65 @@ const CircumstancesPicker = ({
 
   const intensitySteps = [5, 25, 50, 75, 90, 99, 100];
 
-  // Ref для очистки URL
-  const clearUrlRef = useRef(() => {
-    const url = new URL(window.location);
-    url.searchParams.delete('circ');
-    window.history.replaceState({}, '', url);
-  });
-
-  // Передаем функцию очистки наружу
+  // Синхронизация при изменении пропсов
   useEffect(() => {
-    if (onClose) {
-      onClose({ clearUrl: clearUrlRef.current });
+    if (!isDraftMode) {
+      // Сбрасываем UI состояние если изменились пропсы
+      setSelectedCategory(null);
+      setSelectedItem(null);
+      setIntensity(50);
+      setTemperature(20);
+      setCurrentStep('category');
     }
-  }, [onClose]);
+  }, [isDraftMode, selectedCircumstances]);
 
-  // Обновляем URL при изменении обстоятельств
-  useEffect(() => {
-    if (!Array.isArray(selectedCircumstances) || selectedCircumstances.length === 0) {
-      clearUrlRef.current();
-      return;
+  // Обработчик обновления выбора
+  const handleChange = useCallback((newCircumstances) => {
+    if (isDraftMode) {
+      draftStore.updateDraft({ [draftField]: newCircumstances });
+    } else {
+      onChange?.(newCircumstances);
     }
+  }, [isDraftMode, draftStore, draftField, onChange]);
 
-    // Формат: category:item:intensity:isTemp
-    // Пример: weather:sunny:20:t;moon:full:75:p
-    const encoded = selectedCircumstances.map(circ => {
-      const catCode = circ.category.id.charAt(0); // w, m, e
-      const itemCode = circ.item?.id?.substring(0, 2) || 'gn';
-      const intensity = circ.intensity || 50;
-      const tempFlag = circ.isTemperature ? 't' : 'p';
-      return `${catCode}:${itemCode}:${intensity}:${tempFlag}`;
-    }).join(';');
-    
-    const url = new URL(window.location);
-    url.searchParams.set('circ', encoded);
-    window.history.replaceState({}, '', url);
-  }, [selectedCircumstances]);
-
-  // Чтение из URL при открытии
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const circParam = params.get('circ');
-    
-    if (circParam && (!selectedCircumstances || selectedCircumstances.length === 0)) {
-      try {
-        const circumstances = circParam.split(';').map(part => {
-          const [catCode, itemCode, intensityStr, tempFlag] = part.split(':');
-          const intensity = parseInt(intensityStr) || 50;
-          const isTemperature = tempFlag === 't';
-          
-          let categoryId;
-          switch(catCode) {
-            case 'w': categoryId = 'weather'; break;
-            case 'm': categoryId = 'moon'; break;
-            case 'e': categoryId = 'events'; break;
-            default: return null;
-          }
-          
-          const category = {
-            id: categoryId,
-            label: t(`circumstances.categories.${categoryId}`) || categoryId,
-            icon: categoryId === 'weather' ? 'W' : 
-                  categoryId === 'moon' ? 'M' : 'E'
-          };
-          
-          let itemId;
-          switch(itemCode) {
-            case 'su': itemId = 'sunny'; break;
-            case 'ra': itemId = 'rainy'; break;
-            case 'sn': itemId = 'snowy'; break;
-            case 'st': itemId = 'stormy'; break;
-            case 'cl': itemId = 'cloudy'; break;
-            case 'fo': itemId = 'foggy'; break;
-            case 'wi': itemId = 'windy'; break;
-            case 'ne': itemId = 'new_moon'; break;
-            case 'fi': itemId = 'first_quarter'; break;
-            case 'fu': itemId = 'full_moon'; break;
-            case 'la': itemId = 'last_quarter'; break;
-            case 'wa': itemId = 'war'; break;
-            case 'pa': itemId = 'pandemic'; break;
-            case 'el': itemId = 'election'; break;
-            case 'cr': itemId = 'crisis'; break;
-            case 'ea': itemId = 'earthquake'; break;
-            case 'ho': itemId = 'holiday'; break;
-            default: itemId = 'general';
-          }
-          
-          const item = itemId !== 'general' ? {
-            id: itemId,
-            label: t(`circumstances.${categoryId}.${itemId}`) || itemId,
-            icon: category.icon
-          } : null;
-          
-          return {
-            category,
-            item,
-            intensity,
-            isTemperature
-          };
-        }).filter(Boolean);
-        
-        if (circumstances.length > 0) {
-          onChange(circumstances);
-        }
-      } catch (e) {
-        console.error('Error parsing circumstances from URL:', e);
-      }
-    }
-  }, []);
-
-  // Категории обстоятельств (без эмодзи)
-  const categories = [
+  // Категории обстоятельств
+  const categories = useCallback(() => [
     { 
       id: 'weather', 
       label: t('circumstances.categories.weather') || 'Погода',
-      icon: 'W', // Было ☁
+      icon: 'W',
       description: t('circumstances.categories.weatherDesc') || 'Погодные условия'
     },
     { 
       id: 'moon', 
       label: t('circumstances.categories.moon') || 'Луна',
-      icon: 'M', // Было ☽
+      icon: 'M',
       description: t('circumstances.categories.moonDesc') || 'Фаза луны'
     },
     { 
       id: 'events', 
       label: t('circumstances.categories.events') || 'События',
-      icon: 'E', // Было ⚡
+      icon: 'E',
       description: t('circumstances.categories.eventsDesc') || 'Глобальные события'
     }
-  ];
+  ], [t]);
 
-  // Обстоятельства по категориям (без эмодзи)
-  const allItems = {
+  // Обстоятельства по категориям
+  const allItems = useCallback(() => ({
     weather: [
-      { id: 'sunny', icon: 'S', label: t('circumstances.weather.sunny') || 'Солнечно' }, // Было ☀
-      { id: 'rainy', icon: 'R', label: t('circumstances.weather.rainy') || 'Дождь' }, // Было 🌧
-      { id: 'snowy', icon: 'S', label: t('circumstances.weather.snowy') || 'Снег' }, // Было ❄
-      { id: 'stormy', icon: 'T', label: t('circumstances.weather.stormy') || 'Гроза' }, // Было ⛈
-      { id: 'cloudy', icon: 'C', label: t('circumstances.weather.cloudy') || 'Облачно' }, // Было ☁
-      { id: 'foggy', icon: 'F', label: t('circumstances.weather.foggy') || 'Туман' }, // Было 🌫
-      { id: 'windy', icon: 'W', label: t('circumstances.weather.windy') || 'Ветрено' } // Было 💨
+      { id: 'sunny', icon: 'S', label: t('circumstances.weather.sunny') || 'Солнечно' },
+      { id: 'rainy', icon: 'R', label: t('circumstances.weather.rainy') || 'Дождь' },
+      { id: 'snowy', icon: 'S', label: t('circumstances.weather.snowy') || 'Снег' },
+      { id: 'stormy', icon: 'T', label: t('circumstances.weather.stormy') || 'Гроза' },
+      { id: 'cloudy', icon: 'C', label: t('circumstances.weather.cloudy') || 'Облачно' },
+      { id: 'foggy', icon: 'F', label: t('circumstances.weather.foggy') || 'Туман' },
+      { id: 'windy', icon: 'W', label: t('circumstances.weather.windy') || 'Ветрено' }
     ],
     moon: [
-      { id: 'new_moon', icon: 'N', label: t('circumstances.moon.new') || 'Новолуние' }, // Было 🌑
-      { id: 'first_quarter', icon: 'F', label: t('circumstances.moon.first') || 'Первая четверть' }, // Было 🌓
-      { id: 'full_moon', icon: 'F', label: t('circumstances.moon.full') || 'Полнолуние' }, // Было 🌕
-      { id: 'last_quarter', icon: 'L', label: t('circumstances.moon.last') || 'Последняя четверть' } // Было 🌗
+      { id: 'new_moon', icon: 'N', label: t('circumstances.moon.new') || 'Новолуние' },
+      { id: 'first_quarter', icon: 'F', label: t('circumstances.moon.first') || 'Первая четверть' },
+      { id: 'full_moon', icon: 'F', label: t('circumstances.moon.full') || 'Полнолуние' },
+      { id: 'last_quarter', icon: 'L', label: t('circumstances.moon.last') || 'Последняя четверть' }
     ],
     events: [
       { id: 'war', icon: 'W', label: t('circumstances.events.war') || 'Война' },
@@ -173,44 +104,46 @@ const CircumstancesPicker = ({
       { id: 'earthquake', icon: 'Q', label: t('circumstances.events.earthquake') || 'Землетрясение' },
       { id: 'holiday', icon: 'H', label: t('circumstances.events.holiday') || 'Праздник' }
     ]
-  };
+  }), [t]);
 
-  const handleCategorySelect = (categoryId) => {
+  const handleCategorySelect = useCallback((categoryId) => {
     setSelectedCategory(categoryId);
     setCurrentStep('item');
-  };
+  }, []);
 
-  const handleItemSelect = (item) => {
+  const handleItemSelect = useCallback((item) => {
     setSelectedItem(item);
     if (selectedCategory === 'weather') {
       setCurrentStep('temperature');
     } else {
       setCurrentStep('intensity');
     }
-  };
+  }, [selectedCategory]);
 
-  const handleBack = () => {
+  const handleBack = useCallback(() => {
     if (currentStep === 'intensity' || currentStep === 'temperature') {
       setCurrentStep('item');
     } else if (currentStep === 'item') {
       setCurrentStep('category');
       setSelectedItem(null);
     }
-  };
+  }, [currentStep]);
 
-  const handleAdd = () => {
+  const handleAdd = useCallback(() => {
     if (!selectedCategory) return;
     
-    if (selectedCircumstances.length >= maxCircumstances) {
+    if (currentSelection.length >= maxCircumstances) {
       alert(`Максимум ${maxCircumstances} обстоятельств`);
       return;
     }
 
+    const category = categories().find(c => c.id === selectedCategory);
+    
     const newItem = {
       category: {
         id: selectedCategory,
-        label: categories.find(c => c.id === selectedCategory).label,
-        icon: categories.find(c => c.id === selectedCategory).icon
+        label: category?.label,
+        icon: category?.icon
       },
       item: selectedItem ? {
         id: selectedItem.id,
@@ -221,31 +154,39 @@ const CircumstancesPicker = ({
       isTemperature: selectedCategory === 'weather'
     };
 
-    onChange([...selectedCircumstances, newItem]);
+    const newSelection = [...currentSelection, newItem];
+    handleChange(newSelection);
     
+    // Сброс UI состояния
     setSelectedCategory(null);
     setSelectedItem(null);
     setIntensity(50);
     setTemperature(20);
     setCurrentStep('category');
-  };
+  }, [selectedCategory, selectedItem, currentSelection, maxCircumstances, temperature, intensity, categories, handleChange]);
 
-  const handleRemove = (index) => {
-    const updated = selectedCircumstances.filter((_, i) => i !== index);
-    onChange(updated);
-  };
+  const handleRemove = useCallback((index) => {
+    const newSelection = currentSelection.filter((_, i) => i !== index);
+    handleChange(newSelection);
+  }, [currentSelection, handleChange]);
 
-  const handleClearAll = () => {
-    onChange([]);
-    clearUrlRef.current();
-  };
+  const handleClearAll = useCallback(() => {
+    handleChange([]);
+  }, [handleChange]);
 
-  const handleSliderChange = (value) => {
+  const handleSliderChange = useCallback((value) => {
     const closest = intensitySteps.reduce((prev, curr) => {
       return Math.abs(curr - value) < Math.abs(prev - value) ? curr : prev;
     });
     setIntensity(closest);
-  };
+  }, [intensitySteps]);
+
+  const handleUpdateIntensity = useCallback((index, newIntensity) => {
+    const newSelection = currentSelection.map((item, i) => 
+      i === index ? { ...item, intensity: newIntensity } : item
+    );
+    handleChange(newSelection);
+  }, [currentSelection, handleChange]);
 
   const renderCurrentStep = () => {
     switch (currentStep) {
@@ -256,7 +197,7 @@ const CircumstancesPicker = ({
               <h3 className="step-title">Выберите категорию</h3>
             </div>
             <div className="categories-grid">
-              {categories.map(category => (
+              {categories().map(category => (
                 <div
                   key={category.id}
                   className={`category-card ${selectedCategory === category.id ? 'selected' : ''}`}
@@ -272,8 +213,8 @@ const CircumstancesPicker = ({
         );
 
       case 'item':
-        const items = selectedCategory ? allItems[selectedCategory] : [];
-        const categoryLabel = categories.find(c => c.id === selectedCategory)?.label || '';
+        const items = selectedCategory ? allItems()[selectedCategory] : [];
+        const categoryLabel = categories().find(c => c.id === selectedCategory)?.label || '';
 
         return (
           <div className="step-content">
@@ -299,7 +240,7 @@ const CircumstancesPicker = ({
 
       case 'temperature':
         const selectedItemName = selectedItem?.label || 'Погода';
-        const selectedCategoryName = categories.find(c => c.id === selectedCategory)?.label || '';
+        const selectedCategoryName = categories().find(c => c.id === selectedCategory)?.label || '';
 
         return (
           <div className="step-content">
@@ -363,7 +304,7 @@ const CircumstancesPicker = ({
 
       case 'intensity':
         const selectedItemName2 = selectedItem?.label || 'Общее';
-        const selectedCategoryName2 = categories.find(c => c.id === selectedCategory)?.label || '';
+        const selectedCategoryName2 = categories().find(c => c.id === selectedCategory)?.label || '';
 
         return (
           <div className="step-content">
@@ -431,13 +372,13 @@ const CircumstancesPicker = ({
   };
 
   const renderSelected = () => {
-    if (!Array.isArray(selectedCircumstances) || selectedCircumstances.length === 0) return null;
+    if (!Array.isArray(currentSelection) || currentSelection.length === 0) return null;
     
     return (
       <div className="selected-emotions">
         <div className="selected-header">
           <span className="selected-count">
-            Выбрано: {selectedCircumstances.length} / {maxCircumstances}
+            Выбрано: {currentSelection.length} / {maxCircumstances}
           </span>
           <button className="clear-all-button" onClick={handleClearAll}>
             Очистить все
@@ -445,7 +386,7 @@ const CircumstancesPicker = ({
         </div>
         
         <div className="selected-list">
-          {selectedCircumstances.map((item, index) => (
+          {currentSelection.map((item, index) => (
             <div key={index} className="selected-emotion-item">
               <div className="selected-emotion-main">
                 <span className="selected-emotion-icon">
@@ -462,6 +403,16 @@ const CircumstancesPicker = ({
               </div>
               
               <div className="selected-emotion-controls">
+                {item.category?.id === 'weather' && (
+                  <input
+                    type="range"
+                    min="-30"
+                    max="50"
+                    value={item.intensity}
+                    onChange={(e) => handleUpdateIntensity(index, parseInt(e.target.value))}
+                    className="selected-intensity-slider"
+                  />
+                )}
                 <span className="selected-intensity-value">
                   {item.isTemperature ? `${item.intensity}°C` : `${item.intensity}%`}
                 </span>
@@ -487,6 +438,6 @@ const CircumstancesPicker = ({
       </div>
     </div>
   );
-};
+});
 
 export default CircumstancesPicker;

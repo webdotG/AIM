@@ -1,0 +1,235 @@
+
+Система для создания записей с поддержкой черновиков, автосохранения и переиспользуемых компонентов.
+
+1. Разделение ответственности по сторам
+API Stores (работают только с API)
+EntriesStore - CRUD операций с записями
+
+EmotionsStore - работа с эмоциями и справочником
+
+BodyStatesStore - состояния тела
+
+CircumstancesStore - обстоятельства
+
+SkillsStore - навыки
+
+TagsStore - теги
+
+RelationsStore - связи между записями
+
+SkillProgressStore - прогресс навыков
+
+Draft Store (только черновик формы)
+EntryDraftStore - хранение черновика новой записи, автосохранение в LocalStorage
+
+2. Гибридные компоненты-пикеры
+Каждый пикер поддерживает два режима работы:
+
+Режим 1: Автономный (для переиспользования)
+javascript
+<EmotionPicker
+  selectedEmotions={selectedEmotions}  // данные из родителя
+  onChange={handleEmotionsChange}      // колбэк для обновления
+  maxEmotions={5}
+/>
+Режим 2: Интегрированный с черновиком (для EntryForm)
+javascript
+<EmotionPicker
+  draftStore={entryDraftStore}    // стор черновика
+  draftField="emotions"           // поле в черновике
+  maxEmotions={5}
+/>
+3. Поток данных
+text
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Пикеры        │    │ EntryDraftStore │    │  API Stores     │
+│   (UI)          │    │   (Черновик)    │    │   (Бизнес-логика)│
+├─────────────────┤    ├─────────────────┤    ├─────────────────┤
+│ - EmotionPicker │    │ - currentDraft  │    │ - saveToEntry() │
+│ - TagsPicker    │◄──►│ - updateDraft() │◄──►│ - create()      │
+│ - BodyStatePicker│   │ - saveDraft()   │    │ - update()      │
+│ - SkillsPicker  │    │ - loadDraft()   │    │ - delete()      │
+│ - ...           │    │ - resetDraft()  │    │ - fetch()       │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+         │                        │                       │
+         └────────────────────────┼───────────────────────┘
+                                  ▼
+                          ┌─────────────────┐
+                          │   EntryForm     │
+                          │   (Контроллер)  │
+                          │ - handleSubmit()│
+                          │ - валидация     │
+                          │ - сбор данных   │
+                          └─────────────────┘
+Детали реализации
+EntryDraftStore (черновик формы)
+javascript
+// Структура черновика
+currentDraft = {
+  id: 'draft_unique_id',      // уникальный ID черновика
+  type: 'thought',            // тип записи
+  content: '',                // содержание
+  eventDate: '2024-01-15',    // дата события
+  deadline: null,             // срок выполнения (для планов)
+  
+  // Данные из пикеров
+  emotions: [],               // выбранные эмоции
+  circumstances: [],          // обстоятельства
+  bodyState: {},              // состояние тела
+  skills: [],                 // навыки
+  relations: [],              // связи
+  tags: [],                   // теги
+  skillProgress: [],          // прогресс навыков
+  
+  // Метаданные
+  lastSaved: '2024-01-15T10:30:00Z',  // время последнего сохранения
+  version: '1.0'                      // версия структуры
+}
+Функционал:
+
+Автосохранение в LocalStorage (debounce 1s)
+
+Загрузка черновика при инициализации
+
+Сброс формы
+
+Валидация данных
+
+Универсальные пикеры
+Структура пропсов:
+
+javascript
+// Обязательные (один из двух наборов):
+selectedItems, onChange       // для автономного режима
+draftStore, draftField        // для интегрированного режима
+
+// Опциональные:
+maxItems                      // ограничение количества
+onClose                       // колбэк закрытия
+isMultiSelect                 // множественный выбор
+// ... другие специфичные пропсы
+Пример EmotionPicker:
+
+javascript
+const EmotionPicker = ({
+  // Автономный режим
+  selectedEmotions,
+  onChange,
+  
+  // Интегрированный режим
+  draftStore,
+  draftField = 'emotions',
+  
+  // Общие
+  maxEmotions = 5,
+  onClose
+}) => {
+  // Определяем режим
+  const isDraftMode = !!draftStore && !!draftField;
+  
+  // Получаем данные
+  const currentSelection = isDraftMode 
+    ? draftStore.currentDraft[draftField]
+    : selectedEmotions;
+  
+  // Обработчик изменений
+  const handleChange = (newItems) => {
+    if (isDraftMode) {
+      draftStore.updateDraft({ [draftField]: newItems });
+    } else {
+      onChange?.(newItems);
+    }
+  };
+  
+  // Рендер UI...
+};
+EntryForm (главная форма)
+Импорты:
+
+javascript
+import { 
+  useEntryDraftStore,  // только черновик
+  useEntriesStore,     // для сохранения через API
+  useUIStore          // для уведомлений/ошибок
+} from '@/store/StoreContext';
+Структура:
+
+javascript
+const EntryForm = () => {
+  // Сторы
+  const entryDraftStore = useEntryDraftStore();  // черновик
+  const entriesStore = useEntriesStore();        // API для записей
+  
+  // Состояние
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Данные формы
+  const draft = entryDraftStore.currentDraft;
+  
+  // Обработчик отправки
+  const handleSubmit = async () => {
+    // Валидация
+    if (!draft.content.trim()) return;
+    
+    setIsSubmitting(true);
+    try {
+      // Сохраняем через API
+      await entriesStore.createEntryFromDraft(draft);
+      
+      // Очищаем форму
+      entryDraftStore.resetDraft();
+      
+      // Уведомление об успехе
+    } catch (error) {
+      // Обработка ошибок
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  
+  return (
+    <form onSubmit={handleSubmit}>
+      {/* Все пикеры в интегрированном режиме */}
+      <EmotionPicker
+        draftStore={entryDraftStore}
+        draftField="emotions"
+      />
+      
+      <TagsPicker
+        draftStore={entryDraftStore}
+        draftField="tags"
+      />
+      
+      {/* ... другие пикеры */}
+      
+      <button type="submit">
+        Создать запись
+      </button>
+    </form>
+  );
+};
+
+
+Этап 1: Создаем ядро
+text
+1. EntryDraftStore.js (первый и главный)
+2. Обновляем RootStore.js
+3. Обновляем StoreContext.jsx (добавляем хук)
+Этап 2: Переписываем пикеры (по одному)
+text
+4. EmotionPicker.jsx (как пример)
+5. TagsPicker.jsx
+6. BodyStatePicker.jsx
+7. CircumstancesPicker.jsx
+8. SkillsPicker.jsx
+9. RelationsPicker.jsx
+10. EntryTypePicker.jsx
+Этап 3: Обновляем форму
+text
+11. EntryForm.jsx (используем новые пикеры)
+12. EntriesStore.js (добавляем createEntryFromDraft)
+Этап 4: Тестируем и фиксим
+text
+13. Тестируем создание записи
+14. Тестируем автосохранение
+15. Тестируем переиспользование пикеров

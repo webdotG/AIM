@@ -1,149 +1,132 @@
-import React, { useState, useEffect, useRef } from 'react';
+// ~/aProject/AIM/frontend/src/ui/components/bodyState/BodyStatePicker.jsx
+import React, { useState, useEffect, useCallback } from 'react';
+import { observer } from 'mobx-react-lite';
 import { useLanguage } from '@/layers/language';
 import './BodyStatePicker.css';
 
-const BodyStatePicker = ({ 
+const BodyStatePicker = observer(({ 
+  // Режим 1: Автономный (для переиспользования)
   bodyState = null,
   onChange,
-  onClose
+  onClose,
+  
+  // Режим 2: Интегрированный с черновиком (для EntryForm)
+  draftStore,
+  draftField = 'bodyState',
+  
+  // Общие пропсы
+  showTabs = true
 }) => {
   const { t } = useLanguage();
   
-  const [hp, setHp] = useState(bodyState?.hp || 0);
-  const [energy, setEnergy] = useState(bodyState?.energy || 0);
-  const [location, setLocation] = useState(bodyState?.location || '');
+  // Определяем режим работы
+  const isDraftMode = !!draftStore && !!draftField;
+  
+  // Получаем текущие данные
+  const currentBodyState = isDraftMode 
+    ? draftStore.currentDraft[draftField] || {}
+    : bodyState || {};
+  
+  const [hp, setHp] = useState(currentBodyState.hp || 0);
+  const [energy, setEnergy] = useState(currentBodyState.energy || 0);
+  const [location, setLocation] = useState(currentBodyState.location || '');
   const [activeTab, setActiveTab] = useState('stats');
   
-  // Ref для очистки URL
-  const clearUrlRef = useRef(() => {
-    const url = new URL(window.location);
-    url.searchParams.delete('body');
-    window.history.replaceState({}, '', url);
-  });
-
-  // Передаем функцию очистки наружу
-  useEffect(() => {
-    if (onClose) {
-      onClose({ clearUrl: clearUrlRef.current });
-    }
-  }, [onClose]);
-
-  // Обновляем URL при изменении состояния
-  useEffect(() => {
-    if ((!hp || hp === 0) && (!energy || energy === 0) && !location) {
-      clearUrlRef.current();
-      return;
-    }
-
-    // Формат: hp|energy|location
-    // Пример: 75|50|Москва
-    const encoded = `${hp}|${energy}|${location}`;
-    
-    const url = new URL(window.location);
-    url.searchParams.set('body', encoded);
-    window.history.replaceState({}, '', url);
-  }, [hp, energy, location]);
-
-  // Чтение из URL при открытии
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const bodyParam = params.get('body');
-    
-    if (bodyParam) {
-      try {
-        const parts = bodyParam.split('|');
-        const hpFromUrl = parseInt(parts[0]) || 0;
-        const energyFromUrl = parseInt(parts[1]) || 0;
-        const locationFromUrl = parts[2] || '';
-        
-        // Обновляем локальное состояние
-        if (hpFromUrl > 0) setHp(hpFromUrl);
-        if (energyFromUrl > 0) setEnergy(energyFromUrl);
-        if (locationFromUrl) setLocation(locationFromUrl);
-        
-        // Если в пропсах нет bodyState, а в URL есть - вызываем onChange
-        if (!bodyState && (hpFromUrl > 0 || energyFromUrl > 0 || locationFromUrl)) {
-          const newState = {
-            hp: hpFromUrl,
-            energy: energyFromUrl,
-            location: locationFromUrl
-          };
-          onChange(newState);
-        }
-      } catch (e) {
-        console.error('Error parsing body state from URL:', e);
-      }
-    }
-  }, []);
-
   const hpSteps = [0, 5, 25, 50, 75, 90, 99, 100];
   const energySteps = [0, 5, 25, 50, 75, 90, 99, 100];
 
-  const handleHpChange = (value) => {
-    const closest = hpSteps.reduce((prev, curr) => {
-      return Math.abs(curr - value) < Math.abs(prev - value) ? curr : prev;
-    });
-    setHp(closest);
-    updateState({ hp: closest });
-  };
+  // Синхронизация при изменении пропсов
+  useEffect(() => {
+    if (!isDraftMode) {
+      setHp(bodyState?.hp || 0);
+      setEnergy(bodyState?.energy || 0);
+      setLocation(bodyState?.location || '');
+    }
+  }, [isDraftMode, bodyState]);
 
-  const handleEnergyChange = (value) => {
-    const closest = energySteps.reduce((prev, curr) => {
-      return Math.abs(curr - value) < Math.abs(prev - value) ? curr : prev;
-    });
-    setEnergy(closest);
-    updateState({ energy: closest });
-  };
-
-  const handleLocationChange = (value) => {
-    const trimmedValue = value.trim();
-    setLocation(trimmedValue);
-    updateState({ location: trimmedValue });
-  };
-
-  const handleClearLocation = () => {
-    setLocation('');
-    updateState({ location: '' });
-  };
-
-  const handleClearAll = () => {
-    setHp(0);
-    setEnergy(0);
-    setLocation('');
-    updateState({ hp: 0, energy: 0, location: '' });
-    clearUrlRef.current();
-  };
-
-  const updateState = (updates) => {
+  // Обработчик обновления состояния
+  const updateState = useCallback((updates) => {
     const newState = {
       hp: updates.hp !== undefined ? updates.hp : hp,
       energy: updates.energy !== undefined ? updates.energy : energy,
       location: updates.location !== undefined ? updates.location : location
     };
     
-    // Если все поля пустые - передаем null (как в БД)
-    if (newState.hp === 0 && newState.energy === 0 && !newState.location) {
-      onChange(null);
+    // Обновляем состояние UI
+    if (updates.hp !== undefined) setHp(updates.hp);
+    if (updates.energy !== undefined) setEnergy(updates.energy);
+    if (updates.location !== undefined) setLocation(updates.location);
+    
+    // Обрабатываем в зависимости от режима
+    if (isDraftMode) {
+      // Если все поля пустые - передаем пустой объект
+      if (newState.hp === 0 && newState.energy === 0 && !newState.location) {
+        draftStore.updateDraft({ [draftField]: {} });
+      } else {
+        draftStore.updateDraft({ [draftField]: newState });
+      }
     } else {
-      onChange(newState);
+      // Автономный режим
+      if (newState.hp === 0 && newState.energy === 0 && !newState.location) {
+        onChange?.(null);
+      } else {
+        onChange?.(newState);
+      }
     }
-  };
+  }, [hp, energy, location, isDraftMode, draftStore, draftField, onChange]);
 
-  const getHpLabel = (value) => {
+  // Обработчики изменения
+  const handleHpChange = useCallback((value) => {
+    const closest = hpSteps.reduce((prev, curr) => {
+      return Math.abs(curr - value) < Math.abs(prev - value) ? curr : prev;
+    });
+    updateState({ hp: closest });
+  }, [hpSteps, updateState]);
+
+  const handleEnergyChange = useCallback((value) => {
+    const closest = energySteps.reduce((prev, curr) => {
+      return Math.abs(curr - value) < Math.abs(prev - value) ? curr : prev;
+    });
+    updateState({ energy: closest });
+  }, [energySteps, updateState]);
+
+  const handleLocationChange = useCallback((value) => {
+    const trimmedValue = value.trim();
+    updateState({ location: trimmedValue });
+  }, [updateState]);
+
+  const handleClearLocation = useCallback(() => {
+    updateState({ location: '' });
+  }, [updateState]);
+
+  const handleClearAll = useCallback(() => {
+    if (isDraftMode) {
+      draftStore.updateDraft({ [draftField]: {} });
+    } else {
+      onChange?.(null);
+    }
+    
+    // Сбрасываем локальное состояние UI
+    setHp(0);
+    setEnergy(0);
+    setLocation('');
+  }, [isDraftMode, draftStore, draftField, onChange]);
+
+  const getHpLabel = useCallback((value) => {
     if (value === 0) return 'Не указано';
     if (value <= 25) return t('body.hp.critical') || 'Критичное';
     if (value <= 50) return t('body.hp.low') || 'Низкое';
     if (value <= 75) return t('body.hp.normal') || 'Нормальное';
     return t('body.hp.excellent') || 'Отличное';
-  };
+  }, [t]);
 
-  const getEnergyLabel = (value) => {
+  const getEnergyLabel = useCallback((value) => {
     if (value === 0) return 'Не указано';
     if (value <= 25) return t('body.energy.exhausted') || 'Измождён';
     if (value <= 50) return t('body.energy.tired') || 'Устал';
     if (value <= 75) return t('body.energy.normal') || 'Нормально';
     return t('body.energy.energized') || 'Энергичен';
-  };
+  }, [t]);
 
   const renderStats = () => (
     <div className="step-content">
@@ -365,20 +348,22 @@ const BodyStatePicker = ({
     <div className="emotion-picker body-picker">
       {renderSummary()}
       
-      <div className="emotion-tabs">
-        <button
-          className={`emotion-tab ${activeTab === 'stats' ? 'active' : ''}`}
-          onClick={() => setActiveTab('stats')}
-        >
-          HP / MANA
-        </button>
-        <button
-          className={`emotion-tab ${activeTab === 'location' ? 'active' : ''}`}
-          onClick={() => setActiveTab('location')}
-        >
-          Локация
-        </button>
-      </div>
+      {showTabs && (
+        <div className="emotion-tabs">
+          <button
+            className={`emotion-tab ${activeTab === 'stats' ? 'active' : ''}`}
+            onClick={() => setActiveTab('stats')}
+          >
+            HP / MANA
+          </button>
+          <button
+            className={`emotion-tab ${activeTab === 'location' ? 'active' : ''}`}
+            onClick={() => setActiveTab('location')}
+          >
+            Локация
+          </button>
+        </div>
+      )}
       
       <div className="emotion-content">
         {activeTab === 'stats' && renderStats()}
@@ -386,6 +371,6 @@ const BodyStatePicker = ({
       </div>
     </div>
   );
-};
+});
 
 export default BodyStatePicker;

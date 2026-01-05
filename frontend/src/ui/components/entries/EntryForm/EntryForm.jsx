@@ -1,11 +1,21 @@
-import React, { useState, useCallback, useMemo } from 'react';
+// ~/aProject/AIM/frontend/src/ui/components/entries/EntryForm.jsx
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useLanguage } from '@/layers/language';
 import { usePlatform } from '@/layers/platform';
 import { useTheme } from '@/layers/theme';
-import { useEntriesStore, useUIStore, useUrlSyncStore } from '@/store/StoreContext';
-import { useBodyStatesStore, useCircumstancesStore } from '@/store/StoreContext';
-import { useRelationsStore } from '@/store/StoreContext';
+import { 
+  useEntryDraftStore, // ИМЕННО ЭТОТ СТОР!
+  useEntriesStore, 
+  useUIStore,
+  useBodyStatesStore, 
+  useCircumstancesStore,
+  useRelationsStore,
+  useSkillProgressStore,
+  useTagsStore,
+  useEmotionsStore,
+  useSkillsStore
+} from '@/store/StoreContext';
 
 import Modal from '../../common/Modal/Modal';
 import Button from '../../common/Button/Button';
@@ -34,9 +44,19 @@ const EntryForm = observer(() => {
   const { isTelegram, utils } = usePlatform();
   const { themeData } = useTheme();
   
+  // ОСНОВНОЙ СТОР ДЛЯ ЧЕРНОВИКА!
+  const entryDraftStore = useEntryDraftStore();
+  
+  // Остальные сторы для API операций
   const entriesStore = useEntriesStore();
   const uiStore = useUIStore();
-  const urlSyncStore = useUrlSyncStore();
+  const emotionsStore = useEmotionsStore();
+  const bodyStatesStore = useBodyStatesStore();
+  const circumstancesStore = useCircumstancesStore();
+  const relationsStore = useRelationsStore();
+  const skillProgressStore = useSkillProgressStore();
+  const tagsStore = useTagsStore();
+  const skillsStore = useSkillsStore();
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -50,11 +70,12 @@ const EntryForm = observer(() => {
     skillProgress: false,
     tags: false,
   });
-  
-  const bodyStatesStore = useBodyStatesStore();
-  const circumstancesStore = useCircumstancesStore();
-  
-  const relationsStore = useRelationsStore();
+
+  // Загрузка черновика при монтировании
+  useEffect(() => {
+    entryDraftStore.loadDraft();
+    emotionsStore.loadDraft();
+  }, [entryDraftStore, emotionsStore]);
 
   const openModal = useCallback((modalName) => {
     if (isTelegram && utils.hapticFeedback) {
@@ -66,25 +87,6 @@ const EntryForm = observer(() => {
   const closeModal = useCallback((modalName) => {
     setModals(prev => ({ ...prev, [modalName]: false }));
   }, []);
-  
-  const createPickerHandler = useCallback((setterName, hapticType = 'success') => 
-    (data) => {
-      if (urlSyncStore && urlSyncStore[setterName]) {
-        urlSyncStore[setterName](data);
-      }
-      if (isTelegram && utils.hapticFeedback) {
-        utils.hapticFeedback(hapticType);
-      }
-    },
-  [urlSyncStore, isTelegram, utils]);
-  
-  const handleEmotionsChange = createPickerHandler('setEmotions');
-  const handleCircumstancesChange = createPickerHandler('setCircumstances');
-  const handleBodyStateChange = createPickerHandler('setBodyState');
-  const handleSkillsChange = createPickerHandler('setSkills');
-  const handleRelationsChange = createPickerHandler('setRelations');
-  const handleTagsChange = createPickerHandler('setTags');
-  const handleSkillProgressChange = createPickerHandler('setSkillProgress');
   
   // Функция уведомлений
   const showNotification = useCallback((message, type = 'info') => {
@@ -111,15 +113,16 @@ const EntryForm = observer(() => {
   
   // === ВЫЧИСЛЯЕМЫЕ ЗНАЧЕНИЯ ===
   const hasBodyState = useMemo(() => {
-    if (!urlSyncStore || !urlSyncStore.bodyState) return false;
+    const bodyState = entryDraftStore.currentDraft.bodyState;
+    if (!bodyState) return false;
     
-    const { hp, energy, location } = urlSyncStore.bodyState;
+    const { hp, energy, location } = bodyState;
     return (
       (hp !== undefined && hp !== null && hp > 0) ||
       (energy !== undefined && energy !== null && energy > 0) ||
       (location && location.trim().length > 0)
     );
-  }, [urlSyncStore?.bodyState]);
+  }, [entryDraftStore.currentDraft.bodyState]);
   
   // === ФУНКЦИИ ПРЕОБРАЗОВАНИЯ ДАННЫХ ===
   const convertBodyStateForAPI = useCallback((pickerData) => {
@@ -171,21 +174,128 @@ const EntryForm = observer(() => {
     return result;
   }, []);
   
-  // === SUBMIT HANDLER ===
+  // НОВЫЙ МЕТОД ДЛЯ СОХРАНЕНИЯ ИЗ ЧЕРНОВИКА
+  const saveEntryFromDraft = useCallback(async () => {
+    const draft = entryDraftStore.currentDraft;
+    
+    // ВАЛИДАЦИЯ
+    if (!draft.content?.trim()) {
+      throw new Error(t('common.requiredContent') || 'Заполните содержание');
+    }
+    
+    if (draft.type === ENTRY_TYPES.PLAN && !draft.deadline) {
+      throw new Error(t('common.requiredDeadline') || 'Укажите срок выполнения');
+    }
+    
+    let bodyStateId = null;
+    let circumstanceId = null;
+    
+    // 1. СОЗДАНИЕ СОСТОЯНИЯ ТЕЛА (если есть)
+    if (draft.bodyState && hasBodyState) {
+      const bodyStateData = convertBodyStateForAPI(draft.bodyState);
+      if (bodyStateData) {
+        const createdBodyState = await bodyStatesStore.createBodyState(bodyStateData);
+        bodyStateId = createdBodyState.id;
+      }
+    }
+    
+    // 2. СОЗДАНИЕ ОБСТОЯТЕЛЬСТВ (если есть)
+    if (draft.circumstances?.length > 0) {
+      const circumstanceData = convertCircumstancesForAPI(draft.circumstances);
+      if (circumstanceData) {
+        const createdCircumstance = await circumstancesStore.createCircumstance(circumstanceData);
+        circumstanceId = createdCircumstance.id;
+      }
+    }
+    
+    // 3. СОЗДАНИЕ ОСНОВНОЙ ЗАПИСИ
+    const entryDto = {
+      entry_type: draft.type,
+      content: draft.content.trim(),
+      is_completed: false,
+      deadline: draft.deadline || null,
+      ...(bodyStateId && { body_state_id: bodyStateId }),
+      ...(circumstanceId && { circumstance_id: circumstanceId })
+    };
+    
+    console.log('Creating entry with data:', entryDto);
+    
+    const createdEntry = await entriesStore.createEntry(entryDto);
+    const entryId = createdEntry.id;
+    
+    // 4. ДОБАВЛЕНИЕ ЭМОЦИЙ (если есть)
+    if (emotionsStore.hasSelection) {
+      await emotionsStore.saveToEntry(entryId);
+    }
+    
+    // 5. ДОБАВЛЕНИЕ ТЕГОВ (если есть)
+    if (draft.tags?.length > 0) {
+      const tagIds = [];
+      
+      for (const tagName of draft.tags) {
+        const tag = await tagsStore.findOrCreateTag(tagName);
+        tagIds.push(tag.id);
+      }
+      
+      for (const tagId of tagIds) {
+        await entriesStore.addTagToEntry(entryId, { tag_id: tagId });
+      }
+    }
+    
+    // 6. СОЗДАНИЕ СВЯЗЕЙ 
+    if (draft.relations?.length > 0) {
+      for (const relation of draft.relations) {
+        if (relation.needsCreation) {
+          const newEntry = await entriesStore.createEntry({
+            entry_type: 'thought',
+            content: relation.targetEntry.content,
+            is_completed: false
+          });
+          
+          await relationsStore.createRelation({
+            from_entry_id: entryId,
+            to_entry_id: newEntry.id,
+            relation_type: relation.type || 'related_to',
+            description: relation.description || null
+          });
+        } else {
+          await relationsStore.createRelation({
+            from_entry_id: entryId,
+            to_entry_id: relation.targetEntry.id,
+            relation_type: relation.type || 'related_to',
+            description: relation.description || null
+          });
+        }
+      }
+    }
+    
+    // 7. ДОБАВЛЕНИЕ ПРОГРЕССА НАВЫКОВ 
+    if (draft.skillProgress?.length > 0) {
+      for (const progress of draft.skillProgress) {
+        await skillProgressStore.addProgress(progress.skill.id, {
+          entry_id: entryId, 
+          body_state_id: bodyStateId || null,
+          progress_type: progress.progress_type || 'practice',
+          experience_gained: progress.experience_gained || 10,
+          notes: progress.notes || null 
+        });
+      }
+    }
+    
+    // 8. ОЧИСТКА ФОРМЫ И ЧЕРНОВИКОВ
+    entryDraftStore.resetDraft();
+    emotionsStore.clearSelection();
+    
+    return createdEntry;
+  }, [
+    entryDraftStore, emotionsStore, bodyStatesStore, circumstancesStore,
+    relationsStore, skillProgressStore, tagsStore, entriesStore,
+    t, hasBodyState, convertBodyStateForAPI, convertCircumstancesForAPI
+  ]);
+  
   const handleSubmit = useCallback(async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    
-    // ВАЛИДАЦИЯ
-    if (!urlSyncStore?.content?.trim()) {
-      showNotification(t('common.requiredContent') || 'Заполните содержание', 'error');
-      return;
-    }
-    
-    if (urlSyncStore.type === ENTRY_TYPES.PLAN && !urlSyncStore.deadline) {
-      showNotification(t('common.requiredDeadline') || 'Укажите срок выполнения', 'error');
-      return;
-    }
     
     setIsSubmitting(true);
     
@@ -194,101 +304,8 @@ const EntryForm = observer(() => {
     }
     
     try {
-      let bodyStateId = null;
-      let circumstanceId = null;
+      await saveEntryFromDraft();
       
-      // 1. СОЗДАНИЕ СОСТОЯНИЯ ТЕЛА (если есть)
-      if (urlSyncStore.bodyState && hasBodyState) {
-        try {
-          const bodyStateData = convertBodyStateForAPI(urlSyncStore.bodyState);
-          if (bodyStateData) {
-            const createdBodyState = await bodyStatesStore.createBodyState(bodyStateData);
-            bodyStateId = createdBodyState.id;
-          }
-        } catch (error) {
-          console.warn('Failed to create body state:', error);
-        }
-      }
-      
-      // 2. СОЗДАНИЕ ОБСТОЯТЕЛЬСТВ (если есть)
-      if (urlSyncStore.circumstances?.length > 0) {
-        try {
-          const circumstanceData = convertCircumstancesForAPI(urlSyncStore.circumstances);
-          if (circumstanceData) {
-            const createdCircumstance = await circumstancesStore.createCircumstance(circumstanceData);
-            circumstanceId = createdCircumstance.id;
-          }
-        } catch (error) {
-          console.warn('Failed to create circumstance:', error);
-        }
-      }
-      
-      // 3. СОЗДАНИЕ ОСНОВНОЙ ЗАПИСИ
-      const entryDto = {
-        entry_type: urlSyncStore.type,
-        content: urlSyncStore.content.trim(),
-        is_completed: false,
-        deadline: urlSyncStore.deadline || null,
-        ...(bodyStateId && { body_state_id: bodyStateId }),
-        ...(circumstanceId && { circumstance_id: circumstanceId })
-      };
-      
-      console.log('Creating entry with data:', entryDto);
-      
-      const createdEntry = await entriesStore.createEntry(entryDto);
-      const entryId = createdEntry.id;
-      
-      // 4. ДОБАВЛЕНИЕ ЭМОЦИЙ (если есть)
-      if (urlSyncStore.emotions?.length > 0) {
-        try {
-          await entriesStore.addEmotionsToEntry(entryId, urlSyncStore.emotions);
-        } catch (error) {
-          console.warn('Failed to add emotions:', error);
-        }
-      }
-      
-      // 5. ДОБАВЛЕНИЕ ТЕГОВ (если есть)
-      if (urlSyncStore.tags?.length > 0) {
-        try {
-          await entriesStore.addTagsToEntry(entryId, urlSyncStore.tags);
-        } catch (error) {
-          console.warn('Failed to add tags:', error);
-        }
-      }
-      
-      // 6. СОЗДАНИЕ СВЯЗЕЙ 
-      if (urlSyncStore.relations?.length > 0) {
-        try {
-          for (const relation of urlSyncStore.relations) {
-            if (relation.needsCreation) {
-              // Создаем новую запись для связи
-              const newEntry = await entriesStore.createEntry({
-                entry_type: 'thought',
-                content: relation.targetEntry.content,
-                is_completed: false
-              });
-              
-              // Создаем связь с новой записью
-              await relationsStore.createRelationForEntry(entryId, {
-                ...relation,
-                targetEntry: { ...relation.targetEntry, id: newEntry.id }
-              });
-            } else {
-              // Связь с существующей записью
-              await relationsStore.createRelationForEntry(entryId, relation);
-            }
-          }
-        } catch (error) {
-          console.warn('Failed to create relations:', error);
-        }
-      }
-      
-      // 7. ОЧИСТКА ФОРМЫ
-      if (urlSyncStore.reset) {
-        urlSyncStore.reset();
-      }
-      
-      // УВЕДОМЛЕНИЕ ОБ УСПЕХЕ
       showNotification(
         t('common.entryCreated') || 'Запись успешно создана!', 
         'success'
@@ -319,9 +336,8 @@ const EntryForm = observer(() => {
       setIsSubmitting(false);
     }
   }, [
-    urlSyncStore, t, entriesStore, bodyStatesStore, circumstancesStore, 
-    showNotification, isTelegram, utils, hasBodyState, uiStore,
-    convertBodyStateForAPI, convertCircumstancesForAPI
+    saveEntryFromDraft, uiStore,
+    t, isTelegram, utils, showNotification
   ]);
   
   // === ФУНКЦИЯ РЕНДЕРА СЕКЦИЙ ===
@@ -356,49 +372,53 @@ const EntryForm = observer(() => {
     </div>
   ), [openModal, isSubmitting]);
   
+  // === ДАННЫЕ ИЗ ЧЕРНОВИКА ===
+  const draft = entryDraftStore.currentDraft;
+  
   // === ПРЕВЬЮ ЭМОЦИЙ ===
   const emotionsPreview = useMemo(() => {
-    if (!urlSyncStore?.emotions || urlSyncStore.emotions.length === 0) return null;
+    if (!emotionsStore.hasSelection) return null;
     
     return (
       <div className="emotions-preview">
-        {urlSyncStore.emotions.slice(0, 3).map((emotion, index) => (
-          <div key={index} className="emotion-badge">
+        {emotionsStore.currentSelection.slice(0, 3).map((emotion, index) => (
+          <div key={emotion.id} className="emotion-badge">
             <span className="emotion-label">
               {emotion.emotion?.label || emotion.category?.label || 'Эмоция'}
             </span>
           </div>
         ))}
-        {urlSyncStore.emotions.length > 3 && (
-          <div className="more-items">+{urlSyncStore.emotions.length - 3}</div>
+        {emotionsStore.selectionCount > 3 && (
+          <div className="more-items">+{emotionsStore.selectionCount - 3}</div>
         )}
       </div>
     );
-  }, [urlSyncStore?.emotions]);
+  }, [emotionsStore.currentSelection, emotionsStore.selectionCount]);
   
   // === ПРЕВЬЮ ТЕГОВ ===
   const tagsPreview = useMemo(() => {
-    if (!urlSyncStore?.tags || urlSyncStore.tags.length === 0) return null;
+    const tags = draft.tags || [];
+    if (tags.length === 0) return null;
     
     return (
       <div className="tags-preview">
-        {urlSyncStore.tags.slice(0, 5).map((tag, index) => (
+        {tags.slice(0, 5).map((tag, index) => (
           <div key={index} className="tag-badge">
             #{tag}
           </div>
         ))}
-        {urlSyncStore.tags.length > 5 && (
-          <div className="more-items">+{urlSyncStore.tags.length - 5}</div>
+        {tags.length > 5 && (
+          <div className="more-items">+{tags.length - 5}</div>
         )}
       </div>
     );
-  }, [urlSyncStore?.tags]);
+  }, [draft.tags]);
   
   // === ПРЕВЬЮ СОСТОЯНИЯ ТЕЛА ===
   const bodyStatePreview = useMemo(() => {
-    if (!hasBodyState || !urlSyncStore?.bodyState) return null;
+    if (!hasBodyState) return null;
     
-    const { hp, energy, location } = urlSyncStore.bodyState;
+    const { hp, energy, location } = draft.bodyState || {};
     
     return (
       <div className="body-state-preview">
@@ -419,7 +439,7 @@ const EntryForm = observer(() => {
         )}
       </div>
     );
-  }, [hasBodyState, urlSyncStore?.bodyState]);
+  }, [hasBodyState, draft.bodyState]);
   
   // === ГЛАВНЫЙ РЕНДЕР ===
   return (
@@ -434,13 +454,17 @@ const EntryForm = observer(() => {
         </h3>
         
         <div className="form-group">
-          <EntryTypePicker />
+          <EntryTypePicker
+            draftStore={entryDraftStore}
+            draftField="type"
+            compact={false}
+          />
         </div>
         
         <div className="form-group">
           <TextArea
-            value={urlSyncStore?.content || ''}
-            onChange={(value) => urlSyncStore?.setContent?.(value)}
+            value={draft.content || ''}
+            onChange={(value) => entryDraftStore.updateDraft({ content: value })}
             label={t('entries.form.contentLabel') || 'Содержание'}
             placeholder={t('entries.form.contentPlaceholder') || 'Опишите что произошло...'}
             required
@@ -454,21 +478,21 @@ const EntryForm = observer(() => {
           <div className="form-group">
             <Input
               type="date"
-              value={urlSyncStore?.eventDate || ''}
-              onChange={(value) => urlSyncStore?.setEventDate?.(value)}
+              value={draft.eventDate || ''}
+              onChange={(value) => entryDraftStore.updateDraft({ eventDate: value })}
               label={t('entries.form.dateLabel') || 'Дата события'}
               disabled={isSubmitting}
             />
           </div>
           
-          {urlSyncStore?.type === 'plan' && !urlSyncStore?.deadline && (
+          {draft.type === 'plan' && (
             <div className="form-group">
               <Input
                 type="date"
-                value={urlSyncStore?.deadline || ''}
-                onChange={(value) => urlSyncStore?.setDeadline?.(value)}
+                value={draft.deadline || ''}
+                onChange={(value) => entryDraftStore.updateDraft({ deadline: value })}
                 label={t('entries.form.deadlineLabel') || 'Срок выполнения'}
-                required={urlSyncStore?.type === ENTRY_TYPES.PLAN}
+                required={draft.type === ENTRY_TYPES.PLAN}
                 disabled={isSubmitting}
               />
             </div>
@@ -479,9 +503,9 @@ const EntryForm = observer(() => {
           label: t('entries.form.emotionsLabel') || 'Эмоции',
           icon: '',
           modalName: 'emotion',
-          value: urlSyncStore?.emotions?.length > 0,
-          buttonText: urlSyncStore?.emotions?.length > 0 
-            ? `${urlSyncStore.emotions.length} ${t('common.selected') || 'выбрано'}`
+          value: emotionsStore.hasSelection,
+          buttonText: emotionsStore.hasSelection
+            ? `${emotionsStore.selectionCount} ${t('common.selected') || 'выбрано'}`
             : t('emotions.picker.open') || 'Добавить эмоции',
           previewComponent: emotionsPreview
         })}
@@ -490,13 +514,13 @@ const EntryForm = observer(() => {
           label: t('entries.form.circumstancesLabel') || 'Обстоятельства',
           icon: '',
           modalName: 'circumstances',
-          value: urlSyncStore?.circumstances?.length > 0,
-          buttonText: urlSyncStore?.circumstances?.length > 0 
-            ? `${urlSyncStore.circumstances.length} ${t('common.selected') || 'выбрано'}`
+          value: draft.circumstances?.length > 0,
+          buttonText: draft.circumstances?.length > 0
+            ? `${draft.circumstances.length} ${t('common.selected') || 'выбрано'}`
             : t('circumstances.picker.open') || 'Добавить обстоятельства',
-          previewComponent: urlSyncStore?.circumstances?.length > 0 && (
+          previewComponent: draft.circumstances?.length > 0 && (
             <div className="circumstances-preview">
-              {urlSyncStore.circumstances.slice(0, 2).map((circ, index) => (
+              {draft.circumstances.slice(0, 2).map((circ, index) => (
                 <div key={index} className="circumstance-badge">
                   <span className="circumstance-label">
                     {circ.item?.label || circ.category?.label || 'Обстоятельство'}
@@ -506,8 +530,8 @@ const EntryForm = observer(() => {
                   </span>
                 </div>
               ))}
-              {urlSyncStore.circumstances.length > 2 && (
-                <div className="more-items">+{urlSyncStore.circumstances.length - 2}</div>
+              {draft.circumstances.length > 2 && (
+                <div className="more-items">+{draft.circumstances.length - 2}</div>
               )}
             </div>
           )
@@ -518,7 +542,7 @@ const EntryForm = observer(() => {
           icon: '',
           modalName: 'bodyState',
           value: hasBodyState,
-          buttonText: hasBodyState 
+          buttonText: hasBodyState
             ? t('common.edit') || 'Изменить'
             : t('body.picker.open') || 'Добавить состояние',
           previewComponent: bodyStatePreview
@@ -528,13 +552,13 @@ const EntryForm = observer(() => {
           label: t('entries.form.skillsLabel') || 'Навыки',
           icon: '',
           modalName: 'skills',
-          value: urlSyncStore?.skills?.length > 0,
-          buttonText: urlSyncStore?.skills?.length > 0 
-            ? `${urlSyncStore.skills.length} ${t('common.selected') || 'выбрано'}`
+          value: draft.skills?.length > 0,
+          buttonText: draft.skills?.length > 0
+            ? `${draft.skills.length} ${t('common.selected') || 'выбрано'}`
             : t('skills.picker.open') || 'Добавить навыки',
-          previewComponent: urlSyncStore?.skills?.length > 0 && (
+          previewComponent: draft.skills?.length > 0 && (
             <div className="skills-preview">
-              {urlSyncStore.skills.slice(0, 2).map((skill, index) => (
+              {draft.skills.slice(0, 2).map((skill, index) => (
                 <div key={index} className="skill-badge">
                   <span className="skill-label">
                     {skill.skill?.label || 'Навык'} - LVL {skill.level}
@@ -542,8 +566,8 @@ const EntryForm = observer(() => {
                   <span className="skill-exp">{skill.experience} XP</span>
                 </div>
               ))}
-              {urlSyncStore.skills.length > 2 && (
-                <div className="more-items">+{urlSyncStore.skills.length - 2}</div>
+              {draft.skills.length > 2 && (
+                <div className="more-items">+{draft.skills.length - 2}</div>
               )}
             </div>
           )
@@ -553,11 +577,11 @@ const EntryForm = observer(() => {
           label: t('entries.form.relationsLabel') || 'Связи',
           icon: '',
           modalName: 'relations',
-          value: urlSyncStore?.relations?.length > 0,
-          buttonText: urlSyncStore?.relations?.length > 0 
-            ? `${urlSyncStore.relations.length} ${t('common.connections') || 'связей'}`
+          value: draft.relations?.length > 0,
+          buttonText: draft.relations?.length > 0
+            ? `${draft.relations.length} ${t('common.connections') || 'связей'}`
             : t('relations.picker.open') || 'Добавить связи',
-          previewComponent: urlSyncStore?.relations?.length > 0 && (
+          previewComponent: draft.relations?.length > 0 && (
             <div className="relations-preview">
               <Button
                 type="button"
@@ -569,15 +593,15 @@ const EntryForm = observer(() => {
                 {t('common.showGraph') || 'Показать граф'}
               </Button>
               <div className="relations-list">
-                {urlSyncStore.relations.slice(0, 2).map((rel, index) => (
+                {draft.relations.slice(0, 2).map((rel, index) => (
                   <div key={index} className="relation-item">
                     <span className="relation-description">
                       {rel.description?.slice(0, 30) || 'Связь'}...
                     </span>
                   </div>
                 ))}
-                {urlSyncStore.relations.length > 2 && (
-                  <div className="more-items">+{urlSyncStore.relations.length - 2}</div>
+                {draft.relations.length > 2 && (
+                  <div className="more-items">+{draft.relations.length - 2}</div>
                 )}
               </div>
             </div>
@@ -588,9 +612,9 @@ const EntryForm = observer(() => {
           label: t('entries.form.tagsLabel') || 'Теги',
           icon: '#',
           modalName: 'tags',
-          value: urlSyncStore?.tags?.length > 0,
-          buttonText: urlSyncStore?.tags?.length > 0 
-            ? `${urlSyncStore.tags.length} ${t('common.tags') || 'тегов'}`
+          value: draft.tags?.length > 0,
+          buttonText: draft.tags?.length > 0
+            ? `${draft.tags.length} ${t('common.tags') || 'тегов'}`
             : t('tags.picker.open') || 'Добавить теги',
           previewComponent: tagsPreview
         })}
@@ -599,13 +623,13 @@ const EntryForm = observer(() => {
           label: t('entries.form.skillProgressLabel') || 'Прокачка навыков',
           icon: '',
           modalName: 'skillProgress',
-          value: urlSyncStore?.skillProgress?.length > 0,
-          buttonText: urlSyncStore?.skillProgress?.length > 0 
-            ? `${urlSyncStore.skillProgress.length} ${t('common.progress') || 'прокачки'}`
+          value: draft.skillProgress?.length > 0,
+          buttonText: draft.skillProgress?.length > 0
+            ? `${draft.skillProgress.length} ${t('common.progress') || 'прокачки'}`
             : t('skillProgress.picker.open') || 'Добавить прокачку',
-          previewComponent: urlSyncStore?.skillProgress?.length > 0 && (
+          previewComponent: draft.skillProgress?.length > 0 && (
             <div className="progress-preview">
-              {urlSyncStore.skillProgress.slice(0, 2).map((progress, index) => (
+              {draft.skillProgress.slice(0, 2).map((progress, index) => (
                 <div key={index} className="progress-badge">
                   <span className="progress-icon">↑</span>
                   <span className="progress-skill">
@@ -616,8 +640,8 @@ const EntryForm = observer(() => {
                   </span>
                 </div>
               ))}
-              {urlSyncStore.skillProgress.length > 2 && (
-                <div className="more-items">+{urlSyncStore.skillProgress.length - 2}</div>
+              {draft.skillProgress.length > 2 && (
+                <div className="more-items">+{draft.skillProgress.length - 2}</div>
               )}
             </div>
           )
@@ -628,7 +652,7 @@ const EntryForm = observer(() => {
             type="submit"
             variant="primary"
             size="large"
-            disabled={isSubmitting || !urlSyncStore?.content?.trim()}
+            disabled={isSubmitting || !draft.content?.trim()}
             haptic={true}
             fullWidth
             loading={isSubmitting}
@@ -638,9 +662,19 @@ const EntryForm = observer(() => {
               : t('entries.form.submit') || 'Создать запись'
             }
           </Button>
+          
+          <Button
+            type="button"
+            variant="ghost"
+            size="medium"
+            onClick={() => entryDraftStore.resetDraft()}
+            disabled={isSubmitting}
+          >
+            {t('common.clear') || 'Очистить'}
+          </Button>
         </div>
         
-        {urlSyncStore?.type === ENTRY_TYPES.PLAN && !urlSyncStore?.deadline && (
+        {draft.type === ENTRY_TYPES.PLAN && !draft.deadline && (
           <div className="form-warning plan-warning">
             ! {t('common.planDeadlineRequired') || 'Для плана требуется срок выполнения'}
           </div>
@@ -655,9 +689,10 @@ const EntryForm = observer(() => {
         size="lg"
       >
         <EmotionPicker
-          selectedEmotions={urlSyncStore?.emotions || []}
-          onChange={handleEmotionsChange}
+          draftStore={entryDraftStore}
+          draftField="emotions"
           maxEmotions={5}
+          onClose={() => closeModal('emotion')}
         />
       </Modal>
       
@@ -668,9 +703,10 @@ const EntryForm = observer(() => {
         size="lg"
       >
         <CircumstancesPicker
-          selectedCircumstances={urlSyncStore?.circumstances || []}
-          onChange={handleCircumstancesChange}
+          draftStore={entryDraftStore}
+          draftField="circumstances"
           maxCircumstances={5}
+          onClose={() => closeModal('circumstances')}
         />
       </Modal>
       
@@ -681,8 +717,9 @@ const EntryForm = observer(() => {
         size="md"
       >
         <BodyStatePicker
-          bodyState={urlSyncStore?.bodyState || {}}
-          onChange={handleBodyStateChange}
+          draftStore={entryDraftStore}
+          draftField="bodyState"
+          onClose={() => closeModal('bodyState')}
         />
       </Modal>
       
@@ -693,9 +730,10 @@ const EntryForm = observer(() => {
         size="lg"
       >
         <SkillsPicker
-          selectedSkills={urlSyncStore?.skills || []}
-          onChange={handleSkillsChange}
+          draftStore={entryDraftStore}
+          draftField="skills"
           maxSkills={10}
+          onClose={() => closeModal('skills')}
         />
       </Modal>
       
@@ -706,10 +744,11 @@ const EntryForm = observer(() => {
         size="lg"
       >
         <RelationPicker
-          selectedRelations={urlSyncStore?.relations || []}
-          onChange={handleRelationsChange}
+          draftStore={entryDraftStore}
+          draftField="relations"
           maxRelations={5}
           searchGraphs={searchGraphs}
+          onClose={() => closeModal('relations')}
         />
       </Modal>
       
@@ -720,7 +759,7 @@ const EntryForm = observer(() => {
         size="xl"
       >
         <RelationGraph
-          relations={urlSyncStore?.relations || []}
+          relations={draft.relations || []}
           onClose={() => closeModal('graph')}
         />
       </Modal>
@@ -732,23 +771,25 @@ const EntryForm = observer(() => {
         size="lg"
       >
         <SkillsPicker
-          selectedSkills={urlSyncStore?.skillProgress || []}
-          onChange={handleSkillProgressChange}
+          draftStore={entryDraftStore}
+          draftField="skillProgress"
           maxSkills={5}
           mode="progress"
+          onClose={() => closeModal('skillProgress')}
         />
       </Modal>
       
       <Modal
         isOpen={modals.tags}
         onClose={() => closeModal('tags')}
-        title={t('tags.picker.title') || 'Добавление тегов'}
+        title={t('tags.picker.title') || 'Добавление теги'}
         size="md"
       >
         <TagsPicker
-          selectedTags={urlSyncStore?.tags || []}
-          onChange={handleTagsChange}
+          draftStore={entryDraftStore}
+          draftField="tags"
           maxTags={10}
+          onClose={() => closeModal('tags')}
         />
       </Modal>
     </>

@@ -9,7 +9,7 @@ export default function PasswordStrengthIndicator({
 }) {
   const getStrengthLevel = () => {
     if (score >= 80) return { text: 'Кажется ОК', class: 'strong' };
-    if (score >= 60) return { text: 'Уже почти', class: 'good' };
+    if (score >= 60) return { text: 'И так сойдёт', class: 'good' };
     if (score >= 40) return { text: 'НУЖНО лучше', class: 'medium' };
     if (score >= 20) return { text: 'Такое себе', class: 'weak' };
     return { text: 'Оч слабо', class: 'very-weak' };

@@ -33,11 +33,17 @@ export class SkillsAPIClient extends SkillsRepository {
     return true;
   }
 
-  async addProgress(skillId, progressData) {
-    const response = await apiClient.post(`/skills/${skillId}/progress`, progressData);
-    return SkillMapper.toDomain(response.data);
-  }
-
+async addProgress(skillId, progressData) {
+  const response = await apiClient.post(`/skills/${skillId}/progress`, progressData);
+  // progressData = {
+  //   entry_id: "uuid",
+  //   body_state_id: 1 или null,
+  //   progress_type: "practice",
+  //   experience_gained: 50,
+  //   notes: "Worked hard"
+  // }
+  return response.data;
+}
   async getProgressHistory(skillId, params = {}) {
     const response = await apiClient.get(`/skills/${skillId}/progress`, { params });
     return response.data;

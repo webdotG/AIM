@@ -13,25 +13,26 @@ export class SkillProgressStore {
     makeAutoObservable(this);
   }
 
-  // Добавить прогресс к навыку
-  async addProgress(skillId, progressData) {
-    try {
-      const result = await this.repository.addProgress(skillId, progressData);
-      
-      runInAction(() => {
-        this.progresses.push({
-          ...result,
-          skillId,
-          addedAt: new Date().toISOString()
-        });
+async addProgress(skillId, progressData) {
+  try {
+  const result = await this.repository.addProgress(skillId, progressData);
+    // progressData должен содержать:
+    // { entry_id, body_state_id, progress_type, experience_gained, notes }
+    
+    runInAction(() => {
+      this.progresses.push({
+        ...result,
+        skillId,
+        addedAt: new Date().toISOString()
       });
-      
-      return result;
-    } catch (error) {
-      console.error('Failed to add progress:', error);
-      throw error;
-    }
+    });
+    
+    return result;
+  } catch (error) {
+    console.error('Failed to add progress:', error);
+    throw error;
   }
+}
 
   // Загрузить историю прогресса
   async fetchProgressHistory(skillId) {

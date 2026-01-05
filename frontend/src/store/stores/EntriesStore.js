@@ -68,10 +68,8 @@ export class EntriesStore {
     this.error = null;
     
     try {
-      // Проверяем структуру данных перед отправкой
       console.log('EntriesStore.createEntry данные:', entryData);
       
-      // Должны быть: entry_type, content, deadline (опционально)
       const validData = {
         entry_type: entryData.entry_type,
         content: entryData.content,
@@ -168,41 +166,33 @@ export class EntriesStore {
     }
   }
 
-  // МЕТОДЫ ДЛЯ СВЯЗЕЙ
+  // ✅ ИСПРАВЛЕННЫЕ МЕТОДЫ ДЛЯ СВЯЗЕЙ
 
-  async addEmotionsToEntry(entryId, emotionsData) {
+  // Добавить ОДНУ эмоцию к записи
+  async addEmotionToEntry(entryId, emotionData) {
     try {
-      const formattedEmotions = Array.isArray(emotionsData) 
-        ? emotionsData.map(emotion => ({
-            emotion_id: emotion.id || emotion.emotion_id,
-            intensity: emotion.intensity || 5
-          }))
-        : [];
-      
       const response = await apiClient.post(`/entries/${entryId}/emotions`, {
-        emotions: formattedEmotions
+        emotion_id: emotionData.emotion_id,
+        intensity: emotionData.intensity
       });
       
-      return response;
+      return response.data;
     } catch (error) {
-      console.error('Failed to add emotions to entry:', error);
+      console.error('Failed to add emotion to entry:', error);
       throw error;
     }
   }
 
-  async addTagsToEntry(entryId, tagsData) {
+  // Добавить ОДИН тег к записи
+  async addTagToEntry(entryId, tagId) {
     try {
-      const tagNames = Array.isArray(tagsData)
-        ? tagsData.map(tag => typeof tag === 'string' ? tag : tag.name)
-        : [];
-      
       const response = await apiClient.post(`/entries/${entryId}/tags`, {
-        tags: tagNames
+        tag_id: tagId
       });
       
-      return response;
+      return response.data;
     } catch (error) {
-      console.error('Failed to add tags to entry:', error);
+      console.error('Failed to add tag to entry:', error);
       throw error;
     }
   }

@@ -123,29 +123,28 @@ export class SkillsStore {
     }
   }
 
-  async addProgress(skillId, progressData) {
-    try {
-      const result = await this.repository.addProgress(skillId, progressData);
+async addProgress(skillId, progressData) {
+  try {
+    const result = await this.repository.addProgress(skillId, progressData);
+    // API: POST /api/v1/skills/:id/progress
+    // Body: { entry_id, body_state_id, progress_type, experience_gained, notes }
+    
+    runInAction(() => {
+      const currentProgress = this.userProgress.get(skillId) || [];
+      this.userProgress.set(skillId, [...currentProgress, result]);
       
-      runInAction(() => {
-        // прогресс
-        const currentProgress = this.userProgress.get(skillId) || [];
-        this.userProgress.set(skillId, [...currentProgress, result]);
-        
-        // навык
-        const skillIndex = this.skills.findIndex(s => s.id === skillId);
-        if (skillIndex !== -1) {
-          // последний прогресс в навыке
-          this.skills[skillIndex].lastProgress = result;
-        }
-      });
-      
-      return result;
-    } catch (error) {
-      console.error('Failed to add progress', error);
-      throw error;
-    }
+      const skillIndex = this.skills.findIndex(s => s.id === skillId);
+      if (skillIndex !== -1) {
+        this.skills[skillIndex].lastProgress = result;
+      }
+    });
+    
+    return result;
+  } catch (error) {
+    console.error('Failed to add progress', error);
+    throw error;
   }
+}
 
   // ==================== ВЫБРАННЫМИ ====================
 

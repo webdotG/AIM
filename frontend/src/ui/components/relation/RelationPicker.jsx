@@ -1,20 +1,38 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+// ~/aProject/AIM/frontend/src/ui/components/relation/RelationPicker.jsx
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import { observer } from 'mobx-react-lite';
 import { useLanguage } from '@/layers/language';
-import { useEntriesStore } from '@/store';
-// import { useRelationsStore } from '@/store';
+import { useEntriesStore, useRelationsStore } from '@/store/StoreContext';
 import './RelationPicker.css';
 
-const RelationPicker = ({ 
+const RelationPicker = observer(({ 
+  // Режим 1: Автономный (для переиспользования)
   selectedRelations = [], 
   onChange,
-  maxRelations = 5,
   onClose,
-  entryId = null
+  
+  // Режим 2: Интегрированный с черновиком (для EntryForm)
+  draftStore,
+  draftField = 'relations',
+  
+  // Общие пропсы
+  maxRelations = 5,
+  entryId = null,
+  searchGraphs = null
 }) => {
   const { t } = useLanguage();
   const entriesStore = useEntriesStore();
-  // const relationsStore = useRelationsStore();
+  const relationsStore = useRelationsStore();
   
+  // Определяем режим работы
+  const isDraftMode = !!draftStore && !!draftField;
+  
+  // Получаем текущие данные
+  const currentSelection = isDraftMode 
+    ? draftStore.currentDraft[draftField] || []
+    : selectedRelations || [];
+  
+  // Локальное состояние UI
   const [currentStep, setCurrentStep] = useState('type');
   const [selectedType, setSelectedType] = useState(null);
   const [description, setDescription] = useState('');
@@ -23,126 +41,120 @@ const RelationPicker = ({
   const [selectedEntry, setSelectedEntry] = useState(null);
   const [isSearching, setIsSearching] = useState(false);
   const [direction, setDirection] = useState('from');
+  const [localError, setLocalError] = useState(null);
 
-  const clearUrlRef = useRef(() => {
-    try {
-      const url = new URL(window.location);
-      url.searchParams.delete('rel');
-      window.history.replaceState({}, '', url);
-    } catch (e) {
-      console.warn('Failed to clear URL:', e);
-    }
-  });
-
+  // Синхронизация при изменении пропсов
   useEffect(() => {
-    if (onClose) {
-      onClose({ clearUrl: clearUrlRef.current });
+    if (!isDraftMode) {
+      // Сбрасываем UI состояние если изменились пропсы
+      resetUIState();
     }
-  }, [onClose]);
+  }, [isDraftMode, selectedRelations]);
 
-  // Обновление URL
-  useEffect(() => {
-    try {
-      if (selectedRelations.length === 0) {
-        clearUrlRef.current();
-        return;
-      }
-
-      const encoded = selectedRelations
-        .filter(rel => rel?.type?.id && rel?.targetEntry?.id && rel?.description)
-        .map(rel => {
-          const dir = rel.direction || 'from';
-          const type = rel.type.id;
-          const entryId = rel.targetEntry.id.substring(0, 8);
-          const desc = encodeURIComponent(rel.description.substring(0, 50));
-          return `${dir}:${type}:${entryId}:${desc}`;
-        })
-        .join(';');
-      
-      if (encoded) {
-        const url = new URL(window.location);
-        url.searchParams.set('rel', encoded);
-        window.history.replaceState({}, '', url);
-      }
-    } catch (e) {
-      console.warn('Failed to update URL:', e);
+  // Обработчик обновления выбора
+  const handleChange = useCallback((newRelations) => {
+    if (isDraftMode) {
+      draftStore.updateDraft({ [draftField]: newRelations });
+    } else {
+      onChange?.(newRelations);
     }
-  }, [selectedRelations]);
+  }, [isDraftMode, draftStore, draftField, onChange]);
 
-  // Чтение из URL
-  useEffect(() => {
-    try {
-      const params = new URLSearchParams(window.location.search);
-      const relParam = params.get('rel');
-      
-      if (relParam && selectedRelations.length === 0) {
-        const relations = relParam.split(';')
-          .map(part => {
-            const [direction, typeId, entryIdCode, desc] = part.split(':');
-            const description = decodeURIComponent(desc || '');
-            
-            const type = relationTypes.find(t => t.id === typeId);
-            if (!type) return null;
-            
-            return {
-              direction,
-              type,
-              targetEntry: {
-                id: entryIdCode || 'unknown',
-                title: `Запись ${entryIdCode}`,
-                content: description
-              },
-              description
-            };
-          })
-          .filter(Boolean);
-        
-        if (relations.length > 0) {
-          onChange(relations);
-        }
-      }
-    } catch (e) {
-      console.warn('Error parsing URL:', e);
-    }
+  // Сброс UI состояния
+  const resetUIState = useCallback(() => {
+    setCurrentStep('type');
+    setSelectedType(null);
+    setDescription('');
+    setSearchQuery('');
+    setSearchResults([]);
+    setSelectedEntry(null);
+    setIsSearching(false);
+    setDirection('from');
+    setLocalError(null);
   }, []);
+
+  // Типы связей
+  const relationTypes = useMemo(() => [
+    { id: 'led_to', label: t('relations.types.led_to'), icon: '→' },
+    { id: 'reminded_of', label: t('relations.types.reminded_of'), icon: '↔' },
+    { id: 'inspired_by', label: t('relations.types.inspired_by'), icon: '←' },
+    { id: 'caused_by', label: t('relations.types.caused_by'), icon: '←' },
+    { id: 'related_to', label: t('relations.types.related_to'), icon: '↻' },
+    { id: 'resulted_in', label: t('relations.types.resulted_in'), icon: '⇄' },
+    { id: 'contradicts', label: t('relations.types.contradicts'), icon: '≠' },
+    { id: 'develops', label: t('relations.types.develops'), icon: '↗' }
+  ], [t]);
 
   // Поиск записей
   const handleSearch = useCallback(async (query) => {
     if (!query.trim()) {
-      alert(t('relations.search_required'));
+      setLocalError(t('relations.search_required'));
       return;
     }
     
     setIsSearching(true);
+    setLocalError(null);
+    
     try {
-      await entriesStore.searchEntries(query, 5);
-      const results = entriesStore.entries;
+      // Если передан кастомный поиск из пропсов - используем его
+      let results;
+      if (searchGraphs) {
+        results = await searchGraphs({
+          query: query.trim(),
+          limit: 5
+        });
+      } else {
+        // Иначе используем стандартный поиск
+        await entriesStore.searchEntries(query.trim(), 5);
+        results = entriesStore.entries || [];
+      }
+      
       setSearchResults(results);
+      
+      if (results.length === 0) {
+        setLocalError(t('relations.no_results'));
+      }
     } catch (error) {
       console.error('Search error:', error);
+      setLocalError(t('relations.search_error'));
       setSearchResults([]);
     } finally {
       setIsSearching(false);
     }
-  }, [entriesStore, t]);
+  }, [entriesStore, searchGraphs, t]);
 
-  // Обработчики
-  const handleTypeSelect = (type) => {
+  // Создание новой записи из поискового запроса
+  const handleCreateEntry = useCallback((content) => {
+    const tempEntry = {
+      id: `temp_${Date.now()}`,
+      type: 'thought',
+      content: content.trim(),
+      isTemp: true,
+      needsCreation: true,
+      created_at: new Date().toISOString()
+    };
+    
+    setSelectedEntry(tempEntry);
+    setCurrentStep('description');
+  }, []);
+
+  // Обработчики шагов
+  const handleTypeSelect = useCallback((type) => {
     setSelectedType(type);
     setCurrentStep('direction');
-  };
+  }, []);
 
-  const handleDirectionSelect = (dir) => {
+  const handleDirectionSelect = useCallback((dir) => {
     setDirection(dir);
     setCurrentStep('search');
-  };
+  }, []);
 
-  const handleEntrySelect = (entry) => {
+  const handleEntrySelect = useCallback((entry) => {
     setSelectedEntry(entry);
     setCurrentStep('description');
-  };
+  }, []);
 
-  const handleBack = () => {
+  const handleBack = useCallback(() => {
     if (currentStep === 'description') {
       setCurrentStep('search');
     } else if (currentStep === 'search') {
@@ -153,21 +165,24 @@ const RelationPicker = ({
     } else if (currentStep === 'type') {
       setSelectedType(null);
     }
-  };
+    setLocalError(null);
+  }, [currentStep]);
 
-  const handleAddRelation = async () => {
+  const handleAddRelation = useCallback(async () => {
+    // Валидация
     if (!selectedType || !selectedEntry || !description.trim()) {
-      alert(t('relations.fill_all_fields'));
+      setLocalError(t('relations.fill_all_fields'));
       return;
     }
     
-    if (selectedRelations.length >= maxRelations) {
-      alert(t('relations.max_reached', { max: maxRelations }));
+    if (currentSelection.length >= maxRelations) {
+      setLocalError(t('relations.max_reached', { max: maxRelations }));
       return;
     }
 
+    // Проверка на связь с самим собой
     if (entryId && selectedEntry.id === entryId) {
-      alert(t('relations.no_self_relation'));
+      setLocalError(t('relations.no_self_relation'));
       return;
     }
 
@@ -179,39 +194,29 @@ const RelationPicker = ({
       ...(selectedEntry.isTemp && { needsCreation: true })
     };
 
-    const updated = [...selectedRelations, newRelation];
-    onChange(updated);
+    const newSelection = [...currentSelection, newRelation];
+    handleChange(newSelection);
     
-    setSelectedType(null);
-    setSelectedEntry(null);
-    setDescription('');
-    setSearchQuery('');
-    setSearchResults([]);
-    setDirection('from');
-    setCurrentStep('type');
-  };
+    // Сброс UI состояния
+    resetUIState();
+  }, [selectedType, selectedEntry, description, currentSelection, maxRelations, entryId, direction, handleChange, resetUIState, t]);
 
-  const handleRemoveRelation = (index) => {
-    const updated = selectedRelations.filter((_, i) => i !== index);
-    onChange(updated);
-  };
+  const handleRemoveRelation = useCallback((index) => {
+    const newSelection = currentSelection.filter((_, i) => i !== index);
+    handleChange(newSelection);
+  }, [currentSelection, handleChange]);
 
-  const handleClearAll = () => {
-    onChange([]);
-    clearUrlRef.current();
-  };
+  const handleClearAll = useCallback(() => {
+    handleChange([]);
+  }, [handleChange]);
 
-  // Типы связей
-  const relationTypes = [
-    { id: 'led_to', label: t('relations.types.led_to'), icon: '→' },
-    { id: 'reminded_of', label: t('relations.types.reminded_of'), icon: '↔' },
-    { id: 'inspired_by', label: t('relations.types.inspired_by'), icon: '←' },
-    { id: 'caused_by', label: t('relations.types.caused_by'), icon: '←' },
-    { id: 'related_to', label: t('relations.types.related_to'), icon: '↻' },
-    { id: 'resulted_in', label: t('relations.types.resulted_in'), icon: '⇄' },
-    { id: 'contradicts', label: t('relations.types.contradicts'), icon: '≠' },
-    { id: 'develops', label: t('relations.types.develops'), icon: '↗' }
-  ];
+  // Обновление описания существующей связи
+  const handleUpdateDescription = useCallback((index, newDescription) => {
+    const newSelection = currentSelection.map((rel, i) => 
+      i === index ? { ...rel, description: newDescription } : rel
+    );
+    handleChange(newSelection);
+  }, [currentSelection, handleChange]);
 
   const renderCurrentStep = () => {
     switch (currentStep) {
@@ -221,7 +226,11 @@ const RelationPicker = ({
             <h3 className="step-title">{t('relations.step_type')}</h3>
             <div className="relation-types-grid">
               {relationTypes.map(type => (
-                <div key={type.id} className="relation-type-card" onClick={() => handleTypeSelect(type)}>
+                <div 
+                  key={type.id} 
+                  className={`relation-type-card ${selectedType?.id === type.id ? 'selected' : ''}`} 
+                  onClick={() => handleTypeSelect(type)}
+                >
                   <div className="relation-type-icon">{type.icon}</div>
                   <div className="relation-type-label">{type.label}</div>
                 </div>
@@ -279,7 +288,10 @@ const RelationPicker = ({
                 type="text"
                 className="search-input"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setLocalError(null);
+                }}
                 placeholder={t('relations.search_placeholder')}
                 onKeyPress={(e) => e.key === 'Enter' && handleSearch(searchQuery)}
               />
@@ -287,6 +299,10 @@ const RelationPicker = ({
                 <div className="search-loading">{t('common.searching')}</div>
               )}
             </div>
+            
+            {localError && (
+              <div className="error-message">{localError}</div>
+            )}
             
             <button 
               className="search-button btn-primary" 
@@ -314,7 +330,7 @@ const RelationPicker = ({
               </div>
             )}
             
-            {searchQuery.trim() && searchResults.length === 0 && !isSearching && (
+            {searchQuery.trim() && searchResults.length === 0 && !isSearching && !localError && (
               <div className="search-hint">
                 <p>{t('relations.no_results')}</p>
                 <button 
@@ -346,14 +362,24 @@ const RelationPicker = ({
                 <div className="selected-entry">
                   <span className="entry-type">{selectedEntry.type}</span>
                   <span className="entry-content">{selectedEntry.content?.substring(0, 80)}</span>
+                  {selectedEntry.isTemp && (
+                    <span className="entry-temp-badge">[Новая]</span>
+                  )}
                 </div>
               )}
             </div>
             
+            {localError && (
+              <div className="error-message">{localError}</div>
+            )}
+            
             <textarea
               className="relation-description-input"
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={(e) => {
+                setDescription(e.target.value);
+                setLocalError(null);
+              }}
               placeholder={t('relations.description_placeholder')}
               rows="4"
             />
@@ -385,13 +411,13 @@ const RelationPicker = ({
   };
 
   const renderSelectedRelations = () => {
-    if (selectedRelations.length === 0) return null;
+    if (currentSelection.length === 0) return null;
     
     return (
       <div className="selected-relations">
         <div className="selected-header">
           <span className="selected-count">
-            {t('relations.selected')}: {selectedRelations.length} / {maxRelations}
+            {t('relations.selected')}: {currentSelection.length} / {maxRelations}
           </span>
           <button className="clear-all-button btn-secondary" onClick={handleClearAll}>
             {t('common.clear_all')}
@@ -399,7 +425,7 @@ const RelationPicker = ({
         </div>
         
         <div className="selected-list">
-          {selectedRelations.map((rel, index) => (
+          {currentSelection.map((rel, index) => (
             <div key={index} className="relation-item">
               <div className="relation-direction-icon">
                 {rel.direction === 'from' ? '→' : '←'}
@@ -415,10 +441,16 @@ const RelationPicker = ({
                 </div>
                 <div className="relation-target">
                   {rel.targetEntry.content?.substring(0, 60)}
+                  {rel.targetEntry.isTemp && (
+                    <span className="entry-temp-badge">[Новая]</span>
+                  )}
                 </div>
-                <div className="relation-description">
-                  {rel.description}
-                </div>
+                <textarea
+                  className="relation-description-edit"
+                  value={rel.description}
+                  onChange={(e) => handleUpdateDescription(index, e.target.value)}
+                  rows="2"
+                />
               </div>
               <button 
                 className="remove-relation-button btn-secondary" 
@@ -441,6 +473,6 @@ const RelationPicker = ({
       </div>
     </div>
   );
-};
+});
 
 export default RelationPicker;

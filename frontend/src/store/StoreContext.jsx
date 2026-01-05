@@ -1,3 +1,4 @@
+// ~/aProject/AIM/frontend/src/store/StoreContext.jsx
 import React from 'react';
 import RootStore from './RootStore';
 
@@ -13,43 +14,18 @@ export const useStores = () => {
   }
   return context;
 };
-
-// для каждого стора
-export const useAuthStore = () => {
-  return useStores().authStore;
-};
-
-export const useEntriesStore = () => {
-  return useStores().entriesStore;
-};
-
-export const useBodyStatesStore = () => {
-  return useStores().bodyStatesStore;
-};
-
-export const useCircumstancesStore = () => {
-  return useStores().circumstancesStore;
-};
-
-export const useSkillsStore = () => {
-  return useStores().skillsStore;
-};
-
-export const useUIStore = () => {
-  return useStores().uiStore;
-};
-
-export const useUrlSyncStore = () => {
-  return useStores().urlSyncStore;
-};
-
-export const useRelationsStore = () => {
-  return useStores().relationsStore;
-};
-
-export const useSkillProgressStore = () => {
-  return useRootStore().skillProgressStore;
-};
+// для каждого по отдельности 
+export const useAuthStore = () => useStores().authStore;
+export const useEntriesStore = () => useStores().entriesStore;
+export const useBodyStatesStore = () => useStores().bodyStatesStore;
+export const useCircumstancesStore = () => useStores().circumstancesStore;
+export const useSkillsStore = () => useStores().skillsStore;
+export const useUIStore = () => useStores().uiStore;
+export const useRelationsStore = () => useStores().relationsStore;
+export const useSkillProgressStore = () => useStores().skillProgressStore;
+export const useTagsStore = () => useStores().tagsStore;
+export const useEmotionsStore = () => useStores().emotionsStore;
+export const useEntryDraftStore = () => useStores().entryDraftStore;
 
 export const StoreProvider = ({ children }) => {
   return (

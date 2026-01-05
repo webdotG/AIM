@@ -1,106 +1,111 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+// ~/aProject/AIM/frontend/src/ui/components/skills/SkillProgressPicker.jsx
+import React, { useState, useMemo, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useLanguage } from '@/layers/language';
-import { useSkillsStore } from '@/store';
-import { useSkillProgressStore } from '@/store';
+import { useSkillsStore } from '@/store/StoreContext';
 import Input from '../common/Input/Input';
 import Button from '../common/Button/Button';
 import Loader from '../common/Loader/Loader';
 import './SkillProgressPicker.css';
 
 const SkillProgressPicker = observer(({
+  // Режим 1: Автономный (для переиспользования)
   selectedProgresses = [],
   onChange,
-  maxProgresses = 10,
-  onClose
+  onClose,
+  
+  // Режим 2: Интегрированный с черновиком (для EntryForm)
+  draftStore,
+  draftField = 'skillProgress',
+  
+  // Общие пропсы
+  maxProgresses = 10
 }) => {
   const { t } = useLanguage();
   const skillsStore = useSkillsStore();
-  const progressStore = useSkillProgressStore();
   
+  // Определяем режим работы
+  const isDraftMode = !!draftStore && !!draftField;
+  
+  // Получаем текущие данные
+  const currentSelection = isDraftMode 
+    ? draftStore.currentDraft[draftField] || []
+    : selectedProgresses || [];
+  
+  // Локальное состояние UI
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSkill, setSelectedSkill] = useState(null);
   const [experience, setExperience] = useState(10);
   const [description, setDescription] = useState('');
   const [currentStep, setCurrentStep] = useState('select');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [localError, setLocalError] = useState(null);
 
-  const clearUrlRef = useRef(() => {
-    const url = new URL(window.location);
-    url.searchParams.delete('progress');
-    window.history.replaceState({}, '', url);
-  });
-
-  // Инициализация
-  useEffect(() => {
-    const init = async () => {
+  // Загрузка данных при инициализации
+  const initData = useCallback(async () => {
+    try {
       await skillsStore.fetchSkills();
       await skillsStore.fetchCategories();
-    };
-    init();
-  }, []);
-
-  // Передаем clearUrl наружу
-  useEffect(() => {
-    if (onClose) {
-      onClose({ clearUrl: clearUrlRef.current });
+    } catch (error) {
+      console.error('Failed to initialize skills data:', error);
+      setLocalError(t('progress.init_failed'));
     }
-  }, [onClose]);
+  }, [skillsStore, t]);
 
-  // Обновление URL
-  useEffect(() => {
-    if (selectedProgresses.length === 0) {
-      clearUrlRef.current();
-      return;
+  // Обработчик обновления выбора
+  const handleChange = useCallback((newProgresses) => {
+    if (isDraftMode) {
+      draftStore.updateDraft({ [draftField]: newProgresses });
+    } else {
+      onChange?.(newProgresses);
     }
-
-    const encoded = progressStore.encodeToUrl(selectedProgresses);
-    if (encoded) {
-      const url = new URL(window.location);
-      url.searchParams.set('progress', encoded);
-      window.history.replaceState({}, '', url);
-    }
-  }, [selectedProgresses, progressStore]);
-
-  // Чтение из URL
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const progressParam = params.get('progress');
-    
-    if (progressParam && selectedProgresses.length === 0) {
-      const progresses = progressStore.decodeFromUrl(progressParam, skillsStore.skills);
-      if (progresses.length > 0) {
-        onChange(progresses);
-      }
-    }
-  }, [selectedProgresses.length, skillsStore.skills.length, progressStore, onChange]);
+  }, [isDraftMode, draftStore, draftField, onChange]);
 
   // Фильтрация навыков
   const filteredSkills = useMemo(() => {
-    if (!searchQuery.trim()) return skillsStore.skills;
+    if (!skillsStore.skills || skillsStore.skills.length === 0) {
+      return [];
+    }
     
-    const query = searchQuery.toLowerCase();
-    return skillsStore.skills.filter(skill => {
-      const category = skillsStore.categories.find(c => c.id === skill.category_id);
-      return (
-        skill.name.toLowerCase().includes(query) ||
-        skill.description?.toLowerCase().includes(query) ||
-        category?.name?.toLowerCase().includes(query)
-      );
-    });
+    let skills = [...skillsStore.skills];
+    
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      skills = skills.filter(skill => {
+        const category = skillsStore.categories.find(c => c.id === skill.category_id);
+        return (
+          skill.name.toLowerCase().includes(query) ||
+          skill.description?.toLowerCase().includes(query) ||
+          category?.name?.toLowerCase().includes(query)
+        );
+      });
+    }
+    
+    return skills;
   }, [skillsStore.skills, skillsStore.categories, searchQuery]);
 
-  // Обработчики
-  const handleSkillSelect = (skill) => {
+  // Обработчики шагов
+  const handleSkillSelect = useCallback((skill) => {
     setSelectedSkill(skill);
     setCurrentStep('progress');
-  };
+    setLocalError(null);
+  }, []);
 
-  const handleAddProgress = () => {
-    if (!selectedSkill) return;
+  const handleAddProgress = useCallback(() => {
+    if (!selectedSkill) {
+      setLocalError(t('progress.select_skill_first'));
+      return;
+    }
     
-    if (selectedProgresses.length >= maxProgresses) {
-      alert(t('progress.max_reached', { max: maxProgresses }));
+    if (currentSelection.length >= maxProgresses) {
+      setLocalError(t('progress.max_reached', { max: maxProgresses }));
+      return;
+    }
+
+    // Проверяем, не добавлен ли уже этот навык
+    const alreadyAdded = currentSelection.some(p => p.skill?.id === selectedSkill.id);
+    if (alreadyAdded) {
+      setLocalError(t('progress.skill_already_added'));
       return;
     }
 
@@ -109,99 +114,108 @@ const SkillProgressPicker = observer(({
       skill: {
         id: selectedSkill.id,
         name: selectedSkill.name,
+        description: selectedSkill.description,
+        category_id: selectedSkill.category_id,
         icon: selectedSkill.icon || '🎯',
-        level: selectedSkill.level || 1
+        level: skillsStore.getSkillLevel(selectedSkill.id) || 1
       },
       experience_gained: experience,
       description: description.trim(),
+      progress_type: 'practice',
+      notes: description.trim() || null,
       created_at: new Date().toISOString(),
       isTemp: true
     };
 
-    const updated = [...selectedProgresses, newProgress];
-    onChange(updated);
+    const newSelection = [...currentSelection, newProgress];
+    handleChange(newSelection);
     
-    // Сброс
+    // Сброс UI состояния
     setSelectedSkill(null);
     setExperience(10);
     setDescription('');
     setCurrentStep('select');
     setSearchQuery('');
-  };
+    setLocalError(null);
+  }, [selectedSkill, currentSelection, maxProgresses, experience, description, skillsStore, handleChange, t]);
 
-  const handleRemoveProgress = (index) => {
-    const updated = selectedProgresses.filter((_, i) => i !== index);
-    onChange(updated);
-  };
+  const handleRemoveProgress = useCallback((index) => {
+    const newSelection = currentSelection.filter((_, i) => i !== index);
+    handleChange(newSelection);
+  }, [currentSelection, handleChange]);
 
-  const handleClearAll = () => {
-    onChange([]);
-    clearUrlRef.current();
-  };
+  const handleClearAll = useCallback(() => {
+    handleChange([]);
+  }, [handleChange]);
 
-  const handleBack = () => {
+  const handleBack = useCallback(() => {
     if (currentStep === 'progress') {
       setCurrentStep('select');
       setSelectedSkill(null);
+      setExperience(10);
+      setDescription('');
     }
-  };
+    setLocalError(null);
+  }, [currentStep]);
 
-  const handleSaveToServer = async () => {
-    if (selectedProgresses.length === 0) return;
-    
-    setIsSubmitting(true);
-    try {
-      const results = [];
-      
-      for (const progress of selectedProgresses) {
-        if (progress.isTemp && !progress.savedToServer) {
-          try {
-            const saved = await progressStore.addProgress(
-              progress.skill.id,
-              {
-                experience_gained: progress.experience_gained,
-                description: progress.description
-              }
-            );
-            results.push({ ...progress, id: saved.id, savedToServer: true, isTemp: false });
-          } catch (error) {
-            console.error(`Failed to save progress for ${progress.skill.name}:`, error);
-            results.push(progress); // Оставляем как есть
-          }
-        } else {
-          results.push(progress);
-        }
-      }
-      
-      onChange(results);
-      
-      if (results.some(p => p.savedToServer)) {
-        alert(t('progress.saved_success'));
-      }
-    } catch (error) {
-      console.error('Failed to save progress:', error);
-      alert(t('progress.save_failed'));
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  const handleUpdateExperience = useCallback((index, newExperience) => {
+    const newSelection = currentSelection.map((progress, i) => 
+      i === index ? { ...progress, experience_gained: parseInt(newExperience) || 1 } : progress
+    );
+    handleChange(newSelection);
+  }, [currentSelection, handleChange]);
+
+  const handleUpdateDescription = useCallback((index, newDescription) => {
+    const newSelection = currentSelection.map((progress, i) => 
+      i === index ? { ...progress, description: newDescription, notes: newDescription } : progress
+    );
+    handleChange(newSelection);
+  }, [currentSelection, handleChange]);
 
   // Уровни опыта
-  const experienceLevels = [
+  const experienceLevels = useMemo(() => [
     { value: 1, label: t('progress.levels.minimum'), icon: '↗' },
     { value: 5, label: t('progress.levels.small'), icon: '↑' },
     { value: 10, label: t('progress.levels.normal'), icon: '↑↑' },
     { value: 25, label: t('progress.levels.large'), icon: '↑↑↑' },
     { value: 50, label: t('progress.levels.breakthrough'), icon: '🚀' },
     { value: 100, label: t('progress.levels.epic'), icon: '⚡' }
-  ];
+  ], [t]);
 
-  // Расчет общего прогресса
-  const totalExperience = selectedProgresses.reduce((sum, p) => sum + (p.experience_gained || 0), 0);
-  const uniqueSkills = new Set(selectedProgresses.map(p => p.skill?.id)).size;
+  // Расчет статистики
+  const totalExperience = useMemo(() => 
+    currentSelection.reduce((sum, p) => sum + (p.experience_gained || 0), 0),
+    [currentSelection]
+  );
+  
+  const uniqueSkills = useMemo(() => 
+    new Set(currentSelection.map(p => p.skill?.id)).size,
+    [currentSelection]
+  );
 
   // Рендеринг шагов
   const renderCurrentStep = () => {
+    // Если данные еще не загружены
+    if (skillsStore.isLoading) {
+      return (
+        <div className="progress-step-content loading">
+          <Loader />
+          <p>{t('progress.loading_skills')}</p>
+        </div>
+      );
+    }
+
+    if (localError) {
+      return (
+        <div className="progress-step-content error">
+          <div className="error-message">{localError}</div>
+          <Button onClick={initData}>
+            {t('common.retry')}
+          </Button>
+        </div>
+      );
+    }
+
     switch (currentStep) {
       case 'select':
         return (
@@ -219,9 +233,7 @@ const SkillProgressPicker = observer(({
               </div>
             </div>
             
-            {skillsStore.isLoading ? (
-              <Loader />
-            ) : filteredSkills.length === 0 ? (
+            {filteredSkills.length === 0 ? (
               <div className="no-skills-message">
                 {searchQuery ? t('progress.no_results') : t('progress.no_skills')}
               </div>
@@ -229,7 +241,8 @@ const SkillProgressPicker = observer(({
               <div className="skills-progress-grid">
                 {filteredSkills.map(skill => {
                   const category = skillsStore.categories.find(c => c.id === skill.category_id);
-                  const existingProgress = selectedProgresses.find(p => p.skill?.id === skill.id);
+                  const existingProgress = currentSelection.find(p => p.skill?.id === skill.id);
+                  const skillLevel = skillsStore.getSkillLevel(skill.id);
                   
                   return (
                     <div
@@ -255,7 +268,7 @@ const SkillProgressPicker = observer(({
                       
                       <div className="skill-meta">
                         <span className="skill-level">
-                          {t('progress.level')}: {skill.level || 1}
+                          {t('progress.level')}: {skillLevel}
                         </span>
                         <span className="skill-usage">
                           {t('progress.used')}: {skill.usage_count || 0}
@@ -276,37 +289,19 @@ const SkillProgressPicker = observer(({
             <div className="progress-actions">
               <Button
                 variant="secondary"
-                onClick={() => setCurrentStep('add-new')}
+                onClick={initData}
               >
-                + {t('progress.add_new_skill')}
-              </Button>
-            </div>
-          </div>
-        );
-      
-      case 'add-new':
-        return (
-          <div className="progress-step-content">
-            <div className="progress-step-header">
-              <button className="back-button btn-secondary" onClick={() => setCurrentStep('select')}>
-                ← {t('common.back')}
-              </button>
-              <h3 className="progress-step-title">{t('progress.create_skill')}</h3>
-            </div>
-            
-            <div className="create-skill-form">
-              <p className="form-note">{t('progress.create_note')}</p>
-              <Button
-                variant="secondary"
-                onClick={() => setCurrentStep('select')}
-              >
-                {t('common.cancel')}
+                {t('common.refresh')}
               </Button>
             </div>
           </div>
         );
       
       case 'progress':
+        const category = selectedSkill ? 
+          skillsStore.categories.find(c => c.id === selectedSkill.category_id) : 
+          null;
+        
         return (
           <div className="progress-step-content">
             <div className="progress-step-header">
@@ -320,12 +315,22 @@ const SkillProgressPicker = observer(({
             
             <div className="selected-skill-info">
               <div className="selected-skill-header">
-                <span className="skill-icon">{selectedSkill?.icon || '🎯'}</span>
-                <span className="skill-name">{selectedSkill?.name}</span>
+                <span className="skill-category-icon">
+                  {category?.icon || '📚'}
+                </span>
+                <div className="skill-info-text">
+                  <span className="skill-name">{selectedSkill?.name}</span>
+                  <div className="selected-skill-level">
+                    {t('progress.current_level')}: {skillsStore.getSkillLevel(selectedSkill?.id) || 1}
+                  </div>
+                </div>
               </div>
-              <div className="selected-skill-level">
-                {t('progress.current_level')}: {selectedSkill?.level || 1}
-              </div>
+              
+              {selectedSkill?.description && (
+                <div className="selected-skill-description">
+                  {selectedSkill.description}
+                </div>
+              )}
             </div>
             
             <div className="progress-inputs">
@@ -404,9 +409,7 @@ const SkillProgressPicker = observer(({
 
   // Рендеринг выбранного прогресса
   const renderSelectedProgress = () => {
-    if (selectedProgresses.length === 0) return null;
-    
-    const hasTempProgress = selectedProgresses.some(p => p.isTemp);
+    if (currentSelection.length === 0) return null;
     
     return (
       <div className="selected-progress-section">
@@ -419,7 +422,7 @@ const SkillProgressPicker = observer(({
               {t('progress.total_xp')}: {totalExperience}
             </span>
             <span className="stats-item">
-              {t('progress.items')}: {selectedProgresses.length}/{maxProgresses}
+              {t('progress.items')}: {currentSelection.length}/{maxProgresses}
             </span>
           </div>
           <div className="progress-actions-header">
@@ -430,34 +433,27 @@ const SkillProgressPicker = observer(({
             >
               {t('common.clear_all')}
             </Button>
-            {hasTempProgress && (
-              <Button
-                variant="primary"
-                size="small"
-                onClick={handleSaveToServer}
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? t('common.saving') : t('progress.save_all')}
-              </Button>
-            )}
           </div>
         </div>
         
         <div className="selected-progress-list">
-          {selectedProgresses.map((progress, index) => {
+          {currentSelection.map((progress, index) => {
             const skill = progress.skill;
+            const category = skill?.category_id ? 
+              skillsStore.categories.find(c => c.id === skill.category_id) : 
+              null;
             
             return (
               <div key={progress.id || index} className="progress-item">
                 <div className="progress-item-main">
                   <div className="progress-skill-info">
                     <span className="progress-skill-icon">
-                      {skill?.icon || '🎯'}
+                      {category?.icon || skill?.icon || '🎯'}
                     </span>
                     <div className="progress-skill-details">
                       <div className="progress-skill-name">{skill?.name}</div>
                       <div className="progress-skill-level">
-                        {t('progress.level')} {skill?.level || 1}
+                        {t('progress.level')} {skill?.level || skillsStore.getSkillLevel(skill?.id) || 1}
                       </div>
                     </div>
                   </div>
@@ -469,17 +465,19 @@ const SkillProgressPicker = observer(({
                     {progress.isTemp && (
                       <span className="temp-badge">{t('progress.temp')}</span>
                     )}
-                    {progress.fromUrl && (
-                      <span className="url-badge">{t('progress.from_url')}</span>
-                    )}
                   </div>
                 </div>
                 
-                {progress.description && (
-                  <div className="progress-description">
-                    {progress.description}
-                  </div>
-                )}
+                <div className="progress-description-edit">
+                  <Input
+                    type="textarea"
+                    value={progress.description || ''}
+                    onChange={(value) => handleUpdateDescription(index, value)}
+                    placeholder={t('progress.add_notes')}
+                    rows="1"
+                    size="small"
+                  />
+                </div>
                 
                 <div className="progress-item-actions">
                   <Input
@@ -487,11 +485,7 @@ const SkillProgressPicker = observer(({
                     min="1"
                     max="1000"
                     value={progress.experience_gained}
-                    onChange={(value) => {
-                      const updated = [...selectedProgresses];
-                      updated[index].experience_gained = parseInt(value) || 1;
-                      onChange(updated);
-                    }}
+                    onChange={(value) => handleUpdateExperience(index, value)}
                     size="small"
                     className="progress-edit-input"
                   />

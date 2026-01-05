@@ -1,145 +1,177 @@
-import React, { useState, useEffect, useRef } from 'react';
+// ~/aProject/AIM/frontend/src/ui/components/tags/TagsPicker.jsx
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import { observer } from 'mobx-react-lite';
 import { useLanguage } from '@/layers/language';
+import { useTagsStore } from '@/store/StoreContext';
 import './TagsPicker.css';
 
-const TagsPicker = ({ 
+const TagsPicker = observer(({ 
+  // Режим 1: Автономный (для переиспользования)
   selectedTags = [], 
   onChange,
-  maxTags = 10,
-  onClose
+  onClose,
+  
+  // Режим 2: Интегрированный с черновиком (для EntryForm)
+  draftStore,
+  draftField = 'tags',
+  
+  // Общие пропсы
+  maxTags = 10
 }) => {
   const { t } = useLanguage();
+  const tagsStore = useTagsStore();
   
+  // Определяем режим работы
+  const isDraftMode = !!draftStore && !!draftField;
+  
+  // Получаем текущие данные
+  const currentSelection = isDraftMode 
+    ? draftStore.currentDraft[draftField] || []
+    : selectedTags || [];
+  
+  // Локальное состояние UI
   const [inputValue, setInputValue] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const inputRef = useRef(null);
+  const [localError, setLocalError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Основные теги (предложения) - без ! в конце
-  const commonTags = [
+  const commonTags = useMemo(() => [
     'работа', 'здоровье', 'личное', 'проект', 'важное',
     'идея', 'задача', 'встреча', 'обучение', 'отдых'
-  ];
+  ], []);
 
-  // Ref для очистки URL
-  const clearUrlRef = useRef(() => {
-    const url = new URL(window.location);
-    url.searchParams.delete('tags');
-    window.history.replaceState({}, '', url);
-  });
-
-  // Передаем функцию очистки наружу
+  // Загрузка популярных тегов из API
   useEffect(() => {
-    if (onClose) {
-      onClose({ clearUrl: clearUrlRef.current });
-    }
-  }, [onClose]);
-
-  // Обновляем URL при изменении тегов
-  useEffect(() => {
-    if (!Array.isArray(selectedTags) || selectedTags.length === 0) {
-      clearUrlRef.current();
-      return;
-    }
-
-    // Кодируем теги в URL
-    const encoded = selectedTags.join(',');
-    const url = new URL(window.location);
-    url.searchParams.set('tags', encoded);
-    window.history.replaceState({}, '', url);
-  }, [selectedTags]);
-
-  // Чтение из URL при открытии
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const tagsParam = params.get('tags');
-    
-    if (tagsParam && (!selectedTags || selectedTags.length === 0)) {
+    const loadPopularTags = async () => {
       try {
-        const tagsFromUrl = tagsParam.split(',').filter(tag => tag.trim());
-        if (tagsFromUrl.length > 0) {
-          onChange(tagsFromUrl);
-        }
-      } catch (e) {
-        console.error('Error parsing tags from URL:', e);
+        setIsLoading(true);
+        await tagsStore.fetchPopularTags();
+      } catch (error) {
+        console.warn('Failed to load popular tags:', error);
+      } finally {
+        setIsLoading(false);
       }
+    };
+    
+    loadPopularTags();
+  }, [tagsStore]);
+
+  // Получаем популярные теги из стора или используем fallback
+  const popularTags = useMemo(() => {
+    if (tagsStore.popularTags && tagsStore.popularTags.length > 0) {
+      return tagsStore.popularTags.map(tag => tag.name);
     }
-  }, []);
+    return commonTags;
+  }, [tagsStore.popularTags, commonTags]);
+
+  // Обработчик обновления выбора
+  const handleChange = useCallback((newTags) => {
+    if (isDraftMode) {
+      draftStore.updateDraft({ [draftField]: newTags });
+    } else {
+      onChange?.(newTags);
+    }
+  }, [isDraftMode, draftStore, draftField, onChange]);
 
   // Обработка ввода тега
-  const handleInputChange = (e) => {
+  const handleInputChange = useCallback((e) => {
     const value = e.target.value;
     setInputValue(value);
+    setLocalError(null);
     
     // Показываем предложения
     if (value.trim()) {
-      const filtered = commonTags.filter(tag => 
+      const filtered = popularTags.filter(tag => 
         tag.toLowerCase().includes(value.toLowerCase()) &&
-        !selectedTags.includes(tag) // Не показывать уже выбранные
-      );
+        !currentSelection.includes(tag) // Не показывать уже выбранные
+      ).slice(0, 5); // Ограничиваем количество
+      
       setSuggestions(filtered);
       setShowSuggestions(true);
     } else {
       setShowSuggestions(false);
     }
-  };
+  }, [currentSelection, popularTags]);
 
   // Добавление тега
-  const addTag = (tagText) => {
+  const addTag = useCallback((tagText) => {
     const tag = tagText.trim().toLowerCase();
     
-    if (!tag) return;
-    
-    if (selectedTags.length >= maxTags) {
-      alert(t('tags.max_reached', { max: maxTags }));
+    if (!tag) {
+      setLocalError(t('tags.empty_tag'));
       return;
     }
     
-    if (selectedTags.includes(tag)) {
-      setInputValue('');
-      setShowSuggestions(false);
+    // Валидация тега
+    if (tag.length < 2) {
+      setLocalError(t('tags.too_short'));
       return;
     }
     
-    const newTags = [...selectedTags, tag];
-    onChange(newTags);
+    if (tag.length > 50) {
+      setLocalError(t('tags.too_long'));
+      return;
+    }
     
+    if (currentSelection.length >= maxTags) {
+      setLocalError(t('tags.max_reached', { max: maxTags }));
+      return;
+    }
+    
+    if (currentSelection.includes(tag)) {
+      setLocalError(t('tags.already_added'));
+      return;
+    }
+    
+    const newTags = [...currentSelection, tag];
+    handleChange(newTags);
+    
+    // Сброс UI состояния
     setInputValue('');
     setShowSuggestions(false);
-    inputRef.current?.focus();
-  };
+    setLocalError(null);
+    
+    // Фокус на инпут
+    setTimeout(() => {
+      const input = document.querySelector('.tag-input');
+      if (input) input.focus();
+    }, 0);
+  }, [currentSelection, maxTags, handleChange, t]);
 
   // Удаление тега
-  const removeTag = (index) => {
-    const newTags = selectedTags.filter((_, i) => i !== index);
-    onChange(newTags);
-  };
+  const removeTag = useCallback((index) => {
+    const newTags = currentSelection.filter((_, i) => i !== index);
+    handleChange(newTags);
+    setLocalError(null);
+  }, [currentSelection, handleChange]);
 
   // Очистка всех тегов
-  const clearAllTags = () => {
-    onChange([]);
-    clearUrlRef.current();
-  };
+  const clearAllTags = useCallback(() => {
+    handleChange([]);
+    setLocalError(null);
+  }, [handleChange]);
 
   // Выбор тега из предложений
-  const handleSuggestionClick = (suggestion) => {
+  const handleSuggestionClick = useCallback((suggestion) => {
     addTag(suggestion);
-  };
+  }, [addTag]);
 
   // Обработка клавиш
-  const handleKeyDown = (e) => {
+  const handleKeyDown = useCallback((e) => {
     if (e.key === 'Enter' && inputValue.trim()) {
       e.preventDefault();
       addTag(inputValue);
     } else if (e.key === 'Escape') {
       setShowSuggestions(false);
-    } else if (e.key === 'Backspace' && !inputValue && selectedTags.length > 0) {
+    } else if (e.key === 'Backspace' && !inputValue && currentSelection.length > 0) {
       // Удалить последний тег при пустом инпуте и нажатии Backspace
-      const newTags = [...selectedTags];
+      const newTags = [...currentSelection];
       newTags.pop();
-      onChange(newTags);
+      handleChange(newTags);
     }
-  };
+  }, [inputValue, currentSelection, addTag, handleChange]);
 
   // Клик вне предложений
   useEffect(() => {
@@ -153,26 +185,32 @@ const TagsPicker = ({
     return () => document.removeEventListener('click', handleClickOutside);
   }, [showSuggestions]);
 
+  // Быстрые теги (исключая уже выбранные)
+  const availableQuickTags = useMemo(() => 
+    popularTags.filter(tag => !currentSelection.includes(tag)),
+    [popularTags, currentSelection]
+  );
+
   return (
     <div className="tags-picker">
       {/* Выбранные теги */}
-      {selectedTags.length > 0 && (
+      {currentSelection.length > 0 && (
         <div className="selected-tags-section">
           <div className="selected-header">
             <span className="selected-count">
-              {t('tags.selected')}: {selectedTags.length} / {maxTags}
+              {t('tags.selected')}: {currentSelection.length} / {maxTags}
             </span>
             <button 
               className="clear-all-button btn-secondary" 
               onClick={clearAllTags}
-              disabled={selectedTags.length === 0}
+              disabled={currentSelection.length === 0}
             >
               {t('common.clear_all')}
             </button>
           </div>
           
           <div className="selected-tags-list">
-            {selectedTags.map((tag, index) => (
+            {currentSelection.map((tag, index) => (
               <div key={index} className="selected-tag-item">
                 <span className="tag-text">#{tag}</span>
                 <button
@@ -189,11 +227,15 @@ const TagsPicker = ({
         </div>
       )}
 
+      {/* Ошибки */}
+      {localError && (
+        <div className="error-message">{localError}</div>
+      )}
+
       {/* Ввод нового тега */}
       <div className="tag-input-section">
         <div className="input-wrapper">
           <input
-            ref={inputRef}
             type="text"
             className="tag-input"
             placeholder={t('tags.input_placeholder')}
@@ -202,33 +244,39 @@ const TagsPicker = ({
             onKeyDown={handleKeyDown}
             autoFocus
             aria-label={t('tags.input_label')}
+            disabled={isLoading}
           />
           {inputValue.trim() && (
             <div className="input-hint">
               {t('tags.press_enter')}
             </div>
           )}
+          {isLoading && (
+            <div className="loading-indicator">
+              {t('common.loading')}...
+            </div>
+          )}
         </div>
         
         {/* Быстрые теги */}
-        <div className="quick-tags-section">
-          <h4 className="quick-tags-title">{t('tags.popular')}:</h4>
-          <div className="quick-tags-grid">
-            {commonTags
-              .filter(tag => !selectedTags.includes(tag)) // Не показывать выбранные
-              .map((tag, index) => (
-              <button
-                key={index}
-                className="quick-tag"
-                onClick={() => addTag(tag)}
-                disabled={selectedTags.includes(tag)}
-                title={t('tags.add_tag', { tag })}
-              >
-                #{tag}
-              </button>
-            ))}
+        {availableQuickTags.length > 0 && (
+          <div className="quick-tags-section">
+            <h4 className="quick-tags-title">{t('tags.popular')}:</h4>
+            <div className="quick-tags-grid">
+              {availableQuickTags.slice(0, 8).map((tag, index) => (
+                <button
+                  key={index}
+                  className="quick-tag"
+                  onClick={() => addTag(tag)}
+                  disabled={currentSelection.includes(tag)}
+                  title={t('tags.add_tag', { tag })}
+                >
+                  #{tag}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
         
         {/* Предложения при вводе */}
         {showSuggestions && suggestions.length > 0 && (
@@ -265,6 +313,6 @@ const TagsPicker = ({
       </div>
     </div>
   );
-};
+});
 
 export default TagsPicker;
