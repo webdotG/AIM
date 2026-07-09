@@ -78,22 +78,11 @@ export default function BackupCodeModal({
             {backupCode}
           </code>
           <div className="backup-code-hint">
-            <p>{t('сохрани пожалуйста этот код')}</p>
-            <p>{t('он нужен на случай если с основным паролем что ни будь случится')}</p>
+            <p>{t('backup_code.instruction1')}</p>
+            <p>{t('backup_code.instruction2')}</p>
+            <p>{t('backup_code.instruction3')}</p>
           </div>
         </div>
-{/* 
-        {instructions ? (
-          <div className="backup-code-instructions">
-            {instructions}
-          </div>
-        ) : (
-          <div className="backup-code-instructions">
-            <p>{t('auth.backup_code.instruction1')}</p>
-            <p>{t('auth.backup_code.instruction2')}</p>
-            <p>{t('auth.backup_code.instruction3')}</p>
-          </div>
-        )} */}
       </div>
     </Modal>
   );

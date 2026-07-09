@@ -12,3 +12,6 @@ sanitizer.js
 sanitizerExploit.js
 .DECISION
 .exploit
+
+new-config.yaml
+.continue

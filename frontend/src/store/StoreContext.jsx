@@ -1,20 +1,19 @@
 // ~/aProject/AIM/frontend/src/store/StoreContext.jsx
-import React from 'react';
-import RootStore from './RootStore';
+import React from "react";
+import RootStore from "./RootStore";
 
 const rootStoreInstance = new RootStore();
 
 export const StoreContext = React.createContext(rootStoreInstance);
 
-// для доступа ко всем сторам
 export const useStores = () => {
   const context = React.useContext(StoreContext);
   if (!context) {
-    throw new Error('useStores must be used within StoreProvider');
+    throw new Error("useStores must be used within StoreProvider");
   }
   return context;
 };
-// для каждого по отдельности 
+
 export const useAuthStore = () => useStores().authStore;
 export const useEntriesStore = () => useStores().entriesStore;
 export const useBodyStatesStore = () => useStores().bodyStatesStore;

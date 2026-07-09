@@ -1,7 +1,7 @@
 // store/stores/EntriesStore.js
-import { makeAutoObservable, runInAction } from 'mobx';
-import { EntriesAPIClient } from '../../core/adapters/api/clients/EntriesAPIClient';
-import apiClient from '../../core/adapters/config';
+import { makeAutoObservable, runInAction } from "mobx";
+import { EntriesAPIClient } from "../../core/adapters/api/clients/EntriesAPIClient";
+import apiClient from "../../core/adapters/config";
 
 export class EntriesStore {
   entries = [];
@@ -27,10 +27,10 @@ export class EntriesStore {
   async fetchEntries(filters = {}) {
     this.isLoading = true;
     this.error = null;
-    
+
     try {
       const response = await this.repository.getAll(filters);
-      
+
       runInAction(() => {
         this.entries = response.entries;
         this.pagination = response.pagination;
@@ -38,7 +38,7 @@ export class EntriesStore {
       });
     } catch (error) {
       runInAction(() => {
-        this.error = error.error || 'Failed to fetch entries';
+        this.error = error.error || "Failed to fetch entries";
         this.isLoading = false;
       });
     }
@@ -47,17 +47,17 @@ export class EntriesStore {
   async fetchEntryById(id) {
     this.isLoading = true;
     this.error = null;
-    
+
     try {
       const entry = await this.repository.getById(id);
-      
+
       runInAction(() => {
         this.currentEntry = entry;
         this.isLoading = false;
       });
     } catch (error) {
       runInAction(() => {
-        this.error = error.error || 'Failed to fetch entry';
+        this.error = error.error || "Failed to fetch entry";
         this.isLoading = false;
       });
     }
@@ -66,30 +66,34 @@ export class EntriesStore {
   async createEntry(entryData) {
     this.isLoading = true;
     this.error = null;
-    
+
     try {
-      console.log('EntriesStore.createEntry данные:', entryData);
-      
+      console.log("EntriesStore.createEntry данные:", entryData);
+
       const validData = {
         entry_type: entryData.entry_type,
         content: entryData.content,
         ...(entryData.deadline && { deadline: entryData.deadline }),
-        ...(entryData.body_state_id && { body_state_id: entryData.body_state_id }),
-        ...(entryData.circumstance_id && { circumstance_id: entryData.circumstance_id }),
-        is_completed: false
+        ...(entryData.body_state_id && {
+          body_state_id: entryData.body_state_id,
+        }),
+        ...(entryData.circumstance_id && {
+          circumstance_id: entryData.circumstance_id,
+        }),
+        is_completed: false,
       };
-      
+
       const createdEntry = await this.repository.create(validData);
-      
+
       runInAction(() => {
         this.entries.unshift(createdEntry);
         this.isLoading = false;
       });
-      
+
       return createdEntry;
     } catch (error) {
       runInAction(() => {
-        this.error = error.error || 'Failed to create entry';
+        this.error = error.error || "Failed to create entry";
         this.isLoading = false;
       });
       throw error;
@@ -99,12 +103,12 @@ export class EntriesStore {
   async updateEntry(id, entryData) {
     this.isLoading = true;
     this.error = null;
-    
+
     try {
       const updatedEntry = await this.repository.update(id, entryData);
-      
+
       runInAction(() => {
-        const index = this.entries.findIndex(e => e.id === id);
+        const index = this.entries.findIndex((e) => e.id === id);
         if (index !== -1) {
           this.entries[index] = updatedEntry;
         }
@@ -113,11 +117,11 @@ export class EntriesStore {
         }
         this.isLoading = false;
       });
-      
+
       return updatedEntry;
     } catch (error) {
       runInAction(() => {
-        this.error = error.error || 'Failed to update entry';
+        this.error = error.error || "Failed to update entry";
         this.isLoading = false;
       });
       throw error;
@@ -127,12 +131,12 @@ export class EntriesStore {
   async deleteEntry(id) {
     this.isLoading = true;
     this.error = null;
-    
+
     try {
       await this.repository.delete(id);
-      
+
       runInAction(() => {
-        this.entries = this.entries.filter(e => e.id !== id);
+        this.entries = this.entries.filter((e) => e.id !== id);
         if (this.currentEntry?.id === id) {
           this.currentEntry = null;
         }
@@ -140,7 +144,7 @@ export class EntriesStore {
       });
     } catch (error) {
       runInAction(() => {
-        this.error = error.error || 'Failed to delete entry';
+        this.error = error.error || "Failed to delete entry";
         this.isLoading = false;
       });
       throw error;
@@ -150,49 +154,45 @@ export class EntriesStore {
   async searchEntries(query, limit = 20) {
     this.isLoading = true;
     this.error = null;
-    
+
     try {
       const results = await this.repository.search(query, limit);
-      
+
       runInAction(() => {
         this.entries = results;
         this.isLoading = false;
       });
     } catch (error) {
       runInAction(() => {
-        this.error = error.error || 'Search failed';
+        this.error = error.error || "Search failed";
         this.isLoading = false;
       });
     }
   }
 
-  // ✅ ИСПРАВЛЕННЫЕ МЕТОДЫ ДЛЯ СВЯЗЕЙ
-
-  // Добавить ОДНУ эмоцию к записи
   async addEmotionToEntry(entryId, emotionData) {
     try {
       const response = await apiClient.post(`/entries/${entryId}/emotions`, {
         emotion_id: emotionData.emotion_id,
-        intensity: emotionData.intensity
+        intensity: emotionData.intensity,
       });
-      
+
       return response.data;
     } catch (error) {
-      console.error('Failed to add emotion to entry:', error);
+      console.error("Failed to add emotion to entry:", error);
       throw error;
     }
   }
 
-  // Добавить ОДИН тег к записи
   async addTagToEntry(entryId, tagId) {
     try {
       const response = await apiClient.post(`/entries/${entryId}/tags`, {
-        tag_id: tagId
+        tag_id: tagId,
       });
-      
+
       return response.data;
     } catch (error) {
-      console.error('Failed to add tag to entry:', error);
+      console.error("Failed to add tag to entry:", error);
       throw error;
     }
   }
@@ -200,36 +200,35 @@ export class EntriesStore {
   async addPeopleToEntry(entryId, peopleData) {
     try {
       const response = await apiClient.post(`/entries/${entryId}/people`, {
-        people: peopleData
+        people: peopleData,
       });
-      
+
       return response;
     } catch (error) {
-      console.error('Failed to add people to entry:', error);
+      console.error("Failed to add people to entry:", error);
       throw error;
     }
   }
 
-  // Computed
   get dreamEntries() {
-    return this.entries.filter(e => e.type === 'dream');
+    return this.entries.filter((e) => e.type === "dream");
   }
 
   get memoryEntries() {
-    return this.entries.filter(e => e.type === 'memory');
+    return this.entries.filter((e) => e.type === "memory");
   }
 
   get thoughtEntries() {
-    return this.entries.filter(e => e.type === 'thought');
+    return this.entries.filter((e) => e.type === "thought");
   }
 
   get planEntries() {
-    return this.entries.filter(e => e.type === 'plan');
+    return this.entries.filter((e) => e.type === "plan");
   }
 
   get overduePlans() {
-    return this.entries.filter(e => {
-      if (e.type !== 'plan' || !e.deadline) return false;
+    return this.entries.filter((e) => {
+      if (e.type !== "plan" || !e.deadline) return false;
       return new Date(e.deadline) < new Date() && !e.isCompleted;
     });
   }

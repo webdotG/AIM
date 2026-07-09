@@ -194,7 +194,7 @@ const CircumstancesPicker = observer(({
         return (
           <div className="step-content">
             <div className="step-header">
-              <h3 className="step-title">Выберите категорию</h3>
+              <h3 className="step-title">{t('circumstances.picker.selectCategory')}</h3>
             </div>
             <div className="categories-grid">
               {categories().map(category => (
@@ -219,7 +219,9 @@ const CircumstancesPicker = observer(({
         return (
           <div className="step-content">
             <div className="step-header">
-              <button className="back-button" onClick={handleBack}>← Назад</button>
+              <button className="back-button" onClick={handleBack}>
+                {t('circumstances.picker.back')}
+              </button>
               <h3 className="step-title">{categoryLabel}</h3>
             </div>
             
@@ -245,8 +247,12 @@ const CircumstancesPicker = observer(({
         return (
           <div className="step-content">
             <div className="step-header">
-              <button className="back-button" onClick={handleBack}>← Назад</button>
-              <h3 className="step-title" style={{padding:"25px"}}>Температура</h3>
+              <button className="back-button" onClick={handleBack}>
+                {t('circumstances.picker.back')}
+              </button>
+              <h3 className="step-title" style={{padding:"25px"}}>
+                {t('circumstances.picker.temperature')}
+              </h3>
             </div>
             
             <div 
@@ -259,7 +265,8 @@ const CircumstancesPicker = observer(({
                 padding: '0 25px'
               }}
             >
-              {selectedCategoryName}: {selectedItemName}
+              {/* {selectedCategoryName}: {selectedItemName} */}
+              {selectedItemName || t('circumstances.picker.general')}
             </div>
             
             <div className="intensity-content">
@@ -294,9 +301,9 @@ const CircumstancesPicker = observer(({
               </div>
               
               <div className="intensity-actions">
-                <button className="add-emotion-button" onClick={handleAdd}>
-                  Добавить
-                </button>
+              <button className="add-emotion-button" onClick={handleAdd}>
+                {t('circumstances.picker.add')}
+              </button>
               </div>
             </div>
           </div>
@@ -309,8 +316,12 @@ const CircumstancesPicker = observer(({
         return (
           <div className="step-content">
             <div className="step-header">
-              <button className="back-button" onClick={handleBack}>← Назад</button>
-              <h3 className="step-title" style={{padding:"25px"}}>Интенсивность</h3>
+              <button className="back-button" onClick={handleBack}>
+                {t('circumstances.picker.back')}
+              </button>
+              <h3 className="step-title" style={{padding:"25px"}}>
+                {t('circumstances.picker.intensity')}
+              </h3>
             </div>
             
             <div 
@@ -358,9 +369,9 @@ const CircumstancesPicker = observer(({
               </div>
               
               <div className="intensity-actions">
-                <button className="add-emotion-button" onClick={handleAdd}>
-                  Добавить
-                </button>
+              <button className="add-emotion-button" onClick={handleAdd}>
+                {t('circumstances.picker.add')}
+              </button>
               </div>
             </div>
           </div>
@@ -378,11 +389,15 @@ const CircumstancesPicker = observer(({
       <div className="selected-emotions">
         <div className="selected-header">
           <span className="selected-count">
-            Выбрано: {currentSelection.length} / {maxCircumstances}
+            {t('circumstances.picker.selectedCount', {
+              current: currentSelection.length,
+              max: maxCircumstances
+            })}
           </span>
           <button className="clear-all-button" onClick={handleClearAll}>
-            Очистить все
+            {t('circumstances.picker.clearAll')}
           </button>
+
         </div>
         
         <div className="selected-list">
@@ -397,7 +412,7 @@ const CircumstancesPicker = observer(({
                     {item.category?.label}
                   </div>
                   <div className="selected-emotion-name">
-                    {item.item?.label || 'Общее'}
+                    {item.item?.label || t('circumstances.picker.general')}
                   </div>
                 </div>
               </div>

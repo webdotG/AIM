@@ -176,7 +176,7 @@ const EmotionPicker = observer(({
     if (emotionsStore.isLoadingCatalog) {
       return (
         <div className="step-content loading">
-          <p>Загрузка эмоций...</p>
+          <p>{t('emotions.picker.loading')}</p>
         </div>
       );
     }
@@ -186,7 +186,8 @@ const EmotionPicker = observer(({
         return (
           <div className="step-content">
             <div className="step-header">
-              <h3 className="step-title">Выберите категорию</h3>
+              <h3 className="step-title">{t('emotions.picker.selectCategory')}</h3>
+
             </div>
             <div className="categories-grid">
               {categories().map(category => (
@@ -209,12 +210,15 @@ const EmotionPicker = observer(({
         return (
           <div className="step-content">
             <div className="step-header">
-              <button className="back-button" onClick={handleBack}>← Назад</button>
-              <h3 className="step-title">{categoryLabel}: Выберите эмоцию</h3>
+              <button className="back-button" onClick={handleBack}>
+                {t('emotions.picker.back')}
+              </button>
+
+              <h3 className="step-title">{categoryLabel}: {t('emotions.picker.selectEmotion')}</h3>
             </div>
             
             {emotions.length === 0 ? (
-              <div className="empty-state"><p>Нет доступных эмоций</p></div>
+             <div className="empty-state"><p>{t('emotions.picker.noEmotions')}</p></div>
             ) : (
               <div className="emotions-grid">
                 {emotions.map(emotion => {
@@ -242,9 +246,11 @@ const EmotionPicker = observer(({
         return (
           <div className="step-content">
             <div className="step-header">
-              <button className="back-button" onClick={handleBack}>← Назад</button>
+              <button className="back-button" onClick={handleBack}>
+                {t('emotions.picker.back')}
+              </button>
               <h3 className="step-title" style={{padding:"25px"}}>
-                Интенсивность
+                {t('emotions.picker.intensity')}
               </h3>
             </div>
             
@@ -295,7 +301,7 @@ const EmotionPicker = observer(({
               
               <div className="intensity-actions">
                 <button className="add-emotion-button" onClick={handleAddEmotion}>
-                  Добавить эмоцию
+                  {t('emotions.picker.addEmotion')}
                 </button>
               </div>
             </div>
@@ -314,10 +320,14 @@ const EmotionPicker = observer(({
       <div className="selected-emotions">
         <div className="selected-header">
           <span className="selected-count">
-            Выбрано: {currentSelection.length} / {maxEmotions}
+            {t('emotions.picker.selectedCount', {
+              current: currentSelection.length,
+              max: maxEmotions
+            })}
           </span>
+
           <button className="clear-all-button" onClick={handleClearAll}>
-            Очистить все
+            {t('emotions.picker.clearAll')}
           </button>
         </div>
         
@@ -330,10 +340,10 @@ const EmotionPicker = observer(({
                 </span>
                 <div className="selected-emotion-info">
                   <div className="selected-emotion-subtitle">
-                    {item.category?.label || 'Без категории'}
+                    {item.category?.label || t('emotions.picker.noCategory')}
                   </div>
                   <div className="selected-emotion-name">
-                    {item.emotion?.label || item.category?.label || 'Эмоция'}
+                   {item.emotion?.label || item.category?.label || t('emotions.picker.emotion')}
                   </div>
                 </div>
               </div>

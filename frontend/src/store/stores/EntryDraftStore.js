@@ -54,7 +54,7 @@ export class EntryDraftStore {
   resetDraft = () => {
     this.currentDraft = {
       id: `draft_${Date.now()}`,
-      type: 'thought',
+      type: 'ream',
       content: '',
       eventDate: new Date().toISOString().split('T')[0],
       deadline: null,

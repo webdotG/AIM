@@ -1,5 +1,6 @@
 import React from 'react';
 import './PasswordStrengthIndicator.css';
+import { useLanguage } from '@/layers/language';
 
 export default function PasswordStrengthIndicator({ 
   score, 
@@ -7,12 +8,30 @@ export default function PasswordStrengthIndicator({
   reasons = [], 
   suggestions = [] 
 }) {
+
+  const { t } = useLanguage();
+
   const getStrengthLevel = () => {
-    if (score >= 80) return { text: 'Кажется ОК', class: 'strong' };
-    if (score >= 60) return { text: 'И так сойдёт', class: 'good' };
-    if (score >= 40) return { text: 'НУЖНО лучше', class: 'medium' };
-    if (score >= 20) return { text: 'Такое себе', class: 'weak' };
-    return { text: 'Оч слабо', class: 'very-weak' };
+    if (score >= 80) return { 
+      text: t('passwordStrength.levels.strong'), 
+      class: 'strong' 
+    };
+    if (score >= 60) return { 
+      text: t('passwordStrength.levels.good'), 
+      class: 'good' 
+    };
+    if (score >= 40) return { 
+      text: t('passwordStrength.levels.medium'), 
+      class: 'medium' 
+    };
+    if (score >= 20) return { 
+      text: t('passwordStrength.levels.weak'), 
+      class: 'weak' 
+    };
+    return { 
+      text: t('passwordStrength.levels.veryWeak'), 
+      class: 'very-weak' 
+    };
   };
 
   const level = getStrengthLevel();
@@ -21,8 +40,7 @@ export default function PasswordStrengthIndicator({
     <div className="password-strength-indicator">
       {/* Progress Bar */}
       <div className="strength-header">
-        <span className="strength-label">Сила пароля:</span>
-        {/* <span className={`strength-value ${level.class}`}>{level.text}</span> */}
+        <span className="strength-label">{t('passwordStrength.title')}</span>
         <span className={`strength-value`}>{level.text}</span>
       </div>
       
@@ -36,7 +54,7 @@ export default function PasswordStrengthIndicator({
       {/* Requirements Checklist */}
       {reasons.length > 0 && (
         <div className="strength-requirements">
-          <div className="requirements-title">Требования:</div>
+          <div className="requirements-title">{t('passwordStrength.requirements')}</div>
           <ul className="requirements-list">
             {reasons.map((reason, index) => (
               <li key={index} className="requirement-item error">
@@ -50,9 +68,9 @@ export default function PasswordStrengthIndicator({
 
       {/* Success Message */}
       {isStrong && (
-        <div className="strength-success">
-          Все требования выполнены
-        </div>
+          <div className="strength-success">
+            {t('passwordStrength.allRequirementsMet')}
+          </div>
       )}
     </div>
   );

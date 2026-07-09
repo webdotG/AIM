@@ -5,32 +5,28 @@ import './Navigation.css';
 export default function Navigation() {
   const { t } = useLanguage();
   
-  const navItems = [
-    { 
-      path: '/', 
-      icon: 'all', 
-       label: 'Лента'
-      // label: t('navigation.timeline') || 'Лента'
-    },
-    { 
-      path: '/entries/create', 
-      icon: 'crt', 
-       label:'Создать'
-      // label: t('navigation.create') || 'Создать'
-    },
-    { 
-      path: '/analytics', 
-      icon: 'anl', 
-      label: 'Аналитика'
-      // label: t('navigation.analytics') || 'Аналитика'
-    },
-    { 
-      path: '/settings', 
-      icon: 'set', 
-      label: 'Настройки'
-      // label: t('navigation.settings') || 'Настройки'
-    },
-  ];
+const navItems = [
+  { 
+    path: '/', 
+    icon: 'all', 
+    label: t('navigation.timeline') || 'Лента'
+  },
+  { 
+    path: '/entries/create', 
+    icon: 'crt', 
+    label: t('navigation.createEntry') || 'Создать'
+  },
+  { 
+    path: '/analytics', 
+    icon: 'anl', 
+    label: t('navigation.analytics') || 'Аналитика'
+  },
+  { 
+    path: '/settings', 
+    icon: 'set', 
+    label: t('navigation.settings') || 'Настройки'
+  },
+];
   
   return (
     <nav className="bottom-navigation">

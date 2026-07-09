@@ -3,6 +3,7 @@ import Input from '../../common/Input/Input';
 import PasswordStrengthIndicator from '../PasswordStrengthIndicator/PasswordStrengthIndicator';
 import { useAuthStore } from '@/store';
 import './PasswordInput.css';
+import { useLanguage } from '@/layers/language';
 
 function useDebounce(value, delay) {
   const [debouncedValue, setDebouncedValue] = useState(value);
@@ -23,13 +24,13 @@ function useDebounce(value, delay) {
 export default function PasswordInput({ 
   value, 
   onChange, 
-  label = 'Пароль',
-  placeholder = 'Введите пароль',
+  label = t('auth.password.label'),
+  placeholder = t('auth.password.placeholder'),
   showStrengthIndicator = true,
   showGenerateButton = false,
   required = false,
   onStrengthChange = null,
-  ...props 
+  ...props
 }) {
   const [strength, setStrength] = useState({
     score: 0,
@@ -41,6 +42,7 @@ export default function PasswordInput({
   const [showPassword, setShowPassword] = useState(false);
   
   const authStore = useAuthStore();
+  const { t } = useLanguage();
 
   const debouncedPassword = useDebounce(value, 500);
 
@@ -100,29 +102,29 @@ export default function PasswordInput({
       />
 
       <div className="password-actions">
-        <button
-          type="button"
-          className="password-toggle"
-          onClick={() => setShowPassword(!showPassword)}
-        >
-          {showPassword ? 'Скрыть' : 'Показать'}
-        </button>
+      <button
+        type="button"
+        className="password-toggle"
+        onClick={() => setShowPassword(!showPassword)}
+      >
+        {showPassword ? t('password.hide') : t('password.show')}
+      </button>
         
         {showGenerateButton && (
-          <button
-            type="button"
-            className="password-generate"
-            onClick={handleGeneratePassword}
-          >
-            Придумать
-          </button>
+        <button
+          type="button"
+          className="password-generate"
+          onClick={handleGeneratePassword}
+        >
+          {t('password.generate')}
+        </button>
         )}
       </div>
 
       {showStrengthIndicator && value && (
         <div className="password-strength-wrapper">
           {isChecking ? (
-            <div className="checking-indicator">Проверка...</div>
+            <div className="checking-indicator">{t('password.checking')}</div>
           ) : (
             <PasswordStrengthIndicator
               score={strength.score}

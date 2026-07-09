@@ -1,59 +1,34 @@
 const ru = {
-  // relations: {
-  //   "types": {
-  //     "led_to": "Привело к",
-  //     "reminded_of": "Напомнило о",
-  //     "inspired_by": "Вдохновлено",
-  //     "caused_by": "Вызвано",
-  //     "related_to": "Связано с",
-  //     "resulted_in": "Привело к результату"
-  //   },
-  //   "descriptions": {
-  //     "led_to": "Эта запись привела к другой записи",
-  //     "reminded_of": "Напоминает о другой записи",
-  //     "inspired_by": "Было вдохновлено другой записью",
-  //     "caused_by": "Было вызвано другой записью",
-  //     "related_to": "Связана с другой записью",
-  //     "resulted_in": "Привела к другой записи"
-  //   },
-  //   "picker": {
-  //     "title": "Добавить связи",
-  //     "open": "Связать с другими записями",
-  //     "selectType": "Как это связано?",
-  //     "typeHelp": "Выберите тип связи",
-  //     "searchEntry": "Найти запись",
-  //     "searchPlaceholder": "Поиск по содержанию или дате...",
-  //     "searchHint": "Начните вводить для поиска ваших записей",
-  //     "noResults": "Записей не найдено",
-  //     "addDescription": "Добавить описание",
-  //     "descriptionLabel": "Описание (необязательно)",
-  //     "descriptionPlaceholder": "Почему это связано? (необязательно)",
-  //     "addRelation": "Добавить связь",
-  //     "skipDescription": "Пропустить описание",
-  //     "selected": "Выбрано: {count} / {max}"
-  //   },
-  //   "graph": {
-  //     "title": "Граф связей",
-  //     "noData": "Нет связей для визуализации"
-  //   }
-  // },
-  // "entries": {
-  //   "form": {
-  //     "relationsLabel": "Связи"
-  //   }
-  // },
-
-  // Common
+  // Backup Code
   backup_code: {
-  title: 'Код восстановления',
-  warning: 'ВАЖНО! Сохраните этот код в безопасном месте',
-  copy: 'Скопировать код',
-  copied: 'Скопировано!',
-  instruction1: 'Сохраните код в надёжном месте',
-  instruction2: 'Не передавайте код третьим лицам',
-  instruction3: 'Используйте для восстановления доступа',
-  understood: 'Я сохранил код'
+    title: 'Код восстановления',
+    warning: 'ВАЖНО! Сохраните этот код в безопасном месте',
+    copy: 'Скопировать код',
+    copied: 'Скопировано!',
+    instruction1: 'Сохраните код в надёжном месте',
+    instruction2: 'Не передавайте код третьим лицам',
+    instruction3: 'Используйте для восстановления доступа',
+    understood: 'Я сохранил код'
+  },
+  password: {
+  show: 'Показать',
+  hide: 'Скрыть',
+  generate: 'Придумать',
+  checking: 'Проверка...'
 },
+passwordStrength: {
+  title: 'Сила пароля:',
+  levels: {
+    veryWeak: 'Оч слабо',
+    weak: 'Такое себе',
+    medium: 'НУЖНО лучше',
+    good: 'И так сойдёт',
+    strong: 'Кажется ОК'
+  },
+  requirements: 'Требования:',
+  allRequirementsMet: 'Все требования выполнены'
+},
+  // Common
   common: {
     save: 'Сохранить',
     cancel: 'Отмена',
@@ -75,106 +50,114 @@ const ru = {
     add: 'Добавить',
     remove: 'Убрать',
     close: 'Закрыть',
-      entryNotFound: 'Запись не найдена',
-  completed: 'Выполнено',
-  overdue: 'Просрочено',
-  edit: 'Редактировать',
-  delete: 'Удалить',
-  markIncomplete: 'Отметить невыполненным',
-  markComplete: 'Отметить выполненным',
+    entryNotFound: 'Запись не найдена',
+    completed: 'Выполнено',
+    overdue: 'Просрочено',
+    markIncomplete: 'Отметить невыполненным',
+    markComplete: 'Отметить выполненным',
     sortByDate: 'Сортировать по дате',
-  sortByType: 'Сортировать по типу',
-  sortByContent: 'Сортировать по содержанию',
-  listView: 'Вид списком',
-  gridView: 'Вид сеткой',
-  clearFilters: 'Очистить фильтры',
-  total: 'Всего',
+    sortByType: 'Сортировать по типу',
+    sortByContent: 'Сортировать по содержанию',
+    listView: 'Вид списком',
+    gridView: 'Вид сеткой',
+    clearFilters: 'Очистить фильтры',
+    total: 'Всего',
     requiredContent: 'Заполните содержание записи',
-  requiredDeadline: 'Укажите дедлайн для плана',
-  entryCreated: 'Запись создана!',
-  saving: 'Сохранение...',
-  selectEmotion: 'Выберите эмоцию',
-  addTagPlaceholder: 'Введите тег и нажмите Enter',
-  planDeadlineRequired: 'Для плана требуется указать дедлайн',
-    somethingWentWrong: 'Что-то пошло не так',
-  reload: 'Перезагрузить',
-  goHome: 'На главную',
-  entriesCount: 'Записей: {count}', 
-      menu: 'Меню',
-    statistics: 'Статистика',
-    requiredContent: 'Введите текст записи',
     requiredDeadline: 'Укажите дедлайн для плана',
-    entryCreated: 'Запись создана успешно',
-    saving: 'Сохранение',
-    planDeadlineRequired: 'Для плана необходимо указать дедлайн'
+    entryCreated: 'Запись создана!',
+    saving: 'Сохранение...',
+    selectEmotion: 'Выберите эмоцию',
+    addTagPlaceholder: 'Введите тег и нажмите Enter',
+    planDeadlineRequired: 'Для плана требуется указать дедлайн',
+    somethingWentWrong: 'Что-то пошло не так',
+    reload: 'Перезагрузить',
+    goHome: 'На главную',
+    entriesCount: 'Записей: {count}',
+    menu: 'Меню',
+    statistics: 'Статистика',
+    completedPlans: 'Выполненные планы',
+    overduePlans: 'Просроченные планы',
+    clear: 'Очистить',
+    selected: 'Выбрано'
   },
 
   // Navigation
   navigation: {
-    timeline: 'Хронология',
-    analytics: 'Аналитика',
-    settings: 'Настройки',
+  timeline: 'Хронология',
+  analytics: 'Аналитика',
+  settings: 'Настройки',
+  entries: 'Записи',
+  createEntry: 'Создать запись',
+  create: 'Создать',
+  dashboard: 'Панель управления',
+  profile: 'Профиль',
+  home: 'Главная'
+  },
+
+  // Search
+  search: {
+    all: 'Все',
     entries: 'Записи',
-    createEntry: 'Создать запись',
-    dashboard: 'Панель управления',
-    profile: 'Профиль',
-    home: 'Главная'
+    skills: 'Навыки',
+    people: 'Люди',
+    tags: 'Теги',
+    categories: 'Категории поиска',
+    placeholder: 'Поиск записей, навыков...',
+    search: 'Найти',
+    results: 'Результаты поиска',
+    noResults: 'Ничего не найдено'
   },
 
   // Auth
- // В секции auth исправляем:
-auth: {
-  login: {
-    title: 'Вход',
-    subtitle: 'Вход в аккаунт',
-    label: 'Логин',
-    placeholder: 'Введите логин',
-    submit: 'Войти',
-    registerLink: 'Нет аккаунта? Зарегистрироваться',
-    recoverLink: 'Забыли пароль?',
-    logout: 'Выход',
+  auth: {
+    login: {
+      title: 'Вход',
+      subtitle: 'Вход в аккаунт',
+      label: 'Логин',
+      placeholder: 'Введите логин',
+      submit: 'Войти',
+      registerLink: 'Нет аккаунта? Зарегистрироваться',
+      recoverLink: 'Забыли пароль?',
+      logout: 'Выход'
+    },
+    register: {
+      title: 'Регистрация',
+      subtitle: 'Создание нового аккаунта',
+      label: 'Логин',
+      placeholder: 'Введите логин',
+      submit: 'Зарегистрироваться',
+      loginLink: 'Уже есть аккаунт? Войти',
+      backupCodeInfo: 'Сохраните этот код для восстановления пароля',
+      backupCode: 'Backup-код'
+    },
+    recover: {
+      title: 'Восстановление пароля',
+      subtitle: 'Восстановление доступа к аккаунту',
+      label: 'Логин',
+      placeholder: 'Введите логин',
+      submit: 'Восстановить',
+      loginLink: 'Вспомнили пароль? Войти'
+    },
+    password: {
+      label: 'Пароль',
+      placeholder: 'Введите пароль'
+    },
+    confirm_password: {
+      label: 'Повторите пароль',
+      placeholder: 'Повторите пароль'
+    },
+    backup_code: {
+      label: 'Backup-код',
+      placeholder: 'Введите backup-код'
+    },
+    register_link: 'Зарегистрироваться',
+    recover_link: 'Восстановить пароль',
+    back_to_login: 'Вернуться к входу',
+    passwords_not_match: 'Пароли не совпадают',
+    registration_success: 'Регистрация успешна',
+    logout: 'Выйти',
+    sessionExpired: 'Сессия истекла'
   },
-  register: {
-    title: 'Регистрация',
-    subtitle: 'Создание нового аккаунта',
-    label: 'Логин',
-    placeholder: 'Введите логин',
-    submit: 'Зарегистрироваться',
-    loginLink: 'Уже есть аккаунт? Войти',
-    backupCodeInfo: 'Сохраните этот код для восстановления пароля',
-    backupCode: 'Backup-код'
-  },
-  recover: {
-    title: 'Восстановление пароля',
-    subtitle: 'Восстановление доступа к аккаунту',
-    label: 'Логин',
-    placeholder: 'Введите логин',
-    submit: 'Восстановить',
-    loginLink: 'Вспомнили пароль? Войти'
-  },
-  // Общие поля для всех форм
-  password: {
-    label: 'Пароль',
-    placeholder: 'Введите пароль'
-  },
-  confirm_password: {
-    label: 'Повторите пароль',
-    placeholder: 'Повторите пароль'
-  },
-  backup_code: {
-    label: 'Backup-код',
-    placeholder: 'Введите backup-код'
-  },
-  // Ссылки
-  register_link: 'Зарегистрироваться',
-  recover_link: 'Восстановить пароль',
-  back_to_login: 'Вернуться к входу',
-  // Сообщения
-  passwords_not_match: 'Пароли не совпадают',
-  registration_success: 'Регистрация успешна',
-  logout: 'Выйти',
-  sessionExpired: 'Сессия истекла'
-},
 
   // Circumstances
   circumstances: {
@@ -213,7 +196,23 @@ auth: {
     temperature: 'Температура',
     notes: 'Заметки',
     addCircumstances: 'Добавить обстоятельства',
-    noCircumstances: 'Нет записанных обстоятельств'
+    noCircumstances: 'Нет записанных обстоятельств',
+  picker: {
+    selectCategory: 'Выберите категорию',
+    back: '← Назад',
+    temperature: 'Температура',
+    intensity: 'Интенсивность',
+    add: 'Добавить',
+    selectedCount: 'Выбрано: {current} / {max}',
+    clearAll: 'Очистить все',
+    general: 'Общее',
+    maxReached: 'Максимум {max} обстоятельств'
+  },
+  categories: {
+    weatherDesc: 'Погодные условия',
+    moonDesc: 'Фаза луны',
+    eventsDesc: 'Глобальные события'
+  }
   },
 
   // Body States
@@ -232,7 +231,23 @@ auth: {
       approximate: 'Приблизительное',
       city: 'Город',
       country: 'Страна'
-    }
+    },
+    picker: {
+      title: 'Состояние тела',
+      open: 'Добавить состояние тела'
+    },
+      hp: {
+    critical: 'Критичное',
+    low: 'Низкое',
+    normal: 'Нормальное',
+    excellent: 'Отличное'
+  },
+  energy: {
+    exhausted: 'Измождён',
+    tired: 'Устал',
+    normal: 'Нормально',
+    energized: 'Энергичен'
+  }
   },
 
   // Entries
@@ -241,12 +256,17 @@ auth: {
       dream: 'Сон',
       memory: 'Воспоминание',
       thought: 'Мысль',
-      plan: 'План'
+      plan: 'План',
+      dreamDesc: 'Записи о снах и сновидениях',
+      memoryDesc: 'Воспоминания и значимые события',
+      thoughtDesc: 'Мысли, идеи и размышления',
+      planDesc: 'Планы, цели и задачи'
     },
     form: {
       title: 'Создать запись',
       editTitle: 'Редактировать запись',
       typeLabel: 'Тип записи',
+      typeSubtitle: 'Выберите тип записи',
       contentLabel: 'Содержание',
       contentPlaceholder: 'Опишите свою мысль, сон или воспоминание...',
       dateLabel: 'Дата события',
@@ -257,6 +277,9 @@ auth: {
       circumstancesLabel: 'Обстоятельства',
       bodyStateLabel: 'Состояние тела',
       locationLabel: 'Местоположение',
+      relationsLabel: 'Связи',
+      skillsLabel: 'Навыки',
+      skillProgressLabel: 'Прогресс навыков',
       submit: 'Сохранить',
       cancel: 'Отмена',
       saveDraft: 'Сохранить черновик'
@@ -311,6 +334,34 @@ auth: {
       related_to: 'Связано с',
       resulted_in: 'Привело к результату'
     },
+    descriptions: {
+      led_to: 'Эта запись привела к другой записи',
+      reminded_of: 'Напоминает о другой записи',
+      inspired_by: 'Было вдохновлено другой записью',
+      caused_by: 'Было вызвано другой записью',
+      related_to: 'Связана с другой записью',
+      resulted_in: 'Привела к другой записи'
+    },
+    picker: {
+      title: 'Добавить связи',
+      open: 'Связать с другими записями',
+      selectType: 'Как это связано?',
+      typeHelp: 'Выберите тип связи',
+      searchEntry: 'Найти запись',
+      searchPlaceholder: 'Поиск по содержанию или дате...',
+      searchHint: 'Начните вводить для поиска ваших записей',
+      noResults: 'Записей не найдено',
+      addDescription: 'Добавить описание',
+      descriptionLabel: 'Описание (необязательно)',
+      descriptionPlaceholder: 'Почему это связано? (необязательно)',
+      addRelation: 'Добавить связь',
+      skipDescription: 'Пропустить описание',
+      selected: 'Выбрано: {count} / {max}'
+    },
+    graph: {
+      title: 'Граф связей',
+      noData: 'Нет связей для визуализации'
+    },
     modal: {
       title: 'Создать связь',
       fromEntry: 'От записи',
@@ -330,14 +381,24 @@ auth: {
       negative: 'Негативные',
       neutral: 'Нейтральные'
     },
-    picker: {
-      title: 'Выберите эмоции',
-      search: 'Поиск эмоций',
-      intensity: 'Интенсивность',
-      noEmotions: 'Эмоции не выбраны',
-      maxEmotions: 'Максимум {max} эмоций',
-      selectedCount: '{count} выбрано'
-    },
+  picker: {
+    loading: 'Загрузка эмоций...',
+    selectCategory: 'Выберите категорию',
+    back: '← Назад',
+    selectEmotion: 'Выберите эмоцию',
+    noEmotions: 'Нет доступных эмоций',
+    intensity: 'Интенсивность',
+    addEmotion: 'Добавить эмоцию',
+    selectedCount: 'Выбрано: {current} / {max}',
+    clearAll: 'Очистить все',
+    noCategory: 'Без категории',
+    emotion: 'Эмоция',
+    general: 'Общее',
+    maxReached: 'Максимум {max} эмоций',
+    positiveDesc: 'Позитивные чувства и настроения',
+    negativeDesc: 'Негативные чувства и переживания',
+    neutralDesc: 'Нейтральные состояния'
+  },
     list: {
       admiration: 'Восхищение',
       adoration: 'Обожание',
@@ -411,7 +472,11 @@ auth: {
     tagPlaceholder: 'Название тега',
     popularTags: 'Популярные теги',
     noTags: 'Нет тегов',
-    manageTags: 'Управление тегами'
+    manageTags: 'Управление тегами',
+    picker: {
+      title: 'Теги',
+      open: 'Добавить теги'
+    }
   },
 
   // Skills
@@ -443,6 +508,18 @@ auth: {
       study: 'Учёба',
       application: 'Применение',
       teaching: 'Обучение'
+    },
+    picker: {
+      title: 'Навыки',
+      open: 'Выбрать навыки'
+    }
+  },
+
+  // Skill Progress (новый раздел)
+  skillProgress: {
+    picker: {
+      title: 'Прогресс навыков',
+      open: 'Добавить прогресс'
     }
   },
 
@@ -469,21 +546,9 @@ auth: {
       activityHeatmap: 'Карта активности'
     }
   },
-  search: {
-    all: 'Все',
-    entries: 'Записи',
-    skills: 'Навыки',
-    people: 'Люди',
-    tags: 'Теги',
-    categories: 'Категории поиска',
-    placeholder: 'Поиск записей, навыков...',
-    search: 'Найти',
-    results: 'Результаты поиска',
-    noResults: 'Ничего не найдено'
-  },
 
   // Settings
-  settings: { 
+  settings: {
     title: 'Настройки',
     theme: {
       title: 'Тема',
@@ -548,7 +613,8 @@ auth: {
     hours: 'часов',
     minutes: 'минут',
     seconds: 'секунд',
-    ago: 'назад'
+    ago: 'назад',
+    close: 'Закрыть'
   },
 
   // AI Features

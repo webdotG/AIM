@@ -1,4 +1,33 @@
 const fr = {
+  // Backup Code
+  backup_code: {
+    title: 'Code de sauvegarde',
+    warning: 'IMPORTANT ! Conservez ce code en lieu sûr',
+    copy: 'Copier le code',
+    copied: 'Copié !',
+    instruction1: 'Conservez le code dans un endroit sûr',
+    instruction2: 'Ne partagez pas le code avec des tiers',
+    instruction3: 'Utilisez-le pour restaurer l\'accès',
+    understood: 'J\'ai enregistré le code'
+  },
+password: {
+  show: 'Afficher',
+  hide: 'Cacher',
+  generate: 'Générer',
+  checking: 'Vérification...'
+},
+passwordStrength: {
+  title: 'Force du mot de passe :',
+  levels: {
+    veryWeak: 'Très faible',
+    weak: 'Faible',
+    medium: 'Moyen',
+    good: 'Bon',
+    strong: 'Fort'
+  },
+  requirements: 'Exigences :',
+  allRequirementsMet: 'Toutes les exigences sont remplies'
+},
   // Common
   common: {
     save: 'Enregistrer',
@@ -21,161 +50,113 @@ const fr = {
     add: 'Ajouter',
     remove: 'Retirer',
     close: 'Fermer',
-      entryNotFound: 'Entrée non trouvée',
-  completed: 'Terminé',
-  overdue: 'En retard',
-  edit: 'Modifier',
-  delete: 'Supprimer',
-  markIncomplete: 'Marquer comme incomplet',
-  markComplete: 'Marquer comme complet',
+    entryNotFound: 'Entrée non trouvée',
+    completed: 'Terminé',
+    overdue: 'En retard',
+    markIncomplete: 'Marquer comme incomplet',
+    markComplete: 'Marquer comme complet',
     sortByDate: 'Trier par date',
-  sortByType: 'Trier par type',
-  sortByContent: 'Trier par contenu',
-  listView: 'Vue liste',
-  gridView: 'Vue grille',
-  clearFilters: 'Effacer les filtres',
-    requiredContent: 'Veuillez remplir le contenu de l\'entrée',
-  requiredDeadline: 'Veuillez spécifier une échéance pour le plan',
-  entryCreated: 'Entrée créée !',
-  saving: 'Enregistrement...',
-  selectEmotion: 'Sélectionner une émotion',
-  addTagPlaceholder: 'Entrez un tag et appuyez sur Entrée',
-  planDeadlineRequired: 'Le plan nécessite une échéance',
+    sortByType: 'Trier par type',
+    sortByContent: 'Trier par contenu',
+    listView: 'Vue liste',
+    gridView: 'Vue grille',
+    clearFilters: 'Effacer les filtres',
     total: 'Total',
-  statistics: 'Statistiques',
-  completedPlans: 'Plans terminés',
-  overduePlans: 'Plans en retard'
-
+    requiredContent: 'Veuillez remplir le contenu de l\'entrée',
+    requiredDeadline: 'Veuillez spécifier une échéance pour le plan',
+    entryCreated: 'Entrée créée !',
+    saving: 'Enregistrement...',
+    selectEmotion: 'Sélectionner une émotion',
+    addTagPlaceholder: 'Entrez un tag et appuyez sur Entrée',
+    planDeadlineRequired: 'Le plan nécessite une échéance',
+    somethingWentWrong: 'Quelque chose s\'est mal passé',
+    reload: 'Recharger',
+    goHome: 'Accueil',
+    entriesCount: 'Entrées : {count}',
+    menu: 'Menu',
+    statistics: 'Statistiques',
+    completedPlans: 'Plans terminés',
+    overduePlans: 'Plans en retard',
+    clear: 'Effacer',
+    selected: 'Sélectionné'
   },
 
   // Navigation
   navigation: {
-    timeline: 'Chronologie',
-    analytics: 'Analytique',
-    settings: 'Paramètres',
+  timeline: 'Chronologie',
+  analytics: 'Analytique',
+  settings: 'Paramètres',
+  entries: 'Entrées',
+  createEntry: 'Créer une entrée',
+  create: 'Créer',
+  dashboard: 'Tableau de bord',
+  profile: 'Profil',
+  home: 'Accueil'
+  },
+
+  // Search
+  search: {
+    all: 'Tout',
     entries: 'Entrées',
-    createEntry: 'Créer une entrée',
-    dashboard: 'Tableau de bord',
-    profile: 'Profil'
+    skills: 'Compétences',
+    people: 'Personnes',
+    tags: 'Étiquettes',
+    categories: 'Catégories de recherche',
+    placeholder: 'Rechercher des entrées, des compétences...',
+    search: 'Rechercher',
+    results: 'Résultats de recherche',
+    noResults: 'Aucun résultat trouvé'
   },
 
   // Auth
-auth: {
-  login: {
-    title: 'Connexion',
-    subtitle: 'Connectez-vous à votre compte',
-    label: 'Identifiant',
-    placeholder: 'Entrez votre identifiant',
-    submit: 'Se connecter',
-    registerLink: 'Pas de compte ? S\'inscrire',
-    recoverLink: 'Mot de passe oublié ?'
-  },
-  register: {
-    title: 'Inscription',
-    subtitle: 'Créer un nouveau compte',
-    label: 'Identifiant',
-    placeholder: 'Entrez votre identifiant',
-    submit: 'S\'inscrire',
-    loginLink: 'Déjà un compte ? Se connecter',
-    backupCodeInfo: 'Conservez ce code pour récupérer votre mot de passe',
-    backupCode: 'Code de sauvegarde'
-  },
-  recover: {
-    title: 'Récupération du mot de passe',
-    subtitle: 'Récupérer l\'accès à votre compte',
-    label: 'Identifiant',
-    placeholder: 'Entrez votre identifiant',
-    submit: 'Récupérer',
-    loginLink: 'Se souvenir du mot de passe ? Se connecter'
-  },
-  password: {
-    label: 'Mot de passe',
-    placeholder: 'Entrez votre mot de passe'
-  },
-  confirm_password: {
-    label: 'Confirmer le mot de passe',
-    placeholder: 'Répétez votre mot de passe'
-  },
-  backup_code: {
-    label: 'Code de sauvegarde',
-    placeholder: 'Entrez le code de sauvegarde'
-  },
-  register_link: 'S\'inscrire',
-  recover_link: 'Récupérer le mot de passe',
-  back_to_login: 'Retour à la connexion',
-  passwords_not_match: 'Les mots de passe ne correspondent pas',
-  registration_success: 'Inscription réussie',
-  logout: 'Déconnexion',
-  sessionExpired: 'Session expirée'
-},
-
-  // Entries
-  entries: {
-    types: {
-      dream: 'Rêve',
-      memory: 'Souvenir',
-      thought: 'Pensée',
-      plan: 'Plan'
+  auth: {
+    login: {
+      title: 'Connexion',
+      subtitle: 'Connectez-vous à votre compte',
+      label: 'Identifiant',
+      placeholder: 'Entrez votre identifiant',
+      submit: 'Se connecter',
+      registerLink: 'Pas de compte ? S\'inscrire',
+      recoverLink: 'Mot de passe oublié ?',
+      logout: 'Déconnexion'
     },
-    form: {
-      title: 'Créer une entrée',
-      editTitle: 'Modifier l\'entrée',
-      typeLabel: 'Type d\'entrée',
-      contentLabel: 'Contenu',
-      contentPlaceholder: 'Décrivez votre pensée, rêve ou souvenir...',
-      dateLabel: 'Date de l\'événement',
-      deadlineLabel: 'Échéance',
-      emotionsLabel: 'Émotions',
-      peopleLabel: 'Personnes',
-      tagsLabel: 'Étiquettes',
-      circumstancesLabel: 'Circonstances',
-      bodyStateLabel: 'État corporel',
-      locationLabel: 'Lieu',
-      submit: 'Enregistrer',
-      cancel: 'Annuler',
-      saveDraft: 'Enregistrer le brouillon'
+    register: {
+      title: 'Inscription',
+      subtitle: 'Créer un nouveau compte',
+      label: 'Identifiant',
+      placeholder: 'Entrez votre identifiant',
+      submit: 'S\'inscrire',
+      loginLink: 'Déjà un compte ? Se connecter',
+      backupCodeInfo: 'Conservez ce code pour récupérer votre mot de passe',
+      backupCode: 'Code de sauvegarde'
     },
-    list: {
-      title: 'Entrées',
-      emptyState: 'Vous n\'avez pas encore d\'entrées',
-      createFirst: 'Créer la première entrée',
-      filterByType: 'Filtrer par type',
-      filterByDate: 'Filtrer par date',
-      search: 'Rechercher des entrées',
-      sortBy: 'Trier par',
-          title: 'Chronologie des entrées',
-    emptyState: 'Vous n\'avez pas encore d\'entrées',
-    createFirst: 'Créer la première entrée',
-      sortOptions: {
-        newest: 'Plus récent',
-        oldest: 'Plus ancien',
-        updated: 'Dernière modification'
-      }
+    recover: {
+      title: 'Récupération du mot de passe',
+      subtitle: 'Récupérer l\'accès à votre compte',
+      label: 'Identifiant',
+      placeholder: 'Entrez votre identifiant',
+      submit: 'Récupérer',
+      loginLink: 'Se souvenir du mot de passe ? Se connecter'
     },
-    detail: {
-      createdAt: 'Créé le',
-      updatedAt: 'Mis à jour le',
-      emotions: 'Émotions',
-      people: 'Personnes',
-      tags: 'Étiquettes',
-      circumstances: 'Circonstances',
-      bodyState: 'État corporel',
-      relations: 'Relations',
-      incomingRelations: 'Relations entrantes',
-      outgoingRelations: 'Relations sortantes',
-      noRelations: 'Aucune relation',
-      createRelation: 'Créer une relation',
-      deleteConfirmation: 'Êtes-vous sûr de vouloir supprimer cette entrée ?',
-      markAsComplete: 'Marquer comme terminé',
-      markAsIncomplete: 'Marquer comme non terminé'
+    password: {
+      label: 'Mot de passe',
+      placeholder: 'Entrez votre mot de passe'
     },
-    stats: {
-      totalEntries: 'Total des entrées',
-      dreams: 'Rêves',
-      memories: 'Souvenirs',
-      thoughts: 'Pensées',
-      plans: 'Plans'
-    }
+    confirm_password: {
+      label: 'Confirmer le mot de passe',
+      placeholder: 'Répétez votre mot de passe'
+    },
+    backup_code: {
+      label: 'Code de sauvegarde',
+      placeholder: 'Entrez le code de sauvegarde'
+    },
+    register_link: 'S\'inscrire',
+    recover_link: 'Récupérer le mot de passe',
+    back_to_login: 'Retour à la connexion',
+    passwords_not_match: 'Les mots de passe ne correspondent pas',
+    registration_success: 'Inscription réussie',
+    logout: 'Déconnexion',
+    sessionExpired: 'Session expirée'
   },
 
   // Circumstances
@@ -215,7 +196,23 @@ auth: {
     temperature: 'Température',
     notes: 'Notes',
     addCircumstances: 'Ajouter des circonstances',
-    noCircumstances: 'Aucune circonstance enregistrée'
+    noCircumstances: 'Aucune circonstance enregistrée',
+  picker: {
+    selectCategory: 'Sélectionner une catégorie',
+    back: '← Retour',
+    temperature: 'Température',
+    intensity: 'Intensité',
+    add: 'Ajouter',
+    selectedCount: 'Sélectionné : {current} / {max}',
+    clearAll: 'Tout effacer',
+    general: 'Général',
+    maxReached: 'Maximum {max} circonstances'
+  },
+  categories: {
+    weatherDesc: 'Conditions météorologiques',
+    moonDesc: 'Phase de la lune',
+    eventsDesc: 'Événements mondiaux'
+  }
   },
 
   // Body States
@@ -234,24 +231,174 @@ auth: {
       approximate: 'Approximatif',
       city: 'Ville',
       country: 'Pays'
+    },
+    picker: {
+      title: 'État corporel',
+      open: 'Ajouter l\'état corporel'
+    },
+      hp: {
+    critical: 'Critique',
+    low: 'Bas',
+    normal: 'Normal',
+    excellent: 'Excellent'
+  },
+  energy: {
+    exhausted: 'Épuisé',
+    tired: 'Fatigué',
+    normal: 'Normal',
+    energized: 'Énergisé'
+  }
+  },
+
+  // Entries
+  entries: {
+    types: {
+      dream: 'Rêve',
+      memory: 'Souvenir',
+      thought: 'Pensée',
+      plan: 'Plan',
+      dreamDesc: 'Enregistrements de rêves et de visions',
+      memoryDesc: 'Souvenirs et événements significatifs',
+      thoughtDesc: 'Pensées, idées et réflexions',
+      planDesc: 'Plans, objectifs et tâches'
+    },
+    form: {
+      title: 'Créer une entrée',
+      editTitle: 'Modifier l\'entrée',
+      typeLabel: 'Type d\'entrée',
+      typeSubtitle: 'Sélectionner le type d\'entrée',
+      contentLabel: 'Contenu',
+      contentPlaceholder: 'Décrivez votre pensée, rêve ou souvenir...',
+      dateLabel: 'Date de l\'événement',
+      deadlineLabel: 'Échéance',
+      emotionsLabel: 'Émotions',
+      peopleLabel: 'Personnes',
+      tagsLabel: 'Étiquettes',
+      circumstancesLabel: 'Circonstances',
+      bodyStateLabel: 'État corporel',
+      locationLabel: 'Lieu',
+      relationsLabel: 'Relations',
+      skillsLabel: 'Compétences',
+      skillProgressLabel: 'Progression des compétences',
+      submit: 'Enregistrer',
+      cancel: 'Annuler',
+      saveDraft: 'Enregistrer le brouillon'
+    },
+    list: {
+      title: 'Entrées',
+      emptyState: 'Vous n\'avez pas encore d\'entrées',
+      createFirst: 'Créer la première entrée',
+      filterByType: 'Filtrer par type',
+      filterByDate: 'Filtrer par date',
+      search: 'Rechercher des entrées',
+      sortBy: 'Trier par',
+      sortOptions: {
+        newest: 'Plus récent',
+        oldest: 'Plus ancien',
+        updated: 'Dernière modification'
+      }
+    },
+    detail: {
+      createdAt: 'Créé le',
+      updatedAt: 'Mis à jour le',
+      emotions: 'Émotions',
+      people: 'Personnes',
+      tags: 'Étiquettes',
+      circumstances: 'Circonstances',
+      bodyState: 'État corporel',
+      relations: 'Relations',
+      incomingRelations: 'Relations entrantes',
+      outgoingRelations: 'Relations sortantes',
+      noRelations: 'Aucune relation',
+      createRelation: 'Créer une relation',
+      deleteConfirmation: 'Êtes-vous sûr de vouloir supprimer cette entrée ?',
+      markAsComplete: 'Marquer comme terminé',
+      markAsIncomplete: 'Marquer comme non terminé'
+    },
+    stats: {
+      totalEntries: 'Total des entrées',
+      dreams: 'Rêves',
+      memories: 'Souvenirs',
+      thoughts: 'Pensées',
+      plans: 'Plans'
     }
   },
 
-  // Emotions (Extended)
+  // Relations
+  relations: {
+    types: {
+      led_to: 'A mené à',
+      reminded_of: 'A rappelé',
+      inspired_by: 'Inspiré par',
+      caused_by: 'Causé par',
+      related_to: 'Lié à',
+      resulted_in: 'A abouti à'
+    },
+    descriptions: {
+      led_to: 'Cette entrée a mené à une autre entrée',
+      reminded_of: 'Rappelle une autre entrée',
+      inspired_by: 'A été inspiré par une autre entrée',
+      caused_by: 'A été causé par une autre entrée',
+      related_to: 'Lié à une autre entrée',
+      resulted_in: 'A abouti à une autre entrée'
+    },
+    picker: {
+      title: 'Ajouter des relations',
+      open: 'Lier à d\'autres entrées',
+      selectType: 'Quel est le lien ?',
+      typeHelp: 'Sélectionnez le type de relation',
+      searchEntry: 'Trouver une entrée',
+      searchPlaceholder: 'Rechercher par contenu ou date...',
+      searchHint: 'Commencez à taper pour rechercher vos entrées',
+      noResults: 'Aucune entrée trouvée',
+      addDescription: 'Ajouter une description',
+      descriptionLabel: 'Description (optionnelle)',
+      descriptionPlaceholder: 'Pourquoi est-ce lié ? (optionnel)',
+      addRelation: 'Ajouter une relation',
+      skipDescription: 'Ignorer la description',
+      selected: 'Sélectionné : {count} / {max}'
+    },
+    graph: {
+      title: 'Graphe des relations',
+      noData: 'Aucune relation à visualiser'
+    },
+    modal: {
+      title: 'Créer une relation',
+      fromEntry: 'De l\'entrée',
+      toEntry: 'À l\'entrée',
+      typeLabel: 'Type de relation',
+      descriptionLabel: 'Description',
+      descriptionPlaceholder: 'Décrivez la relation entre les entrées...',
+      submit: 'Créer',
+      cancel: 'Annuler'
+    }
+  },
+
+  // Emotions
   emotions: {
     categories: {
       positive: 'Positif',
       negative: 'Négatif',
       neutral: 'Neutre'
     },
-    picker: {
-      title: 'Sélectionner des émotions',
-      search: 'Rechercher des émotions',
-      intensity: 'Intensité',
-      noEmotions: 'Aucune émotion sélectionnée',
-      maxEmotions: 'Maximum {max} émotions',
-      selectedCount: '{count} sélectionnée(s)'
-    },
+  picker: {
+    loading: 'Chargement des émotions...',
+    selectCategory: 'Sélectionner une catégorie',
+    back: '← Retour',
+    selectEmotion: 'Sélectionner une émotion',
+    noEmotions: 'Aucune émotion disponible',
+    intensity: 'Intensité',
+    addEmotion: 'Ajouter une émotion',
+    selectedCount: 'Sélectionné : {current} / {max}',
+    clearAll: 'Tout effacer',
+    noCategory: 'Pas de catégorie',
+    emotion: 'Émotion',
+    general: 'Général',
+    maxReached: 'Maximum {max} émotions',
+    positiveDesc: 'Sentiments et humeurs positifs',
+    negativeDesc: 'Sentiments et expériences négatifs',
+    neutralDesc: 'États neutres'
+  },
     list: {
       admiration: 'Admiration',
       adoration: 'Adoration',
@@ -317,28 +464,6 @@ auth: {
     }
   },
 
-  // Relations
-  relations: {
-    types: {
-      led_to: 'A mené à',
-      reminded_of: 'A rappelé',
-      inspired_by: 'Inspiré par',
-      caused_by: 'Causé par',
-      related_to: 'Lié à',
-      resulted_in: 'A abouti à'
-    },
-    modal: {
-      title: 'Créer une relation',
-      fromEntry: 'De l\'entrée',
-      toEntry: 'À l\'entrée',
-      typeLabel: 'Type de relation',
-      descriptionLabel: 'Description',
-      descriptionPlaceholder: 'Décrivez la relation entre les entrées...',
-      submit: 'Créer',
-      cancel: 'Annuler'
-    }
-  },
-
   // Tags
   tags: {
     title: 'Étiquettes',
@@ -347,10 +472,14 @@ auth: {
     tagPlaceholder: 'Nom de l\'étiquette',
     popularTags: 'Étiquettes populaires',
     noTags: 'Aucune étiquette',
-    manageTags: 'Gérer les étiquettes'
+    manageTags: 'Gérer les étiquettes',
+    picker: {
+      title: 'Étiquettes',
+      open: 'Ajouter des étiquettes'
+    }
   },
 
-  // Skills (RPG System)
+  // Skills
   skills: {
     title: 'Compétences',
     level: 'Niveau',
@@ -379,6 +508,18 @@ auth: {
       study: 'Étude',
       application: 'Application',
       teaching: 'Enseignement'
+    },
+    picker: {
+      title: 'Compétences',
+      open: 'Sélectionner des compétences'
+    }
+  },
+
+  // Skill Progress
+  skillProgress: {
+    picker: {
+      title: 'Progression des compétences',
+      open: 'Ajouter une progression'
     }
   },
 
@@ -472,7 +613,8 @@ auth: {
     hours: 'heures',
     minutes: 'minutes',
     seconds: 'secondes',
-    ago: 'il y a'
+    ago: 'il y a',
+    close: 'Fermer'
   },
 
   // AI Features

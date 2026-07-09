@@ -112,21 +112,21 @@ const BodyStatePicker = observer(({
     setLocation('');
   }, [isDraftMode, draftStore, draftField, onChange]);
 
-  const getHpLabel = useCallback((value) => {
-    if (value === 0) return 'Не указано';
-    if (value <= 25) return t('body.hp.critical') || 'Критичное';
-    if (value <= 50) return t('body.hp.low') || 'Низкое';
-    if (value <= 75) return t('body.hp.normal') || 'Нормальное';
-    return t('body.hp.excellent') || 'Отличное';
-  }, [t]);
+const getHpLabel = useCallback((value) => {
+  if (value === 0) return 'Не указано';
+  if (value <= 25) return t('bodyStates.hp.critical') || 'Критичное';
+  if (value <= 50) return t('bodyStates.hp.low') || 'Низкое';
+  if (value <= 75) return t('bodyStates.hp.normal') || 'Нормальное';
+  return t('bodyStates.hp.excellent') || 'Отличное';
+}, [t]);
 
-  const getEnergyLabel = useCallback((value) => {
-    if (value === 0) return 'Не указано';
-    if (value <= 25) return t('body.energy.exhausted') || 'Измождён';
-    if (value <= 50) return t('body.energy.tired') || 'Устал';
-    if (value <= 75) return t('body.energy.normal') || 'Нормально';
-    return t('body.energy.energized') || 'Энергичен';
-  }, [t]);
+const getEnergyLabel = useCallback((value) => {
+  if (value === 0) return 'Не указано';
+  if (value <= 25) return t('bodyStates.energy.exhausted') || 'Измождён';
+  if (value <= 50) return t('bodyStates.energy.tired') || 'Устал';
+  if (value <= 75) return t('bodyStates.energy.normal') || 'Нормально';
+  return t('bodyStates.energy.energized') || 'Энергичен';
+}, [t]);
 
   const renderStats = () => (
     <div className="step-content">

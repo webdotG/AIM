@@ -1,4 +1,33 @@
 const en = {
+  // Backup Code
+  backup_code: {
+    title: 'Backup Code',
+    warning: 'IMPORTANT! Save this code in a safe place',
+    copy: 'Copy code',
+    copied: 'Copied!',
+    instruction1: 'Save the code in a secure place',
+    instruction2: 'Do not share the code with third parties',
+    instruction3: 'Use it to restore access',
+    understood: 'I have saved the code'
+  },
+password: {
+  show: 'Show',
+  hide: 'Hide',
+  generate: 'Generate',
+  checking: 'Checking...'
+},
+passwordStrength: {
+  title: 'Password strength:',
+  levels: {
+    veryWeak: 'Very weak',
+    weak: 'Weak',
+    medium: 'Medium',
+    good: 'Good',
+    strong: 'Strong'
+  },
+  requirements: 'Requirements:',
+  allRequirementsMet: 'All requirements met'
+},
   // Common
   common: {
     save: 'Save',
@@ -21,39 +50,51 @@ const en = {
     add: 'Add',
     remove: 'Remove',
     close: 'Close',
-      entryNotFound: 'Entry not found',
-  completed: 'Completed',
-  overdue: 'Overdue',
-  edit: 'Edit',
-  delete: 'Delete',
-  markIncomplete: 'Mark as incomplete',
-  markComplete: 'Mark as complete',
+    entryNotFound: 'Entry not found',
+    completed: 'Completed',
+    overdue: 'Overdue',
+    markIncomplete: 'Mark as incomplete',
+    markComplete: 'Mark as complete',
     sortByDate: 'Sort by date',
-  sortByType: 'Sort by type',
-  sortByContent: 'Sort by content',
-  listView: 'List view',
-  gridView: 'Grid view',
-  clearFilters: 'Clear filters',
-  total: 'Total',
+    sortByType: 'Sort by type',
+    sortByContent: 'Sort by content',
+    listView: 'List view',
+    gridView: 'Grid view',
+    clearFilters: 'Clear filters',
+    total: 'Total',
     requiredContent: 'Please fill in the entry content',
-  requiredDeadline: 'Please specify a deadline for the plan',
-  entryCreated: 'Entry created!',
-  saving: 'Saving...',
-  selectEmotion: 'Select emotion',
-  addTagPlaceholder: 'Enter tag and press Enter',
-  planDeadlineRequired: 'Plan requires a deadline',
+    requiredDeadline: 'Please specify a deadline for the plan',
+    entryCreated: 'Entry created!',
+    saving: 'Saving...',
+    selectEmotion: 'Select emotion',
+    addTagPlaceholder: 'Enter tag and press Enter',
+    planDeadlineRequired: 'Plan requires a deadline',
+    somethingWentWrong: 'Something went wrong',
+    reload: 'Reload',
+    goHome: 'Go home',
+    entriesCount: 'Entries: {count}',
+    menu: 'Menu',
+    statistics: 'Statistics',
+    completedPlans: 'Completed plans',
+    overduePlans: 'Overdue plans',
+    clear: 'Clear',
+    selected: 'Selected'
   },
 
   // Navigation
   navigation: {
-    timeline: 'Timeline',
-    analytics: 'Analytics',
-    settings: 'Settings',
-    entries: 'Entries',
-    createEntry: 'Create Entry',
-    dashboard: 'Dashboard',
-    profile: 'Profile'
+  timeline: 'Timeline',
+  analytics: 'Analytics',
+  settings: 'Settings',
+  entries: 'Entries',
+  createEntry: 'Create Entry',
+  create: 'Create',
+  dashboard: 'Dashboard',
+  profile: 'Profile',
+  home: 'Home'
   },
+
+  // Search
   search: {
     all: 'All',
     entries: 'Entries',
@@ -68,54 +109,55 @@ const en = {
   },
 
   // Auth
-auth: {
-  login: {
-    title: 'Login',
-    subtitle: 'Sign in to your account',
-    label: 'Login',
-    placeholder: 'Enter your login',
-    submit: 'Log in',
-    registerLink: "Don't have an account? Register",
-    recoverLink: 'Forgot password?'
+  auth: {
+    login: {
+      title: 'Login',
+      subtitle: 'Sign in to your account',
+      label: 'Login',
+      placeholder: 'Enter your login',
+      submit: 'Log in',
+      registerLink: "Don't have an account? Register",
+      recoverLink: 'Forgot password?',
+      logout: 'Log out'
+    },
+    register: {
+      title: 'Register',
+      subtitle: 'Create a new account',
+      label: 'Login',
+      placeholder: 'Enter your login',
+      submit: 'Register',
+      loginLink: 'Already have an account? Log in',
+      backupCodeInfo: 'Save this code for password recovery',
+      backupCode: 'Backup code'
+    },
+    recover: {
+      title: 'Password recovery',
+      subtitle: 'Restore access to your account',
+      label: 'Login',
+      placeholder: 'Enter your login',
+      submit: 'Recover',
+      loginLink: 'Remember password? Log in'
+    },
+    password: {
+      label: 'Password',
+      placeholder: 'Enter your password'
+    },
+    confirm_password: {
+      label: 'Confirm password',
+      placeholder: 'Repeat your password'
+    },
+    backup_code: {
+      label: 'Backup code',
+      placeholder: 'Enter backup code'
+    },
+    register_link: 'Register',
+    recover_link: 'Recover password',
+    back_to_login: 'Back to login',
+    passwords_not_match: 'Passwords do not match',
+    registration_success: 'Registration successful',
+    logout: 'Log out',
+    sessionExpired: 'Session expired'
   },
-  register: {
-    title: 'Register',
-    subtitle: 'Create a new account',
-    label: 'Login',
-    placeholder: 'Enter your login',
-    submit: 'Register',
-    loginLink: 'Already have an account? Log in',
-    backupCodeInfo: 'Save this code for password recovery',
-    backupCode: 'Backup code'
-  },
-  recover: {
-    title: 'Password recovery',
-    subtitle: 'Restore access to your account',
-    label: 'Login',
-    placeholder: 'Enter your login',
-    submit: 'Recover',
-    loginLink: 'Remember password? Log in'
-  },
-  password: {
-    label: 'Password',
-    placeholder: 'Enter your password'
-  },
-  confirm_password: {
-    label: 'Confirm password',
-    placeholder: 'Repeat your password'
-  },
-  backup_code: {
-    label: 'Backup code',
-    placeholder: 'Enter backup code'
-  },
-  register_link: 'Register',
-  recover_link: 'Recover password',
-  back_to_login: 'Back to login',
-  passwords_not_match: 'Passwords do not match',
-  registration_success: 'Registration successful',
-  logout: 'Log out',
-  sessionExpired: 'Session expired'
-},
 
   // Circumstances
   circumstances: {
@@ -154,7 +196,23 @@ auth: {
     temperature: 'Temperature',
     notes: 'Notes',
     addCircumstances: 'Add Circumstances',
-    noCircumstances: 'No circumstances recorded'
+    noCircumstances: 'No circumstances recorded',
+  picker: {
+    selectCategory: 'Select category',
+    back: '← Back',
+    temperature: 'Temperature',
+    intensity: 'Intensity',
+    add: 'Add',
+    selectedCount: 'Selected: {current} / {max}',
+    clearAll: 'Clear all',
+    general: 'General',
+    maxReached: 'Maximum {max} circumstances'
+  },
+  categories: {
+    weatherDesc: 'Weather conditions',
+    moonDesc: 'Moon phase',
+    eventsDesc: 'Global events'
+  }
   },
 
   // Body States
@@ -173,7 +231,23 @@ auth: {
       approximate: 'Approximate',
       city: 'City',
       country: 'Country'
-    }
+    },
+    picker: {
+      title: 'Body State',
+      open: 'Add Body State'
+    },
+      hp: {
+    critical: 'Critical',
+    low: 'Low',
+    normal: 'Normal',
+    excellent: 'Excellent'
+  },
+  energy: {
+    exhausted: 'Exhausted',
+    tired: 'Tired',
+    normal: 'Normal',
+    energized: 'Energized'
+  }
   },
 
   // Entries
@@ -182,12 +256,17 @@ auth: {
       dream: 'Dream',
       memory: 'Memory',
       thought: 'Thought',
-      plan: 'Plan'
+      plan: 'Plan',
+      dreamDesc: 'Records of dreams and visions',
+      memoryDesc: 'Memories and significant events',
+      thoughtDesc: 'Thoughts, ideas and reflections',
+      planDesc: 'Plans, goals and tasks'
     },
     form: {
       title: 'Create entry',
       editTitle: 'Edit entry',
       typeLabel: 'Entry type',
+      typeSubtitle: 'Select entry type',
       contentLabel: 'Content',
       contentPlaceholder: 'Describe your thought, dream or memory...',
       dateLabel: 'Event date',
@@ -198,6 +277,9 @@ auth: {
       circumstancesLabel: 'Circumstances',
       bodyStateLabel: 'Body State',
       locationLabel: 'Location',
+      relationsLabel: 'Relations',
+      skillsLabel: 'Skills',
+      skillProgressLabel: 'Skill Progress',
       submit: 'Save',
       cancel: 'Cancel',
       saveDraft: 'Save Draft'
@@ -252,6 +334,34 @@ auth: {
       related_to: 'Related to',
       resulted_in: 'Resulted in'
     },
+    descriptions: {
+      led_to: 'This entry led to another entry',
+      reminded_of: 'Reminds of another entry',
+      inspired_by: 'Was inspired by another entry',
+      caused_by: 'Was caused by another entry',
+      related_to: 'Related to another entry',
+      resulted_in: 'Resulted in another entry'
+    },
+    picker: {
+      title: 'Add relations',
+      open: 'Link to other entries',
+      selectType: 'How is this related?',
+      typeHelp: 'Select relation type',
+      searchEntry: 'Find entry',
+      searchPlaceholder: 'Search by content or date...',
+      searchHint: 'Start typing to search your entries',
+      noResults: 'No entries found',
+      addDescription: 'Add description',
+      descriptionLabel: 'Description (optional)',
+      descriptionPlaceholder: 'Why is this related? (optional)',
+      addRelation: 'Add relation',
+      skipDescription: 'Skip description',
+      selected: 'Selected: {count} / {max}'
+    },
+    graph: {
+      title: 'Relations Graph',
+      noData: 'No relations to visualize'
+    },
     modal: {
       title: 'Create relation',
       fromEntry: 'From entry',
@@ -271,14 +381,24 @@ auth: {
       negative: 'Negative',
       neutral: 'Neutral'
     },
-    picker: {
-      title: 'Select emotions',
-      search: 'Search emotions',
-      intensity: 'Intensity',
-      noEmotions: 'No emotions selected',
-      maxEmotions: 'Maximum {max} emotions',
-      selectedCount: '{count} selected'
-    },
+  picker: {
+    loading: 'Loading emotions...',
+    selectCategory: 'Select category',
+    back: '← Back',
+    selectEmotion: 'Select emotion',
+    noEmotions: 'No emotions available',
+    intensity: 'Intensity',
+    addEmotion: 'Add emotion',
+    selectedCount: 'Selected: {current} / {max}',
+    clearAll: 'Clear all',
+    noCategory: 'No category',
+    emotion: 'Emotion',
+    general: 'General',
+    maxReached: 'Maximum {max} emotions',
+    positiveDesc: 'Positive feelings and moods',
+    negativeDesc: 'Negative feelings and experiences',
+    neutralDesc: 'Neutral states'
+  },
     list: {
       admiration: 'Admiration',
       adoration: 'Adoration',
@@ -352,7 +472,11 @@ auth: {
     tagPlaceholder: 'Tag name',
     popularTags: 'Popular Tags',
     noTags: 'No tags',
-    manageTags: 'Manage Tags'
+    manageTags: 'Manage Tags',
+    picker: {
+      title: 'Tags',
+      open: 'Add Tags'
+    }
   },
 
   // Skills
@@ -384,6 +508,18 @@ auth: {
       study: 'Study',
       application: 'Application',
       teaching: 'Teaching'
+    },
+    picker: {
+      title: 'Skills',
+      open: 'Select Skills'
+    }
+  },
+
+  // Skill Progress
+  skillProgress: {
+    picker: {
+      title: 'Skill Progress',
+      open: 'Add Progress'
     }
   },
 
