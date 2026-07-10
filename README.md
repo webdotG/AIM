@@ -1,7 +1,7 @@
 # A I M 
 
 <p align="center">
-  <img src="./logo_full.png" alt="AIM LifeGraph Logo" width="420px" />
+  <img src="./logo_full.png" alt="AIM LifeGraph Logo" width="690px" />
 </p>
 
 > Анонимная платформа для построения цифровой модели жизни человека через граф фактов, действий, мыслей, воспоминаний, снов и их эмоций.
@@ -181,7 +181,7 @@ LifeGraph не требует раскрытия личности пользов
 
 
 <p align="center">
-  <img src="./schema.png" alt="AIM LifeGraph Logo" width="420px"/>
+  <img src="./schema.png" alt="AIM LifeGraph Logo" width="690px"/>
 </p>
 ---
 
