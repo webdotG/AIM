@@ -5,10 +5,10 @@ export declare const createCircumstanceSchema: z.ZodObject<{
         weather: z.ZodNullable<z.ZodOptional<z.ZodEnum<{
             sunny: "sunny";
             rainy: "rainy";
+            foggy: "foggy";
             snowy: "snowy";
             stormy: "stormy";
             cloudy: "cloudy";
-            foggy: "foggy";
             windy: "windy";
         }>>>;
         temperature: z.ZodNullable<z.ZodOptional<z.ZodNumber>>;
@@ -32,10 +32,10 @@ export declare const updateCircumstanceSchema: z.ZodObject<{
         weather: z.ZodNullable<z.ZodOptional<z.ZodEnum<{
             sunny: "sunny";
             rainy: "rainy";
+            foggy: "foggy";
             snowy: "snowy";
             stormy: "stormy";
             cloudy: "cloudy";
-            foggy: "foggy";
             windy: "windy";
         }>>>;
         temperature: z.ZodNullable<z.ZodOptional<z.ZodNumber>>;
@@ -67,10 +67,10 @@ export declare const getCircumstancesSchema: z.ZodObject<{
         weather: z.ZodOptional<z.ZodEnum<{
             sunny: "sunny";
             rainy: "rainy";
+            foggy: "foggy";
             snowy: "snowy";
             stormy: "stormy";
             cloudy: "cloudy";
-            foggy: "foggy";
             windy: "windy";
         }>>;
         moon_phase: z.ZodOptional<z.ZodEnum<{

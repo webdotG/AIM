@@ -1,95 +1,73 @@
 import { EmotionsRepository } from '../repositories/EmotionsRepository';
-import { EntriesRepository } from '../../entries/repositories/EntriesRepository';
-import { AppError } from '../../../shared/errors/AppError';
+import { NodeEmotionsRepository } from '../repositories/NodeEmotionsRepository';
+import { NodesRepository } from '../../graph/repositories/NodesRepository';
+import { NotFoundError, ValidationError } from '../../../shared/errors/AppError';
+import { Pool } from 'pg';
 
 export class EmotionsService {
-  constructor(
-    private emotionsRepository: EmotionsRepository,
-    private entriesRepository: EntriesRepository
-  ) {}
+  private emotionsRepo: EmotionsRepository;
+  private nodeEmotionsRepo: NodeEmotionsRepository;
+  private nodesRepo: NodesRepository;
 
-  // Получить все эмоции из справочника
+  constructor(pool: Pool) {
+    this.emotionsRepo = new EmotionsRepository(pool);
+    this.nodeEmotionsRepo = new NodeEmotionsRepository(pool);
+    this.nodesRepo = new NodesRepository(pool);
+  }
+
   async getAllEmotions() {
-    return await this.emotionsRepository.findAll();
+    return this.emotionsRepo.findAll();
   }
 
-  // Получить эмоции по категории
-  async getEmotionsByCategory(category: 'positive' | 'negative' | 'neutral') {
-    return await this.emotionsRepository.findByCategory(category);
+  async getByCategory(category: string) {
+    if (!['positive', 'negative', 'neutral'].includes(category)) {
+      throw new ValidationError('Invalid category. Must be positive, negative, or neutral.');
+    }
+    return this.emotionsRepo.findByCategory(category as any);
   }
 
-  // Получить эмоции для записи
-  async getEmotionsForEntry(entryId: string, userId: number) {
-    // Проверяем, что запись принадлежит пользователю
-    const entry = await this.entriesRepository.findById(entryId, userId);
-    
-    if (!entry) {
-      throw new AppError('Entry not found', 404);
+  async getEmotionsForNode(nodeId: string, userId: number) {
+    if (!await this.nodesRepo.belongsToUser(nodeId, userId)) {
+      throw new NotFoundError('Node not found');
+    }
+    return this.nodeEmotionsRepo.findByNodeId(nodeId);
+  }
+
+  async replaceEmotionsForNode(nodeId: string, userId: number, emotions: { emotion_id: number; intensity: number }[]) {
+    if (!await this.nodesRepo.belongsToUser(nodeId, userId)) {
+      throw new NotFoundError('Node not found');
     }
 
-    return await this.emotionsRepository.getForEntry(entryId);
-  }
-
-  // Привязать эмоции к записи
-  async attachEmotionsToEntry(entryId: string, emotions: any[], userId: number) {
-    // Проверяем, что запись принадлежит пользователю
-    const entry = await this.entriesRepository.findById(entryId, userId);
-    
-    if (!entry) {
-      throw new AppError('Entry not found', 404);
-    }
-
-    // Валидация эмоций
-    for (const emotion of emotions) {
-      if (emotion.emotion_id) {
-        // Проверяем, что эмоция существует
-        const exists = await this.emotionsRepository.findById(emotion.emotion_id);
-        if (!exists) {
-          throw new AppError(`Emotion with id ${emotion.emotion_id} not found`, 400);
-        }
+    for (const e of emotions) {
+      if (e.intensity < 1 || e.intensity > 10) {
+        throw new ValidationError('Intensity must be between 1 and 10');
       }
-
-      // Проверяем интенсивность
-      if (emotion.intensity < 1 || emotion.intensity > 10) {
-        throw new AppError('Intensity must be between 1 and 10', 400);
+      const emotion = await this.emotionsRepo.findById(e.emotion_id);
+      if (!emotion) {
+        throw new ValidationError(`Emotion with id ${e.emotion_id} not found`);
       }
     }
 
-    await this.emotionsRepository.attachToEntry(entryId, emotions);
-
-    return { success: true, message: 'Emotions attached successfully' };
+    return this.nodeEmotionsRepo.replaceForNode(nodeId, emotions);
   }
 
-  // Удалить эмоции из записи
-  async detachEmotionsFromEntry(entryId: string, userId: number) {
-    const entry = await this.entriesRepository.findById(entryId, userId);
-    
-    if (!entry) {
-      throw new AppError('Entry not found', 404);
+  async removeEmotionsFromNode(nodeId: string, userId: number) {
+    if (!await this.nodesRepo.belongsToUser(nodeId, userId)) {
+      throw new NotFoundError('Node not found');
     }
-
-    await this.emotionsRepository.detachFromEntry(entryId);
-
-    return { success: true, message: 'Emotions detached successfully' };
+    const count = await this.nodeEmotionsRepo.removeFromNode(nodeId);
+    return { removed: count };
   }
 
-  // Статистика по эмоциям
-  async getUserEmotionStats(userId: number, fromDate?: Date, toDate?: Date) {
-    return await this.emotionsRepository.getUserEmotionStats(userId, fromDate, toDate);
+  async getStats(userId: number) {
+    return this.nodeEmotionsRepo.getMostFrequent(userId, 27);
   }
 
-  // Самые частые эмоции
   async getMostFrequent(userId: number, limit: number = 10) {
-    return await this.emotionsRepository.getMostFrequent(userId, limit);
+    return this.nodeEmotionsRepo.getMostFrequent(userId, limit);
   }
 
-  // Распределение по категориям
-  async getCategoryDistribution(userId: number, fromDate?: Date, toDate?: Date) {
-    return await this.emotionsRepository.getCategoryDistribution(userId, fromDate, toDate);
-  }
-
-  // Эмоции по времени
-  async getEmotionTimeline(userId: number, fromDate: Date, toDate: Date, granularity: 'day' | 'week' | 'month' = 'day') {
-    return await this.emotionsRepository.getEmotionTimeline(userId, fromDate, toDate, granularity);
+  async getDistribution(userId: number, granularity: 'day' | 'week' | 'month' = 'day') {
+    return this.nodeEmotionsRepo.getDistribution(userId, granularity);
   }
 }

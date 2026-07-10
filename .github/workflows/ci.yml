@@ -1,0 +1,115 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # Fast check
+  lint-and-types:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+
+  # Unit tests (no DB)
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - run: npm ci
+      - run: npm run test:unit
+
+  # Integration tests (with PostGIS)
+  integration-tests:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: lifegraph_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - run: npm ci
+      - run: npm run migrate:test
+        env:
+          DB_USER: test
+          DB_PASSWORD: test
+          DB_NAME_TEST: lifegraph_test
+          DB_HOST: localhost
+          DB_PORT: 5432
+      - run: npm run test:integration
+        env:
+          DB_USER: test
+          DB_PASSWORD: test
+          DB_NAME_TEST: lifegraph_test
+          DB_HOST: localhost
+          DB_PORT: 5432
+          REDIS_URL: redis://localhost:6379
+          JWT_SECRET: ci-test-secret
+
+  # Migration test
+  migration-test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: lifegraph_migrate
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          for f in db/migrations/*.sql; do
+            PGPASSWORD=test psql -h localhost -U test -d lifegraph_migrate -f "$f"
+          done
+      - run: |
+          TABLES=$(PGPASSWORD=test psql -h localhost -U test -d lifegraph_migrate -t -c \
+            "SELECT count(*) FROM information_schema.tables WHERE table_schema='public'")
+          echo "Tables created: $TABLES"
+
+  # Deploy (only on main branch)
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [lint-and-types, unit-tests, integration-tests, migration-test]
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm ci
+      - run: npm run build

@@ -43,9 +43,9 @@ export declare const mostFrequentSchema: z.ZodObject<{
 export declare const distributionSchema: z.ZodObject<{
     query: z.ZodObject<{
         group_by: z.ZodDefault<z.ZodOptional<z.ZodEnum<{
-            intensity: "intensity";
             month: "month";
             category: "category";
+            intensity: "intensity";
         }>>>;
         start_date: z.ZodOptional<z.ZodString>;
         end_date: z.ZodOptional<z.ZodString>;

@@ -1,0 +1,1 @@
+{"version":3,"file":"CommandInjectionSanitizer.d.ts","sourceRoot":"","sources":["../../../../src/security/sanitizers/reflected/CommandInjectionSanitizer.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,aAAa,EAAE,MAAM,uBAAuB,CAAC;AAItD,qBAAa,yBAA0B,SAAQ,aAAa;IAC1D,QAAQ,CAAC,KAAK,EAAE,OAAO,GAAG,OAAO;IAmBjC,cAAc,CAAC,KAAK,EAAE,OAAO,GAAG,OAAO;CAGxC"}

@@ -1,4 +1,2 @@
-import { Pool } from 'pg';
-declare let testPool: Pool;
-export { testPool };
+export {};
 //# sourceMappingURL=setup.d.ts.map

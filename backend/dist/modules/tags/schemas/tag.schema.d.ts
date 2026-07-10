@@ -53,8 +53,8 @@ export declare const entriesByTagSchema: z.ZodObject<{
         limit: z.ZodOptional<z.ZodPipe<z.ZodString, z.ZodTransform<number | undefined, string>>>;
         entry_type: z.ZodDefault<z.ZodOptional<z.ZodEnum<{
             dream: "dream";
-            memory: "memory";
             thought: "thought";
+            memory: "memory";
             plan: "plan";
             all: "all";
         }>>>;

@@ -1,0 +1,1 @@
+{"version":3,"file":"searchPreset.d.ts","sourceRoot":"","sources":["../../../src/security/presets/searchPreset.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,iBAAiB,EAAE,MAAM,gCAAgC,CAAC;AAMnE,MAAM,WAAW,kBAAkB;IACjC,SAAS,CAAC,EAAE,MAAM,CAAC;IACnB,KAAK,CAAC,EAAE,OAAO,CAAC;CACjB;AAED,wBAAgB,kBAAkB,CAAC,MAAM,GAAE,kBAAuB,qBAUjE"}

@@ -4,9 +4,6 @@ import app from '../../index';
 import { jwtService } from '../../modules/auth/services/JWTService';
 
 export class TestHelpers {
-  /**
-   * Регистрирует пользователя и возвращает данные с токеном
-   */
   static async registerUser(login: string, password: string) {
     const response = await request(app)
       .post('/api/v1/auth/register')
@@ -20,9 +17,6 @@ export class TestHelpers {
     };
   }
 
-  /**
-   * Логинит пользователя
-   */
   static async loginUser(login: string, password: string) {
     const response = await request(app)
       .post('/api/v1/auth/login')
@@ -35,27 +29,18 @@ export class TestHelpers {
     };
   }
 
-  /**
-   * Создает JWT токен для пользователя (без регистрации)
-   */
   static createToken(userId: number, login: string): string {
     return jwtService.sign({ userId, login });
   }
 
-  /**
-   * Создает Authorization header
-   */
   static authHeader(token: string): string {
     return `Bearer ${token}`;
   }
 
-  /**
-   * Проверяет что ответ содержит ошибку валидации
-   */
   static expectValidationError(response: any, field?: string) {
     expect(response.body.success).toBe(false);
     expect(response.body.error).toBe('Validation error');
-    
+
     if (field) {
       expect(response.body.details).toBeDefined();
       const hasField = response.body.details.some(
@@ -65,17 +50,11 @@ export class TestHelpers {
     }
   }
 
-  /**
-   * Проверяет что ответ содержит ошибку авторизации
-   */
   static expectAuthError(response: any) {
     expect(response.body.success).toBe(false);
-    expect([401, 403]).toContain(response.status);
+    expect([401, 403].includes(response.status)).toBe(true);
   }
 
-  /**
-   * Генерирует случайную строку
-   */
   static randomString(length: number = 10): string {
     const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     let result = '';
@@ -85,16 +64,10 @@ export class TestHelpers {
     return result;
   }
 
-  /**
-   * Генерирует валидный логин
-   */
   static generateLogin(): string {
     return `test_user_${this.randomString(8)}`;
   }
 
-  /**
-   * Генерирует сильный пароль
-   */
   static generateStrongPassword(): string {
     const words = ['Purple', 'Monkey', 'Battery', 'Horse', 'Dragon'];
     const randomWords = [
@@ -104,20 +77,14 @@ export class TestHelpers {
     const number = Math.floor(Math.random() * 90) + 10;
     const symbols = '!@#$%^&*';
     const symbol = symbols[Math.floor(Math.random() * symbols.length)];
-    
+
     return `${randomWords[0]}-${randomWords[1]}-${number}${symbol}`;
   }
 
-  /**
-   * Ждет указанное количество миллисекунд
-   */
   static async sleep(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
-  /**
-   * Измеряет время выполнения функции
-   */
   static async measureTime<T>(fn: () => Promise<T>): Promise<{ result: T; elapsed: number }> {
     const start = Date.now();
     const result = await fn();
@@ -125,25 +92,16 @@ export class TestHelpers {
     return { result, elapsed };
   }
 
-  /**
-   * Форматирует UUID для проверок
-   */
   static isValidUUID(uuid: string): boolean {
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
     return uuidRegex.test(uuid);
   }
 
-  /**
-   * Проверяет формат даты ISO 8601
-   */
   static isValidISODate(date: string): boolean {
     const isoRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?$/;
     return isoRegex.test(date) && !isNaN(Date.parse(date));
   }
 
-  /**
-   * Создает мок request для тестирования middleware
-   */
   static createMockRequest(overrides: any = {}) {
     return {
       body: {},
@@ -154,9 +112,6 @@ export class TestHelpers {
     };
   }
 
-  /**
-   * Создает мок response для тестирования middleware
-   */
   static createMockResponse() {
     const res: any = {
       status: jest.fn().mockReturnThis(),
@@ -166,9 +121,6 @@ export class TestHelpers {
     return res;
   }
 
-  /**
-   * Создает мок next для тестирования middleware
-   */
   static createMockNext() {
     return jest.fn();
   }

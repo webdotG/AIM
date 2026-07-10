@@ -1,0 +1,1 @@
+{"version":3,"file":"CRLFSanitizer.d.ts","sourceRoot":"","sources":["../../../../src/security/sanitizers/reflected/CRLFSanitizer.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,aAAa,EAAE,MAAM,uBAAuB,CAAC;AAGtD,qBAAa,aAAc,SAAQ,aAAa;IAC9C,QAAQ,CAAC,KAAK,EAAE,OAAO,GAAG,OAAO;IAOjC,cAAc,CAAC,KAAK,EAAE,OAAO,GAAG,OAAO;CAGxC"}

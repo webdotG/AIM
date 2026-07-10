@@ -3,8 +3,8 @@ export declare const createEntrySchema: z.ZodObject<{
     body: z.ZodObject<{
         entry_type: z.ZodEnum<{
             dream: "dream";
-            memory: "memory";
             thought: "thought";
+            memory: "memory";
             plan: "plan";
         }>;
         content: z.ZodString;
@@ -41,8 +41,8 @@ export declare const getEntriesSchema: z.ZodObject<{
     query: z.ZodObject<{
         type: z.ZodOptional<z.ZodEnum<{
             dream: "dream";
-            memory: "memory";
             thought: "thought";
+            memory: "memory";
             plan: "plan";
         }>>;
         page: z.ZodOptional<z.ZodPipe<z.ZodString, z.ZodTransform<number | undefined, string>>>;

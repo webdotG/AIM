@@ -49,6 +49,41 @@ const errorHandler = (error, req, res, next) => {
         });
         return;
     }
+    // UUID in error message (catches PostgreSQL UUID parse errors)
+    if (error.message && error.message.toLowerCase().includes('uuid')) {
+        res.status(404).json({
+            success: false,
+            error: 'Not found',
+        });
+        return;
+    }
+    // PostgreSQL errors
+    if (error.name === 'invalid_input_syntax' ||
+        error.code === '22P02' ||
+        error.code === '23505' ||
+        error.code === '23503' ||
+        error.code === '23514' ||
+        error.code === '23502') {
+        if (error.code === '23505') {
+            res.status(409).json({
+                success: false,
+                error: 'Conflict',
+            });
+        }
+        else if (error.code === '23503') {
+            res.status(404).json({
+                success: false,
+                error: 'Resource not found',
+            });
+        }
+        else {
+            res.status(400).json({
+                success: false,
+                error: error.message || 'Bad request',
+            });
+        }
+        return;
+    }
     // Default error
     const status = error.status || 500;
     const message = error.message || 'Internal server error';

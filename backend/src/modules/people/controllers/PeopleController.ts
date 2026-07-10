@@ -1,87 +1,62 @@
 import { Request, Response, NextFunction } from 'express';
 import { PeopleService } from '../services/PeopleService';
-import { PeopleRepository } from '../repositories/PeopleRepository';
 import { pool } from '../../../db/pool';
 
 export class PeopleController {
-  private peopleService: PeopleService;
+  private service: PeopleService;
+  constructor() { this.service = new PeopleService(pool); }
 
-  constructor() {
-    const peopleRepository = new PeopleRepository(pool);
-    this.peopleService = new PeopleService(peopleRepository);
-  }
-
-  getAll = async (req: Request, res: Response, next: NextFunction) => {
+  getPeople = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const userId = req.userId!;
-      const filters = {
-        category: req.query.category as string,
-        search: req.query.search as string,
-        sort: req.query.sort as string,
-        page: parseInt(req.query.page as string) || 1,
-        limit: parseInt(req.query.limit as string) || 50,
-        offset: ((parseInt(req.query.page as string) || 1) - 1) * (parseInt(req.query.limit as string) || 50)
-      };
-
-      const result = await this.peopleService.getAllPeople(userId, filters);
+      const filters = { search: req.query.search as string, relationship: req.query.relationship as string };
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 50;
+      const result = await this.service.getPeople(req.userId!, filters, page, limit);
       res.status(200).json({ success: true, data: result });
-    } catch (error) {
-      next(error);
-    }
-  };
-
-  getById = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const id = parseInt(req.params.id);
-      const userId = req.userId!;
-      const person = await this.peopleService.getPersonById(id, userId);
-      res.status(200).json({ success: true, data: person });
-    } catch (error) {
-      next(error);
-    }
-  };
-
-  create = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const userId = req.userId!;
-      const person = await this.peopleService.createPerson(req.body, userId);
-      res.status(201).json({ success: true, data: person });
-    } catch (error) {
-      next(error);
-    }
-  };
-
-  update = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const id = parseInt(req.params.id);
-      const userId = req.userId!;
-      const person = await this.peopleService.updatePerson(id, req.body, userId);
-      res.status(200).json({ success: true, data: person });
-    } catch (error) {
-      next(error);
-    }
-  };
-
-  delete = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const id = parseInt(req.params.id);
-      const userId = req.userId!;
-      const result = await this.peopleService.deletePerson(id, userId);
-      res.status(200).json(result);
-    } catch (error) {
-      next(error);
-    }
+    } catch (error) { next(error); }
   };
 
   getMostMentioned = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const userId = req.userId!;
       const limit = parseInt(req.query.limit as string) || 10;
-      const people = await this.peopleService.getMostMentioned(userId, limit);
-      res.status(200).json({ success: true, data: people });
-    } catch (error) {
-      next(error);
-    }
+      const result = await this.service.getMostMentioned(req.userId!, limit);
+      res.status(200).json({ success: true, data: result });
+    } catch (error) { next(error); }
+  };
+
+  getPersonById = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const result = await this.service.getPersonById(req.params.id, req.userId!);
+      res.status(200).json({ success: true, data: result });
+    } catch (error) { next(error); }
+  };
+
+  createPerson = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const result = await this.service.createPerson(req.userId!, req.body);
+      res.status(201).json({ success: true, data: result });
+    } catch (error) { next(error); }
+  };
+
+  updatePerson = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const result = await this.service.updatePerson(req.params.id, req.userId!, req.body);
+      res.status(200).json({ success: true, data: result });
+    } catch (error) { next(error); }
+  };
+
+  deletePerson = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      await this.service.deletePerson(req.params.id, req.userId!);
+      res.status(200).json({ success: true });
+    } catch (error) { next(error); }
+  };
+
+  getPersonContacts = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const result = await this.service.getPersonContacts(req.params.id, req.userId!);
+      res.status(200).json({ success: true, data: result });
+    } catch (error) { next(error); }
   };
 }
 

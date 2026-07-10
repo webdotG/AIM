@@ -1,29 +1,36 @@
 export { default as RootStore } from './RootStore';
 
+// TEMP STUBS — remove in Block 5 when old UI components are deleted
+export const useSkillsStore = () => ({ skills: [], createSkill: async () => {} });
+export const useCircumstancesStore = () => ({ circumstances: [] });
+export const useBodyStatesStore = () => ({ bodyStates: [], createBodyState: async () => {} });
+export const useRelationsStore = () => ({ relations: [], createRelation: async () => {} });
+export const useSkillProgressStore = () => ({ addProgress: async () => {} });
+export const useEntriesStore = () => ({ entries: [], createEntry: async () => {}, fetchEntries: async () => {} });
+
 export { 
   StoreContext, 
   useStores, 
   StoreProvider,
   useAuthStore,
-  useEntriesStore,
-  useBodyStatesStore,
-  useCircumstancesStore,
-  useSkillsStore,
   useUIStore,
-  useRelationsStore, 
-  useSkillProgressStore, 
-  useTagsStore, 
+  useNodeStore,
+  useEdgeStore,
+  useSelectionStore,
+  useTraversalStore,
+  useAnalyticsStore,
+  useAIStore,
   useEmotionsStore,
+  useTagsStore,
 } from './StoreContext';
 
-
 export { AuthStore } from './stores/AuthStore';
-export { BodyStatesStore } from './stores/BodyStatesStore';
-export { CircumstancesStore } from './stores/CircumstancesStore';
-export { EntriesStore } from './stores/EntriesStore';
-export { RelationsStore } from './stores/RelationsStore';
-export { SkillProgressStore } from './stores/SkillProgressStore';
-export { SkillsStore } from './stores/SkillsStore';
+export { EmotionsStore } from './stores/EmotionsStore';
 export { TagsStore } from './stores/TagsStore';
 export { UIStore } from './stores/UIStore';
-export { EmotionsStore } from './stores/EmotionsStore';
+export { NodeStore } from './stores/NodeStore';
+export { EdgeStore } from './stores/EdgeStore';
+export { SelectionStore } from './stores/SelectionStore';
+export { TraversalStore } from './stores/TraversalStore';
+export { AnalyticsStore } from './stores/AnalyticsStore';
+export { AIStore } from './stores/AISTore';

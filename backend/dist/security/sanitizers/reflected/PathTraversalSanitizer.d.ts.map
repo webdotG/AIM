@@ -1,0 +1,1 @@
+{"version":3,"file":"PathTraversalSanitizer.d.ts","sourceRoot":"","sources":["../../../../src/security/sanitizers/reflected/PathTraversalSanitizer.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,aAAa,EAAE,MAAM,uBAAuB,CAAC;AAGtD,qBAAa,sBAAuB,SAAQ,aAAa;IACvD,QAAQ,CAAC,KAAK,EAAE,OAAO,GAAG,OAAO;IAqBjC,cAAc,CAAC,KAAK,EAAE,OAAO,GAAG,OAAO;CAGxC"}

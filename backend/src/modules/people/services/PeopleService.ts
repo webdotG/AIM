@@ -1,61 +1,102 @@
-// src/modules/people/services/PeopleService.ts
+import { NodesRepository } from '../../graph/repositories/NodesRepository';
 import { PeopleRepository } from '../repositories/PeopleRepository';
-import { AppError } from '../../../shared/errors/AppError';
+import { NotFoundError, ValidationError } from '../../../shared/errors/AppError';
+import { Pool } from 'pg';
 
 export class PeopleService {
-  constructor(private peopleRepository: PeopleRepository) {}
+  private pool: Pool;
+  private nodesRepo: NodesRepository;
+  private peopleRepo: PeopleRepository;
 
-  async getAllPeople(userId: number, filters: any = {}) {
-    const people = await this.peopleRepository.findByUserId(userId, filters);
-    const total = await this.peopleRepository.countByUserId(userId, filters);
-    
-    return {
-      people,
-      pagination: {
-        page: filters.page || 1,
-        limit: filters.limit || 50,
-        total,
-        totalPages: Math.ceil(total / (filters.limit || 50))
-      }
-    };
+  constructor(pool: Pool) {
+    this.pool = pool;
+    this.nodesRepo = new NodesRepository(pool);
+    this.peopleRepo = new PeopleRepository(pool);
   }
 
-  async getPersonById(id: number, userId: number) {
-    const person = await this.peopleRepository.findById(id, userId);
-    
-    if (!person) {
-      throw new AppError('Person not found', 404);
+  async createPerson(userId: number, data: { title?: string; full_name: string; nickname?: string; birth_date?: Date | null; relationship?: string; notes?: string }) {
+    if (!data.full_name || data.full_name.trim().length === 0) {
+      throw new ValidationError('Full name is required');
     }
 
-    return person;
-  }
+    const client = await this.pool.connect();
+    try {
+      await client.query('BEGIN');
 
-  async createPerson(data: any, userId: number) {
-    return await this.peopleRepository.create({ ...data, user_id: userId });
-  }
+      const node = await this.nodesRepo.create(userId, 'person', data.title || null);
+      if (!node) throw new ValidationError('Failed to create person node');
 
-  async updatePerson(id: number, updates: any, userId: number) {
-    const existing = await this.peopleRepository.findById(id, userId);
-    
-    if (!existing) {
-      throw new AppError('Person not found', 404);
+      const person = await this.peopleRepo.create(node.id, data);
+      await client.query('COMMIT');
+      return { node, person };
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
     }
-
-    return await this.peopleRepository.update(id, updates, userId);
   }
 
-  async deletePerson(id: number, userId: number) {
-    const existing = await this.peopleRepository.findById(id, userId);
-    
-    if (!existing) {
-      throw new AppError('Person not found', 404);
-    }
-
-    await this.peopleRepository.deleteByUser(id, userId);
-    return { success: true, message: 'Person deleted successfully' };
+  async getPeople(userId: number, filters: { search?: string; relationship?: string } = {}, page: number = 1, limit: number = 50) {
+    return this.peopleRepo.findByUserId(userId, filters, page, limit);
   }
 
   async getMostMentioned(userId: number, limit: number = 10) {
-    return await this.peopleRepository.getMostMentioned(userId, limit);
+    return this.peopleRepo.getMostMentioned(userId, limit);
+  }
+
+  async getPersonById(nodeId: string, userId: number) {
+    const node = await this.nodesRepo.findById(nodeId, userId);
+    if (!node) throw new NotFoundError('Person not found');
+
+    const person = await this.peopleRepo.findByNodeId(nodeId);
+    if (!person) throw new NotFoundError('Person data not found');
+    return { node, person };
+  }
+
+  async updatePerson(nodeId: string, userId: number, updates: { title?: string; full_name?: string; nickname?: string | null; birth_date?: Date | null; relationship?: string | null; notes?: string | null }) {
+    await this.getPersonById(nodeId, userId);
+    const client = await this.pool.connect();
+    try {
+      await client.query('BEGIN');
+      if (updates.title !== undefined) await this.nodesRepo.updateTitle(nodeId, userId, updates.title);
+
+      const personUpdates = { ...updates };
+      delete personUpdates.title;
+      if (Object.keys(personUpdates).length > 0) {
+        const person = await this.peopleRepo.update(nodeId, personUpdates);
+        if (!person) throw new NotFoundError('Person not found');
+      }
+
+      await client.query('COMMIT');
+      return this.getPersonById(nodeId, userId);
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  async deletePerson(nodeId: string, userId: number) {
+    await this.getPersonById(nodeId, userId);
+    const client = await this.pool.connect();
+    try {
+      await client.query('BEGIN');
+      await this.peopleRepo.softDelete(nodeId);
+      await this.nodesRepo.softDelete(nodeId, userId);
+      await client.query('COMMIT');
+      return { success: true };
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  async getPersonContacts(nodeId: string, userId: number) {
+    await this.getPersonById(nodeId, userId);
+    return this.peopleRepo.getContacts(nodeId, userId);
   }
 }

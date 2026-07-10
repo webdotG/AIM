@@ -1,121 +1,90 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TagsService = void 0;
+const TagsRepository_1 = require("../repositories/TagsRepository");
+const NodesRepository_1 = require("../../graph/repositories/NodesRepository");
 const AppError_1 = require("../../../shared/errors/AppError");
 class TagsService {
-    constructor(tagsRepository, entriesRepository) {
-        this.tagsRepository = tagsRepository;
-        this.entriesRepository = entriesRepository;
+    constructor(pool) {
+        this.tagsRepo = new TagsRepository_1.TagsRepository(pool);
+        this.nodesRepo = new NodesRepository_1.NodesRepository(pool);
     }
-    async getAllTags(userId, filters = {}) {
-        const tags = await this.tagsRepository.findByUserId(userId, filters);
-        const total = await this.tagsRepository.countByUserId(userId, filters);
+    async getTags(userId, filters = {}, page = 1, limit = 50) {
+        const offset = (page - 1) * limit;
+        const tags = await this.tagsRepo.findByUserId(userId, filters, limit, offset);
         return {
-            tags,
-            pagination: {
-                page: filters.page || 1,
-                limit: filters.limit || 100,
-                total,
-                totalPages: Math.ceil(total / (filters.limit || 100))
-            }
+            data: tags,
+            pagination: { page, limit, total: tags.length, totalPages: Math.ceil(tags.length / limit) },
         };
     }
-    async getTagById(id, userId) {
-        const tag = await this.tagsRepository.findById(id, userId);
-        if (!tag) {
-            throw new AppError_1.AppError('Tag not found', 404);
-        }
+    async getTagById(tagId, userId) {
+        const tag = await this.tagsRepo.findById(tagId, userId);
+        if (!tag)
+            throw new AppError_1.NotFoundError('Tag not found');
         return tag;
     }
-    async createTag(name, userId) {
-        // Проверяем уникальность имени
-        const existing = await this.tagsRepository.findByName(userId, name);
-        if (existing) {
-            throw new AppError_1.AppError('Tag with this name already exists', 400);
+    async createTag(userId, name) {
+        if (!name || name.trim().length === 0) {
+            throw new AppError_1.ValidationError('Tag name is required');
         }
-        return await this.tagsRepository.create({ user_id: userId, name });
-    }
-    async updateTag(id, name, userId) {
-        const existingTag = await this.tagsRepository.findById(id, userId);
-        if (!existingTag) {
-            throw new AppError_1.AppError('Tag not found', 404);
-        }
-        // Проверяем уникальность нового имени
-        const duplicate = await this.tagsRepository.findByName(userId, name);
-        if (duplicate && duplicate.id !== id) {
-            throw new AppError_1.AppError('Tag with this name already exists', 400);
-        }
-        return await this.tagsRepository.update(id, name, userId);
-    }
-    async deleteTag(id, userId) {
-        const existingTag = await this.tagsRepository.findById(id, userId);
-        if (!existingTag) {
-            throw new AppError_1.AppError('Tag not found', 404);
-        }
-        // ON DELETE CASCADE удалит все entry_tags автоматически
-        await this.tagsRepository.deleteByUser(id, userId);
-        return { success: true, message: 'Tag deleted successfully' };
-    }
-    // Теги для записи
-    async getTagsForEntry(entryId, userId) {
-        const entry = await this.entriesRepository.findById(entryId, userId);
-        if (!entry) {
-            throw new AppError_1.AppError('Entry not found', 404);
-        }
-        return await this.tagsRepository.getForEntry(entryId);
-    }
-    // Привязать теги к записи
-    async attachTagsToEntry(entryId, tagIds, userId) {
-        const entry = await this.entriesRepository.findById(entryId, userId);
-        if (!entry) {
-            throw new AppError_1.AppError('Entry not found', 404);
-        }
-        // Проверяем, что все теги существуют и принадлежат пользователю
-        for (const tagId of tagIds) {
-            const tag = await this.tagsRepository.findById(tagId, userId);
-            if (!tag) {
-                throw new AppError_1.AppError(`Tag with id ${tagId} not found`, 400);
+        const existing = await this.tagsRepo.findByUserId(userId, { search: name });
+        for (const t of existing) {
+            if (t.name.toLowerCase() === name.trim().toLowerCase()) {
+                throw new AppError_1.ValidationError(`Tag "${name}" already exists`);
             }
         }
-        await this.tagsRepository.attachToEntry(entryId, tagIds);
-        return { success: true, message: 'Tags attached successfully' };
+        return this.tagsRepo.create(userId, name.trim());
     }
-    // Отвязать все теги
-    async detachTagsFromEntry(entryId, userId) {
-        const entry = await this.entriesRepository.findById(entryId, userId);
-        if (!entry) {
-            throw new AppError_1.AppError('Entry not found', 404);
+    async updateTag(tagId, userId, name) {
+        await this.getTagById(tagId, userId);
+        const tag = await this.tagsRepo.update(tagId, userId, name.trim());
+        if (!tag)
+            throw new AppError_1.NotFoundError('Tag not found');
+        return tag;
+    }
+    async deleteTag(tagId, userId) {
+        await this.getTagById(tagId, userId);
+        const result = await this.tagsRepo.delete(tagId, userId);
+        if (!result)
+            throw new AppError_1.NotFoundError('Tag not found');
+        return { success: true };
+    }
+    async findOrCreate(userId, name) {
+        const tag = await this.tagsRepo.findOrCreate(userId, name.trim());
+        return { data: tag };
+    }
+    async getNodesByTag(tagId, userId) {
+        await this.getTagById(tagId, userId);
+        return this.tagsRepo.getNodesByTag(tagId, userId);
+    }
+    async getTagsForNode(nodeId, userId) {
+        if (!await this.nodesRepo.belongsToUser(nodeId, userId)) {
+            throw new AppError_1.NotFoundError('Node not found');
         }
-        await this.tagsRepository.detachFromEntry(entryId);
-        return { success: true, message: 'Tags detached successfully' };
+        return this.tagsRepo.getTagsForNode(nodeId);
     }
-    // Записи по тегу
-    async getEntriesByTag(tagId, userId, limit = 50) {
-        const tag = await this.tagsRepository.findById(tagId, userId);
-        if (!tag) {
-            throw new AppError_1.AppError('Tag not found', 404);
+    async replaceTagsForNode(nodeId, userId, tagIds) {
+        if (!await this.nodesRepo.belongsToUser(nodeId, userId)) {
+            throw new AppError_1.NotFoundError('Node not found');
         }
-        return await this.tagsRepository.getEntriesByTag(tagId, userId, limit);
+        for (const tagId of tagIds) {
+            await this.getTagById(tagId, userId);
+        }
+        return this.tagsRepo.replaceTagsForNode(nodeId, tagIds, userId);
     }
-    // Самые используемые теги
-    async getMostUsed(userId, limit = 20) {
-        return await this.tagsRepository.getMostUsed(userId, limit);
+    async getMostUsed(userId, limit = 10) {
+        const tags = await this.tagsRepo.getMostUsed(userId, limit);
+        return {
+            data: tags,
+            pagination: { page: 1, limit: tags.length, total: tags.length, totalPages: 1 },
+        };
     }
-    // Неиспользуемые теги
     async getUnused(userId) {
-        return await this.tagsRepository.getUnused(userId);
-    }
-    // Создать или найти (для автодополнения)
-    async findOrCreateTag(name, userId) {
-        return await this.tagsRepository.findOrCreate(userId, name);
-    }
-    // Похожие теги
-    async getSimilarTags(tagId, userId, limit = 5) {
-        const tag = await this.tagsRepository.findById(tagId, userId);
-        if (!tag) {
-            throw new AppError_1.AppError('Tag not found', 404);
-        }
-        return await this.tagsRepository.getSimilar(userId, tagId, limit);
+        const tags = await this.tagsRepo.getUnused(userId);
+        return {
+            data: tags,
+            pagination: { page: 1, limit: tags.length, total: tags.length, totalPages: 1 },
+        };
     }
 }
 exports.TagsService = TagsService;

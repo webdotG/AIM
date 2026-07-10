@@ -1,0 +1,41 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.EdgeTypeCode = exports.NodeTypeCode = void 0;
+var NodeTypeCode;
+(function (NodeTypeCode) {
+    NodeTypeCode["DREAM"] = "dream";
+    NodeTypeCode["THOUGHT"] = "thought";
+    NodeTypeCode["MEMORY"] = "memory";
+    NodeTypeCode["PLAN"] = "plan";
+    NodeTypeCode["ACTION"] = "action";
+    NodeTypeCode["PERSON"] = "person";
+    NodeTypeCode["PLACE"] = "place";
+    NodeTypeCode["BOOK"] = "book";
+    NodeTypeCode["PROJECT"] = "project";
+    NodeTypeCode["CONVERSATION"] = "conversation";
+    NodeTypeCode["MOVIE"] = "movie";
+    NodeTypeCode["COURSE"] = "course";
+    NodeTypeCode["WEBSITE"] = "website";
+    NodeTypeCode["MUSIC"] = "music";
+    NodeTypeCode["ARTICLE"] = "article";
+})(NodeTypeCode || (exports.NodeTypeCode = NodeTypeCode = {}));
+var EdgeTypeCode;
+(function (EdgeTypeCode) {
+    EdgeTypeCode["MENTIONS"] = "mentions";
+    EdgeTypeCode["CAUSED"] = "caused";
+    EdgeTypeCode["RESULTED_IN"] = "resulted_in";
+    EdgeTypeCode["INSPIRED"] = "inspired";
+    EdgeTypeCode["REMINDED_OF"] = "reminded_of";
+    EdgeTypeCode["ABOUT"] = "about";
+    EdgeTypeCode["CONTAINS"] = "contains";
+    EdgeTypeCode["PERFORMED_WITH"] = "performed_with";
+    EdgeTypeCode["COMPLETED_BY"] = "completed_by";
+    EdgeTypeCode["CREATED"] = "created";
+    EdgeTypeCode["REFERENCES"] = "references";
+    EdgeTypeCode["SYMBOLIZES"] = "symbolizes";
+    EdgeTypeCode["CONTRADICTS"] = "contradicts";
+    EdgeTypeCode["DEPENDS_ON"] = "depends_on";
+    EdgeTypeCode["BELONGS_TO"] = "belongs_to";
+    EdgeTypeCode["RELATED_TO"] = "related_to";
+})(EdgeTypeCode || (exports.EdgeTypeCode = EdgeTypeCode = {}));
+//# sourceMappingURL=graph.types.js.map

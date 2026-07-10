@@ -1,23 +1,21 @@
-import { EmotionsRepository } from '../repositories/EmotionsRepository';
-import { EntriesRepository } from '../../entries/repositories/EntriesRepository';
+import { Pool } from 'pg';
 export declare class EmotionsService {
-    private emotionsRepository;
-    private entriesRepository;
-    constructor(emotionsRepository: EmotionsRepository, entriesRepository: EntriesRepository);
-    getAllEmotions(): Promise<any[]>;
-    getEmotionsByCategory(category: 'positive' | 'negative' | 'neutral'): Promise<any[]>;
-    getEmotionsForEntry(entryId: string, userId: number): Promise<any[]>;
-    attachEmotionsToEntry(entryId: string, emotions: any[], userId: number): Promise<{
-        success: boolean;
-        message: string;
+    private emotionsRepo;
+    private nodeEmotionsRepo;
+    private nodesRepo;
+    constructor(pool: Pool);
+    getAllEmotions(): Promise<import("../../../shared/types").Emotion[]>;
+    getByCategory(category: string): Promise<import("../../../shared/types").Emotion[]>;
+    getEmotionsForNode(nodeId: string, userId: number): Promise<any[]>;
+    replaceEmotionsForNode(nodeId: string, userId: number, emotions: {
+        emotion_id: number;
+        intensity: number;
+    }[]): Promise<any[]>;
+    removeEmotionsFromNode(nodeId: string, userId: number): Promise<{
+        removed: number;
     }>;
-    detachEmotionsFromEntry(entryId: string, userId: number): Promise<{
-        success: boolean;
-        message: string;
-    }>;
-    getUserEmotionStats(userId: number, fromDate?: Date, toDate?: Date): Promise<any[]>;
+    getStats(userId: number): Promise<any[]>;
     getMostFrequent(userId: number, limit?: number): Promise<any[]>;
-    getCategoryDistribution(userId: number, fromDate?: Date, toDate?: Date): Promise<any[]>;
-    getEmotionTimeline(userId: number, fromDate: Date, toDate: Date, granularity?: 'day' | 'week' | 'month'): Promise<any[]>;
+    getDistribution(userId: number, granularity?: 'day' | 'week' | 'month'): Promise<any[]>;
 }
 //# sourceMappingURL=EmotionsService.d.ts.map

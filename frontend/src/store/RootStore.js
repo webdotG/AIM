@@ -1,28 +1,29 @@
-// ~/aProject/AIM/frontend/src/store/RootStore.js
+// NEW V3 — Replaced old stores with graph-based architecture
+// Old: EntriesStore, BodyStatesStore, CircumstancesStore, SkillsStore, SkillProgressStore, RelationsStore
+// New: NodeStore, EdgeStore, SelectionStore, TraversalStore, AnalyticsStore, AIStore
+
 import { AuthStore } from './stores/AuthStore';
-import { BodyStatesStore } from './stores/BodyStatesStore';
-import { CircumstancesStore } from './stores/CircumstancesStore';
-import { EntriesStore } from './stores/EntriesStore';
-import { SkillsStore } from './stores/SkillsStore';
-import { UIStore } from './stores/UIStore';
-import { RelationsStore } from './stores/RelationsStore';
-import { SkillProgressStore } from './stores/SkillProgressStore';
-import { TagsStore } from './stores/TagsStore';
 import { EmotionsStore } from './stores/EmotionsStore';
-import { EntryDraftStore } from './stores/EntryDraftStore'; 
+import { TagsStore } from './stores/TagsStore';
+import { UIStore } from './stores/UIStore';
+import { NodeStore } from './stores/NodeStore';
+import { EdgeStore } from './stores/EdgeStore';
+import { SelectionStore } from './stores/SelectionStore';
+import { TraversalStore } from './stores/TraversalStore';
+import { AnalyticsStore } from './stores/AnalyticsStore';
+import { AIStore } from './stores/AISTore';
 
 export default class RootStore {
   constructor() {
-    this.authStore = new AuthStore(this);
-    this.bodyStatesStore = new BodyStatesStore(this);
-    this.circumstancesStore = new CircumstancesStore(this);
-    this.entriesStore = new EntriesStore(this);
-    this.skillsStore = new SkillsStore(this);
-    this.uiStore = new UIStore(this);
-    this.relationsStore = new RelationsStore(this);
-    this.skillProgressStore = new SkillProgressStore(this);
-    this.tagsStore = new TagsStore(this);
-    this.emotionsStore = new EmotionsStore(this);
-    this.entryDraftStore = new EntryDraftStore(); 
+    this.auth = new AuthStore(this);
+    this.ui = new UIStore();
+    this.emotions = new EmotionsStore(this);
+    this.tags = new TagsStore(this);
+    this.nodes = new NodeStore(this);
+    this.edges = new EdgeStore(this);
+    this.selection = new SelectionStore(this);
+    this.traversal = new TraversalStore(this);
+    this.analytics = new AnalyticsStore(this);
+    this.ai = new AIStore(this);
   }
 }

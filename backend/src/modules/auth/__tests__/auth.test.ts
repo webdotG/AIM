@@ -4,7 +4,21 @@ import { pool } from '../../../db/pool';
 
 describe('Auth Module - Complete Test Suite', () => {
   beforeEach(async () => {
-    await pool.query("DELETE FROM users WHERE login LIKE 'test_%' OR login LIKE 'testuser%' OR login LIKE 'test-%'");
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      // Soft-delete nodes first (hard delete forbidden by trigger)
+      await client.query(`UPDATE nodes SET deleted_at = NOW() WHERE user_id IN (SELECT id FROM users WHERE login LIKE 'test_%' OR login LIKE 'testuser%' OR login LIKE 'test-%') AND deleted_at IS NULL`);
+      // Clean up AI tables (ON DELETE RESTRICT)
+      await client.query(`DELETE FROM ai_analysis WHERE node_id IN (SELECT id FROM nodes WHERE user_id IN (SELECT id FROM users WHERE login LIKE 'test_%' OR login LIKE 'testuser%' OR login LIKE 'test-%'))`);
+      await client.query(`DELETE FROM ai_images WHERE node_id IN (SELECT id FROM nodes WHERE user_id IN (SELECT id FROM users WHERE login LIKE 'test_%' OR login LIKE 'testuser%' OR login LIKE 'test-%'))`);
+      await client.query("DELETE FROM users WHERE login LIKE 'test_%' OR login LIKE 'testuser%' OR login LIKE 'test-%'");
+      await client.query('COMMIT');
+    } catch (e) {
+      await client.query('ROLLBACK');
+    } finally {
+      client.release();
+    }
   });
 
   describe('POST /api/v1/auth/register - Success Cases', () => {

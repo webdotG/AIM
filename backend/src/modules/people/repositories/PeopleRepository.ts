@@ -1,112 +1,102 @@
-
 import { Pool } from 'pg';
 import { BaseRepository } from '../../../shared/repositories/BaseRepository';
 
-interface PersonData {
-  user_id: number;
-  name: string;
-  category: string;
-  relationship?: string | null;
-  bio?: string | null;
-  birth_date?: Date | null;
-  notes?: string | null;
-}
-
 export class PeopleRepository extends BaseRepository {
-constructor(pool: Pool) {
-  super(pool);
-}
+  constructor(pool: Pool) {
+    super(pool);
+  }
 
-  async findByUserId(userId: number, filters: any = {}) {
+  async findByNodeId(nodeId: string) {
+    const result = await this.pool.query(
+      'SELECT * FROM people WHERE node_id = $1 AND deleted_at IS NULL',
+      [nodeId]
+    );
+    return result.rows[0] || null;
+  }
+
+  async findByUserId(userId: number, filters: { search?: string; relationship?: string } = {}, page: number = 1, limit: number = 50) {
+    const offset = (page - 1) * limit;
     let query = `
-      SELECT 
-        p.*,
-        COUNT(ep.entry_id) as mention_count
+      SELECT p.*, n.title, n.created_at,
+             COUNT(e.id) FILTER (WHERE e.id IS NOT NULL) AS mention_count
       FROM people p
-      LEFT JOIN entry_people ep ON p.id = ep.person_id
-      WHERE p.user_id = $1
+      JOIN nodes n ON n.id = p.node_id
+      LEFT JOIN edges e ON (e.from_node_id = p.node_id OR e.to_node_id = p.node_id) AND e.deleted_at IS NULL
+      WHERE n.user_id = $1 AND n.deleted_at IS NULL AND p.deleted_at IS NULL
     `;
-    
     const params: any[] = [userId];
     let paramIndex = 2;
 
-    if (filters.category) {
-      query += ` AND p.category = $${paramIndex}`;
-      params.push(filters.category);
-      paramIndex++;
-    }
-
     if (filters.search) {
-      query += ` AND p.name ILIKE $${paramIndex}`;
+      query += ` AND (p.full_name ILIKE $${paramIndex} OR p.nickname ILIKE $${paramIndex})`;
       params.push(`%${filters.search}%`);
       paramIndex++;
     }
-
-    query += ` GROUP BY p.id`;
-
-    const sortMap: any = {
-      name: 'p.name ASC',
-      mentions: 'mention_count DESC',
-      created_at: 'p.created_at DESC'
-    };
-    
-    query += ` ORDER BY ${sortMap[filters.sort] || 'p.name ASC'}`;
-
-    if (filters.limit) {
-      query += ` LIMIT $${paramIndex}`;
-      params.push(filters.limit);
+    if (filters.relationship) {
+      query += ` AND p.relationship = $${paramIndex}`;
+      params.push(filters.relationship);
       paramIndex++;
-      
-      if (filters.offset) {
-        query += ` OFFSET $${paramIndex}`;
-        params.push(filters.offset);
-      }
     }
+
+    query += ` GROUP BY p.node_id, n.title, n.created_at ORDER BY mention_count DESC LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
+    params.push(limit, offset);
 
     const result = await this.pool.query(query, params);
     return result.rows;
   }
 
-  async findById(id: number, userId?: number) {
-    let query = `
-      SELECT 
-        p.*,
-        COUNT(ep.entry_id) as mention_count
-      FROM people p
-      LEFT JOIN entry_people ep ON p.id = ep.person_id
-      WHERE p.id = $1
-    `;
-    
-    const params: any[] = [id];
-
-    if (userId) {
-      query += ` AND p.user_id = $2`;
-      params.push(userId);
-    }
-
-    query += ` GROUP BY p.id`;
-
-    const result = await this.pool.query(query, params);
-    return result.rows[0];
+  async getMostMentioned(userId: number, limit: number = 10) {
+    const result = await this.pool.query(
+      `SELECT p.*, n.title,
+              COUNT(e.id) AS mention_count
+       FROM people p
+       JOIN nodes n ON n.id = p.node_id
+       LEFT JOIN edges e ON (e.from_node_id = p.node_id OR e.to_node_id = p.node_id) AND e.deleted_at IS NULL
+       WHERE n.user_id = $1 AND n.deleted_at IS NULL AND p.deleted_at IS NULL
+       GROUP BY p.node_id, n.title
+       HAVING COUNT(e.id) > 0
+       ORDER BY mention_count DESC
+       LIMIT $2`,
+      [userId, limit]
+    );
+    return result.rows;
   }
 
-  async create(data: PersonData) {
+  async getContacts(nodeId: string, userId: number) {
     const result = await this.pool.query(
-      `INSERT INTO people (user_id, name, category, relationship, bio, birth_date, notes)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)
+      `SELECT p.*,
+              COUNT(e.id) AS interaction_count,
+              array_agg(DISTINCT et.code) AS relation_types,
+              array_agg(DISTINCT n.title) AS connected_items
+       FROM edges e
+       JOIN nodes n ON (n.id = e.from_node_id OR n.id = e.to_node_id) AND n.id != $1
+       JOIN people p ON p.node_id = n.id AND p.deleted_at IS NULL
+       JOIN edge_types et ON et.id = e.edge_type_id
+       WHERE (e.from_node_id = $1 OR e.to_node_id = $1)
+         AND e.deleted_at IS NULL
+         AND n.user_id = $2
+       GROUP BY p.node_id`,
+      [nodeId, userId]
+    );
+    return result.rows;
+  }
+
+  async create(nodeId: string, data: { full_name: string; nickname?: string | null; birth_date?: Date | null; relationship?: string | null; notes?: string | null }) {
+    const result = await this.pool.query(
+      `INSERT INTO people (node_id, full_name, nickname, birth_date, relationship, notes)
+       VALUES ($1, $2, $3, $4, $5, $6)
        RETURNING *`,
-      [data.user_id, data.name, data.category, data.relationship || null, data.bio || null, data.birth_date || null, data.notes || null]
+      [nodeId, data.full_name, data.nickname || null, data.birth_date || null, data.relationship || null, data.notes || null]
     );
     return result.rows[0];
   }
 
-  async update(id: number, updates: any, userId: number) {
-    const fields = [];
-    const values = [];
+  async update(nodeId: string, updates: Partial<{ full_name: string; nickname: string | null; birth_date: Date | null; relationship: string | null; notes: string | null }>) {
+    const fields: string[] = [];
+    const values: any[] = [];
     let paramIndex = 1;
 
-    const allowedFields = ['name', 'category', 'relationship', 'bio', 'birth_date', 'notes'];
-
+    const allowedFields = ['full_name', 'nickname', 'birth_date', 'relationship', 'notes'];
     for (const [key, value] of Object.entries(updates)) {
       if (allowedFields.includes(key)) {
         fields.push(`${key} = $${paramIndex}`);
@@ -115,69 +105,21 @@ constructor(pool: Pool) {
       }
     }
 
-    if (fields.length === 0) {
-      throw new Error('No valid fields to update');
-    }
+    if (fields.length === 0) throw new Error('No valid fields to update');
+    values.push(nodeId);
 
-    values.push(id, userId);
-    
-    const query = `
-      UPDATE people 
-      SET ${fields.join(', ')}
-      WHERE id = $${paramIndex} AND user_id = $${paramIndex + 1}
-      RETURNING *
-    `;
-
-    const result = await this.pool.query(query, values);
-    return result.rows[0];
-  }
-
-  async deleteByUser(id: number, userId: number) {
     const result = await this.pool.query(
-      `DELETE FROM people WHERE id = $1 AND user_id = $2 RETURNING id`,
-      [id, userId]
+      `UPDATE people SET ${fields.join(', ')} WHERE node_id = $${paramIndex} AND deleted_at IS NULL RETURNING *`,
+      values
     );
-    return result.rows[0];
+    return result.rows[0] || null;
   }
 
-  async countByUserId(userId: number, filters: any = {}) {
-    let query = `SELECT COUNT(*) FROM people WHERE user_id = $1`;
-    const params: any[] = [userId];
-    let paramIndex = 2;
-
-    if (filters.category) {
-      query += ` AND category = $${paramIndex}`;
-      params.push(filters.category);
-      paramIndex++;
-    }
-
-    const result = await this.pool.query(query, params);
-    return parseInt(result.rows[0].count);
-  }
-
-  async getMostMentioned(userId: number, limit: number = 10) {
+  async softDelete(nodeId: string) {
     const result = await this.pool.query(
-      `SELECT p.*, COUNT(ep.entry_id) as mention_count
-       FROM people p
-       JOIN entry_people ep ON p.id = ep.person_id
-       JOIN entries e ON ep.entry_id = e.id
-       WHERE e.user_id = $1
-       GROUP BY p.id
-       ORDER BY mention_count DESC
-       LIMIT $2`,
-      [userId, limit]
+      'UPDATE people SET deleted_at = NOW() WHERE node_id = $1 AND deleted_at IS NULL RETURNING node_id',
+      [nodeId]
     );
-    return result.rows;
-  }
-
-  async getForEntry(entryId: string) {
-    const result = await this.pool.query(
-      `SELECT p.*, ep.role, ep.notes
-       FROM people p
-       JOIN entry_people ep ON p.id = ep.person_id
-       WHERE ep.entry_id = $1`,
-      [entryId]
-    );
-    return result.rows;
+    return result.rows[0] || null;
   }
 }

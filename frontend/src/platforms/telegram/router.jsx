@@ -1,43 +1,34 @@
 import React, { useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { useStores } from '@/store/StoreContext'
-import  TelegramLayout from '../../ui/layouts/TelegramLayout';
+import { useStores } from '@/store/StoreContext';
+import TelegramLayout from '../../ui/layouts/TelegramLayout';
 import AuthPage from '@/ui/pages/auth/AuthPage';
-import TimelinePage from '../../\/ui/pages/analytics/AnalyticsTimelinePage';
-import CreateEntryPage from '@/ui/pages/entries/CreateEntryPage';
-import EntryDetailPage from '@/ui/pages/entries/detail/EntryDetailPage';
+import CreateNodePage from '@/ui/pages/nodes/CreateNodePage';
 import SettingsPage from '@/ui/pages/settings/SettingsPage';
 
 const RouterContent = observer(() => {
-    const [currentRoute, setCurrentRoute] = useState('home');
+  const [currentRoute, setCurrentRoute] = useState('home');
 
-  switch(currentRoute.screen) {
-    case 'timeline':
-      return <TimelinePage />;
-    case 'create-entry':
-      return <CreateEntryPage />;
-    case 'entry-detail':
-      return <EntryDetailPage id={currentRoute.params.id} />;
-    case 'analytics':
-      return <TimelinePage />;
+  switch (currentRoute) {
+    case 'create':
+      return <CreateNodePage />;
     case 'settings':
       return <SettingsPage />;
     default:
-      return <TimelinePage />;
+      return <CreateNodePage />;
   }
 });
 
 const TelegramRouter = observer(() => {
   const { authStore } = useStores();
-  
+
   if (!authStore.isAuthenticated) {
     return <AuthPage />;
   }
 
   return (
-    <TelegramLayout >
- 
-        <RouterContent />
+    <TelegramLayout>
+      <RouterContent />
     </TelegramLayout>
   );
 });

@@ -14,17 +14,25 @@ export const useStores = () => {
   return context;
 };
 
-export const useAuthStore = () => useStores().authStore;
-export const useEntriesStore = () => useStores().entriesStore;
-export const useBodyStatesStore = () => useStores().bodyStatesStore;
-export const useCircumstancesStore = () => useStores().circumstancesStore;
-export const useSkillsStore = () => useStores().skillsStore;
-export const useUIStore = () => useStores().uiStore;
-export const useRelationsStore = () => useStores().relationsStore;
-export const useSkillProgressStore = () => useStores().skillProgressStore;
-export const useTagsStore = () => useStores().tagsStore;
-export const useEmotionsStore = () => useStores().emotionsStore;
-export const useEntryDraftStore = () => useStores().entryDraftStore;
+export const useAuthStore = () => useStores().auth;
+export const useUIStore = () => useStores().ui;
+export const useNodeStore = () => useStores().nodes;
+export const useEdgeStore = () => useStores().edges;
+export const useSelectionStore = () => useStores().selection;
+export const useTraversalStore = () => useStores().traversal;
+export const useAnalyticsStore = () => useStores().analytics;
+export const useAIStore = () => useStores().ai;
+export const useEmotionsStore = () => useStores().emotions;
+export const useTagsStore = () => useStores().tags;
+
+// TEMP STUBS — remove in Block 5 when old UI components deleted
+export const useSkillsStore = () => ({ skills: [], createSkill: async () => {} });
+export const useCircumstancesStore = () => ({ circumstances: [] });
+export const useBodyStatesStore = () => ({ bodyStates: [], createBodyState: async () => {} });
+export const useRelationsStore = () => ({ relations: [], createRelation: async () => {} });
+export const useSkillProgressStore = () => ({ addProgress: async () => {} });
+export const useEntriesStore = () => ({ entries: [], createEntry: async () => {}, fetchEntries: async () => {} });
+export const useEntryDraftStore = () => ({ currentDraft: {}, updateDraft: () => {}, clearDraft: () => {} });
 
 export const StoreProvider = ({ children }) => {
   return (

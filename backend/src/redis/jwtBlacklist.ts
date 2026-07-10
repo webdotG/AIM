@@ -1,0 +1,1 @@
+export { jwtBlacklist, JWTBlacklistService } from '../services/JWTBlacklistService';

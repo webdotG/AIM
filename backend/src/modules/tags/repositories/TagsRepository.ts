@@ -1,184 +1,101 @@
 import { Pool } from 'pg';
 import { BaseRepository } from '../../../shared/repositories/BaseRepository';
 
-interface TagData {
-  user_id: number;
-  name: string;
-}
-
 export class TagsRepository extends BaseRepository {
-constructor(pool: Pool) {
-  super(pool);
-}
+  constructor(pool: Pool) {
+    super(pool);
+  }
 
-  // Получить все теги пользователя
-  async findByUserId(userId: number, filters: any = {}) {
-    let query = `
-      SELECT 
-        t.*,
-        COUNT(et.entry_id) as usage_count
-      FROM tags t
-      LEFT JOIN entry_tags et ON t.id = et.tag_id
-      WHERE t.user_id = $1
-    `;
-    
+  async findByUserId(userId: number, filters: { search?: string } = {}, limit: number = 50, offset: number = 0) {
+    let query = 'SELECT * FROM tags WHERE user_id = $1';
     const params: any[] = [userId];
     let paramIndex = 2;
 
-    // Поиск по имени
     if (filters.search) {
-      query += ` AND t.name ILIKE $${paramIndex}`;
+      query += ` AND name ILIKE $${paramIndex}`;
       params.push(`%${filters.search}%`);
       paramIndex++;
     }
 
-    query += ` GROUP BY t.id, t.user_id, t.name, t.created_at`;
-
-    // Сортировка
-    const sortMap: any = {
-      name: 't.name ASC',
-      usage: 'usage_count DESC',
-      created_at: 't.created_at DESC'
-    };
-    
-    const sortBy = sortMap[filters.sort] || 't.name ASC';
-    query += ` ORDER BY ${sortBy}`;
-
-    // Пагинация
-    if (filters.limit) {
-      query += ` LIMIT $${paramIndex}`;
-      params.push(filters.limit);
-      paramIndex++;
-      
-      if (filters.offset) {
-        query += ` OFFSET $${paramIndex}`;
-        params.push(filters.offset);
-      }
-    }
+    query += ` ORDER BY name ASC LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
+    params.push(limit, offset);
 
     const result = await this.pool.query(query, params);
     return result.rows;
   }
 
-  // Найти тег по ID
-  async findById(id: number, userId?: number) {
-    let query = `
-      SELECT 
-        t.*,
-        COUNT(et.entry_id) as usage_count
-      FROM tags t
-      LEFT JOIN entry_tags et ON t.id = et.tag_id
-      WHERE t.id = $1
-    `;
-    
-    const params: any[] = [id];
-
-    if (userId) {
-      query += ` AND t.user_id = $2`;
-      params.push(userId);
-    }
-
-    query += ` GROUP BY t.id, t.user_id, t.name, t.created_at`;
-
-    const result = await this.pool.query(query, params);
-    return result.rows[0];
+  async findById(tagId: number, userId: number) {
+    const result = await this.pool.query(
+      'SELECT * FROM tags WHERE id = $1 AND user_id = $2',
+      [tagId, userId]
+    );
+    return result.rows[0] || null;
   }
 
-  // Найти тег по имени
-  async findByName(userId: number, name: string) {
+  async create(userId: number, name: string) {
     const result = await this.pool.query(
-      `SELECT * FROM tags WHERE user_id = $1 AND LOWER(name) = LOWER($2)`,
+      'INSERT INTO tags (user_id, name) VALUES ($1, $2) RETURNING *',
       [userId, name]
     );
     return result.rows[0];
   }
 
-  // Создать тег
-  async create(data: TagData) {
+  async update(tagId: number, userId: number, name: string) {
     const result = await this.pool.query(
-      `INSERT INTO tags (user_id, name)
-       VALUES ($1, $2)
-       RETURNING *`,
-      [data.user_id, data.name]
+      'UPDATE tags SET name = $1 WHERE id = $2 AND user_id = $3 RETURNING *',
+      [name, tagId, userId]
     );
-    return result.rows[0];
+    return result.rows[0] || null;
   }
 
-  // Обновить тег
-  async update(id: number, name: string, userId: number) {
+  async delete(tagId: number, userId: number) {
     const result = await this.pool.query(
-      `UPDATE tags 
-       SET name = $1
-       WHERE id = $2 AND user_id = $3
-       RETURNING *`,
-      [name, id, userId]
+      'DELETE FROM tags WHERE id = $1 AND user_id = $2 RETURNING id',
+      [tagId, userId]
     );
-    return result.rows[0];
+    return result.rows[0] || null;
   }
 
-  // Удалить тег
-  async deleteByUser(id: number, userId: number) {
+  async findOrCreate(userId: number, name: string) {
     const result = await this.pool.query(
-      `DELETE FROM tags WHERE id = $1 AND user_id = $2 RETURNING id`,
-      [id, userId]
+      'SELECT * FROM tags WHERE user_id = $1 AND lower(name) = lower($2)',
+      [userId, name]
     );
-    return result.rows[0];
+    if (result.rows.length > 0) return result.rows[0];
+    return this.create(userId, name);
   }
 
-  // Подсчёт тегов
-  async countByUserId(userId: number, filters: any = {}) {
-    let query = `SELECT COUNT(DISTINCT t.id) FROM tags t WHERE t.user_id = $1`;
-    const params: any[] = [userId];
-    let paramIndex = 2;
-
-    if (filters.search) {
-      query += ` AND t.name ILIKE $${paramIndex}`;
-      params.push(`%${filters.search}%`);
-    }
-
-    const result = await this.pool.query(query, params);
-    return parseInt(result.rows[0].count);
-  }
-
-  // ============ TAGS FOR ENTRIES ============
-
-  // Получить теги для записи
-  async getForEntry(entryId: string) {
+  async getNodesByTag(tagId: number, userId: number) {
     const result = await this.pool.query(
-      `SELECT t.*
-       FROM tags t
-       JOIN entry_tags et ON t.id = et.tag_id
-       WHERE et.entry_id = $1
-       ORDER BY t.name ASC`,
-      [entryId]
+      `SELECT n.*, nt.code AS node_type_code
+       FROM node_tags ntg
+       JOIN nodes n ON n.id = ntg.node_id
+       JOIN node_types nt ON nt.id = n.node_type_id
+       WHERE ntg.tag_id = $1 AND n.user_id = $2 AND n.deleted_at IS NULL
+       ORDER BY n.created_at DESC`,
+      [tagId, userId]
     );
     return result.rows;
   }
 
-  // Привязать теги к записи
-  async attachToEntry(entryId: string, tagIds: number[]) {
+  async replaceTagsForNode(nodeId: string, tagIds: number[], userId: number) {
     const client = await this.pool.connect();
-    
     try {
       await client.query('BEGIN');
 
-      // Удаляем старые теги
-      await client.query(
-        `DELETE FROM entry_tags WHERE entry_id = $1`,
-        [entryId]
-      );
+      await client.query('DELETE FROM node_tags WHERE node_id = $1', [nodeId]);
 
-      // Добавляем новые
-      for (const tagId of tagIds) {
-        await client.query(
-          `INSERT INTO entry_tags (entry_id, tag_id)
-           VALUES ($1, $2)
-           ON CONFLICT DO NOTHING`,
-          [entryId, tagId]
-        );
+      if (tagIds.length > 0) {
+        for (const tagId of tagIds) {
+          await client.query(
+            'INSERT INTO node_tags (node_id, tag_id) VALUES ($1, $2)',
+            [nodeId, tagId]
+          );
+        }
       }
 
       await client.query('COMMIT');
+      return this.getTagsForNode(nodeId);
     } catch (error) {
       await client.query('ROLLBACK');
       throw error;
@@ -187,39 +104,24 @@ constructor(pool: Pool) {
     }
   }
 
-  // Отвязать все теги от записи
-  async detachFromEntry(entryId: string) {
-    await this.pool.query(
-      `DELETE FROM entry_tags WHERE entry_id = $1`,
-      [entryId]
-    );
-  }
-
-  // Найти записи по тегу
-  async getEntriesByTag(tagId: number, userId: number, limit: number = 50) {
+  async getTagsForNode(nodeId: string) {
     const result = await this.pool.query(
-      `SELECT e.*
-       FROM entries e
-       JOIN entry_tags et ON e.id = et.entry_id
-       WHERE et.tag_id = $1 AND e.user_id = $2
-       ORDER BY e.created_at DESC
-       LIMIT $3`,
-      [tagId, userId, limit]
+      `SELECT t.* FROM node_tags ntg
+       JOIN tags t ON t.id = ntg.tag_id
+       WHERE ntg.node_id = $1`,
+      [nodeId]
     );
     return result.rows;
   }
 
-  // Самые используемые теги
-  async getMostUsed(userId: number, limit: number = 20) {
+  async getMostUsed(userId: number, limit: number = 10) {
     const result = await this.pool.query(
-      `SELECT 
-        t.*,
-        COUNT(et.entry_id) as usage_count
+      `SELECT t.*, COUNT(ntg.node_id) AS usage_count
        FROM tags t
-       LEFT JOIN entry_tags et ON t.id = et.tag_id
-       WHERE t.user_id = $1
-       GROUP BY t.id, t.user_id, t.name, t.created_at
-       HAVING COUNT(et.entry_id) > 0
+       JOIN node_tags ntg ON ntg.tag_id = t.id
+       JOIN nodes n ON n.id = ntg.node_id
+       WHERE t.user_id = $1 AND n.deleted_at IS NULL
+       GROUP BY t.id, t.user_id, t.name
        ORDER BY usage_count DESC
        LIMIT $2`,
       [userId, limit]
@@ -227,48 +129,12 @@ constructor(pool: Pool) {
     return result.rows;
   }
 
-  // Неиспользуемые теги
   async getUnused(userId: number) {
     const result = await this.pool.query(
-      `SELECT t.*
-       FROM tags t
-       LEFT JOIN entry_tags et ON t.id = et.tag_id
+      `SELECT t.* FROM tags t
        WHERE t.user_id = $1
-       GROUP BY t.id, t.user_id, t.name, t.created_at
-       HAVING COUNT(et.entry_id) = 0
-       ORDER BY t.created_at DESC`,
+       AND NOT EXISTS (SELECT 1 FROM node_tags ntg WHERE ntg.tag_id = t.id)`,
       [userId]
-    );
-    return result.rows;
-  }
-
-  // Создать или найти тег по имени (для автодополнения)
-  async findOrCreate(userId: number, name: string) {
-    // Сначала ищем
-    let tag = await this.findByName(userId, name);
-    
-    // Если нет - создаём
-    if (!tag) {
-      tag = await this.create({ user_id: userId, name });
-    }
-
-    return tag;
-  }
-
-  // Получить похожие теги (для рекомендаций)
-  async getSimilar(userId: number, tagId: number, limit: number = 5) {
-    const result = await this.pool.query(
-      `SELECT DISTINCT t2.*, COUNT(*) as co_occurrence
-       FROM entry_tags et1
-       JOIN entry_tags et2 ON et1.entry_id = et2.entry_id
-       JOIN tags t2 ON et2.tag_id = t2.id
-       WHERE et1.tag_id = $1 
-         AND et2.tag_id != $1
-         AND t2.user_id = $2
-       GROUP BY t2.id, t2.user_id, t2.name, t2.created_at
-       ORDER BY co_occurrence DESC
-       LIMIT $3`,
-      [tagId, userId, limit]
     );
     return result.rows;
   }

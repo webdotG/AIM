@@ -1,0 +1,1 @@
+{"version":3,"file":"apiPreset.d.ts","sourceRoot":"","sources":["../../../src/security/presets/apiPreset.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,sBAAsB,EAAE,MAAM,qCAAqC,CAAC;AAU7E,MAAM,WAAW,eAAe;IAC9B,SAAS,CAAC,EAAE,MAAM,CAAC;IACnB,WAAW,CAAC,EAAE,MAAM,EAAE,CAAC;IACvB,KAAK,CAAC,EAAE,OAAO,CAAC;IAChB,MAAM,CAAC,EAAE,OAAO,CAAC;CAClB;AAED,wBAAgB,eAAe,CAAC,MAAM,GAAE,eAAoB,0BAc3D"}
