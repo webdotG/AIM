@@ -1,0 +1,3589 @@
+openapi: 3.1.0
+info:
+  title: AIM Backend API
+  description: "Life Graph -- psychological profile through graph analysis. All endpoints return {success, data} envelope. Auth via Bearer JWT. Soft delete only. Graph: 16 node types, 16 edge types."
+  version: 1.0.0
+servers:
+  - url: http://localhost:3003
+tags:
+  - name: System
+    description: Health check
+  - name: Auth
+    description: Authentication & registration
+  - name: Graph
+    description: Graph nodes, edges, traversal
+  - name: Dreams
+    description: Dream journal entries
+  - name: Thoughts
+    description: Thought entries
+  - name: Memories
+    description: Memory entries
+  - name: Plans
+    description: Plan/task entries
+  - name: Actions
+    description: Action/activity tracking
+  - name: People
+    description: People/contacts management
+  - name: Emotions
+    description: Berkeley emotion model (26 emotions)
+  - name: Tags
+    description: User-defined tagging
+  - name: Measurements
+    description: Node measurements
+  - name: AI
+    description: AI analysis and image generation
+  - name: Analytics
+    description: Statistics and analytics
+security:
+  - bearerAuth: []
+paths:
+  /health:
+    get:
+      tags:
+        - System
+      summary: Health check
+      operationId: healthCheck
+      security: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: 'OK'
+                  timestamp:
+                    type: string
+                    format: date-time
+                  version:
+                    type: string
+
+  /api/v1/auth/register:
+    post:
+      tags:
+        - Auth
+      summary: Register a new user
+      operationId: register
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - login
+                - password
+                - hcaptchaToken
+              properties:
+                login:
+                  type: string
+                  minLength: 3
+                  maxLength: 50
+                password:
+                  type: string
+                  minLength: 12
+                  maxLength: 128
+                hcaptchaToken:
+                  type: string
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: '#/components/schemas/User'
+                      token:
+                        type: string
+                      backupCode:
+                        type: string
+                      message:
+                        type: string
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Duplicate login
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/auth/login:
+    post:
+      tags:
+        - Auth
+      summary: Login
+      operationId: login
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - login
+                - password
+                - hcaptchaToken
+              properties:
+                login:
+                  type: string
+                password:
+                  type: string
+                hcaptchaToken:
+                  type: string
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: '#/components/schemas/User'
+                      token:
+                        type: string
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/auth/recover:
+    post:
+      tags:
+        - Auth
+      summary: Recover account with backup code
+      operationId: recover
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - backup_code
+                - new_password
+                - hcaptchaToken
+              properties:
+                backup_code:
+                  type: string
+                new_password:
+                  type: string
+                  minLength: 12
+                  maxLength: 128
+                hcaptchaToken:
+                  type: string
+      responses:
+        '200':
+          description: Password recovered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      token:
+                        type: string
+                      backup_code:
+                        type: string
+                      message:
+                        type: string
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/auth/verify:
+    get:
+      tags:
+        - Auth
+      summary: Verify current user
+      operationId: verify
+      security: []
+      responses:
+        '200':
+          description: User verified
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/auth/check-password-strength:
+    post:
+      tags:
+        - Auth
+      summary: Check password strength
+      operationId: checkPasswordStrength
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - password
+              properties:
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Password strength evaluated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      isStrong:
+                        type: boolean
+                      score:
+                        type: integer
+                      reasons:
+                        type: array
+                        items:
+                          type: string
+                      suggestions:
+                        type: array
+                        items:
+                          type: string
+
+  /api/v1/auth/generate-password:
+    post:
+      tags:
+        - Auth
+      summary: Generate a strong password
+      operationId: generatePassword
+      security: []
+      responses:
+        '200':
+          description: Generated password
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      password:
+                        type: string
+  /api/v1/graph/node-types:
+    get:
+      tags:
+        - Graph
+      summary: Get all node types
+      operationId: getNodeTypes
+      security: []
+      responses:
+        '200':
+          description: List of node types
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/NodeType'
+
+  /api/v1/graph/edge-types:
+    get:
+      tags:
+        - Graph
+      summary: Get all edge types
+      operationId: getEdgeTypes
+      security: []
+      responses:
+        '200':
+          description: List of edge types
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/EdgeType'
+
+  /api/v1/graph/nodes:
+    get:
+      tags:
+        - Graph
+      summary: List nodes
+      operationId: getNodes
+      parameters:
+        - name: node_type_code
+          in: query
+          schema:
+            $ref: '#/components/schemas/NodeTypeCode'
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: from
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: to
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Paginated list of nodes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedResponse'
+    post:
+      tags:
+        - Graph
+      summary: Create a new node
+      operationId: createNode
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - node_type_code
+              properties:
+                node_type_code:
+                  $ref: '#/components/schemas/NodeTypeCode'
+                title:
+                  type: string
+                  maxLength: 300
+                  nullable: true
+      responses:
+        '201':
+          description: Node created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/Node'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/graph/nodes/{id}:
+    get:
+      tags:
+        - Graph
+      summary: Get a node by ID
+      operationId: getNode
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Node details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/Node'
+        '404':
+          description: Node not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      tags:
+        - Graph
+      summary: Update a node
+      operationId: updateNode
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  maxLength: 300
+                  nullable: true
+      responses:
+        '200':
+          description: Node updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/Node'
+        '404':
+          description: Node not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      tags:
+        - Graph
+      summary: Soft delete a node
+      operationId: deleteNode
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Node deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+        '404':
+          description: Node not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/graph/edges:
+    post:
+      tags:
+        - Graph
+      summary: Create a new edge
+      operationId: createEdge
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - from_node_id
+                - to_node_id
+                - edge_type_code
+              properties:
+                from_node_id:
+                  type: string
+                  format: uuid
+                to_node_id:
+                  type: string
+                  format: uuid
+                edge_type_code:
+                  type: string
+                confidence:
+                  type: number
+                  minimum: 0
+                  maximum: 1
+                  nullable: true
+                weight:
+                  type: number
+                  minimum: 0
+                  nullable: true
+                notes:
+                  type: string
+                  maxLength: 1000
+                  nullable: true
+      responses:
+        '201':
+          description: Edge created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/Edge'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/graph/edges/node/{nodeId}:
+    get:
+      tags:
+        - Graph
+      summary: Get edges connected to a node
+      operationId: getEdgesByNode
+      parameters:
+        - name: nodeId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: direction
+          in: query
+          schema:
+            type: string
+            enum:
+              - outgoing
+              - incoming
+              - both
+            default: both
+      responses:
+        '200':
+          description: Paginated list of edges
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedResponse'
+
+  /api/v1/graph/edges/{id}:
+    delete:
+      tags:
+        - Graph
+      summary: Delete an edge
+      operationId: deleteEdge
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Edge deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+        '404':
+          description: Edge not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/graph/traversal/{nodeId}:
+    get:
+      tags:
+        - Graph
+      summary: Traverse graph from a node
+      operationId: traverseGraph
+      parameters:
+        - name: nodeId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: direction
+          in: query
+          schema:
+            type: string
+            enum:
+              - forward
+              - backward
+              - both
+        - name: depth
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 20
+            default: 10
+        - name: filterNodeType
+          in: query
+          schema:
+            $ref: '#/components/schemas/NodeTypeCode'
+        - name: filterEdgeType
+          in: query
+          schema:
+            type: string
+        - name: minConfidence
+          in: query
+          schema:
+            type: number
+            minimum: 0
+            maximum: 1
+      responses:
+        '200':
+          description: Graph traversal result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      path:
+                        type: array
+                        items:
+                          type: object
+                      edges:
+                        type: array
+                        items:
+                          type: object
+
+  /api/v1/graph/neighbors/{nodeId}:
+    get:
+      tags:
+        - Graph
+      summary: Get neighbor nodes
+      operationId: getNeighbors
+      parameters:
+        - name: nodeId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of neighbors
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        node_id:
+                          type: string
+                          format: uuid
+                        node_type_code:
+                          type: string
+                        node_title:
+                          type: string
+                        link_count:
+                          type: integer
+
+  /api/v1/graph/graph-data:
+    get:
+      tags:
+        - Graph
+      summary: Get all graph data for visualization
+      operationId: getGraphData
+      responses:
+        '200':
+          description: Full graph data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      nodes:
+                        type: array
+                        items:
+                          type: object
+                      edges:
+                        type: array
+                        items:
+                          type: object
+
+  /api/v1/graph/most-connected:
+    get:
+      tags:
+        - Graph
+      summary: Get most connected nodes
+      operationId: getMostConnected
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Most connected nodes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedResponse'
+  /api/v1/dreams:
+    get:
+      tags:
+        - Dream
+      summary: List dreams
+      operationId: getDreams
+      parameters:
+        - name: from
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: to
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: nightmare
+          in: query
+          schema:
+            type: boolean
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Paginated list of dreams
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedResponse'
+    post:
+      tags:
+        - Dream
+      summary: Create a dream entry
+      operationId: createDream
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - content
+              properties:
+                title:
+                  type: string
+                  nullable: true
+                content:
+                  type: string
+                dream_date:
+                  type: string
+                  format: date-time
+                  nullable: true
+                lucidity:
+                  type: integer
+                  minimum: 1
+                  maximum: 10
+                  nullable: true
+                vividness:
+                  type: integer
+                  minimum: 1
+                  maximum: 10
+                  nullable: true
+                nightmare:
+                  type: boolean
+                  default: False
+                sleep_start:
+                  type: string
+                  format: date-time
+                  nullable: true
+                sleep_end:
+                  type: string
+                  format: date-time
+                  nullable: true
+      responses:
+        '201':
+          description: Dream created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      node:
+                        $ref: '#/components/schemas/Node'
+                      dream:
+                        type: object
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/dreams/{id}:
+    get:
+      tags:
+        - Dream
+      summary: Get a dream by ID
+      operationId: getDream
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Dream details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      node:
+                        $ref: '#/components/schemas/Node'
+                      dream:
+                        type: object
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      tags:
+        - Dream
+      summary: Update a dream
+      operationId: updateDream
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  nullable: true
+                content:
+                  type: string
+                  nullable: true
+                dream_date:
+                  type: string
+                  format: date-time
+                  nullable: true
+                lucidity:
+                  type: integer
+                  minimum: 1
+                  maximum: 10
+                  nullable: true
+                vividness:
+                  type: integer
+                  minimum: 1
+                  maximum: 10
+                  nullable: true
+                nightmare:
+                  type: boolean
+                  nullable: true
+                sleep_start:
+                  type: string
+                  format: date-time
+                  nullable: true
+                sleep_end:
+                  type: string
+                  format: date-time
+                  nullable: true
+      responses:
+        '200':
+          description: Dream updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      node:
+                        $ref: '#/components/schemas/Node'
+                      dream:
+                        type: object
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      tags:
+        - Dream
+      summary: Soft delete a dream
+      operationId: deleteDream
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Dream deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/thoughts:
+    get:
+      tags:
+        - Thought
+      summary: List thoughts
+      operationId: getThoughts
+      parameters:
+        - name: from
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: to
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Paginated list of thoughts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedResponse'
+    post:
+      tags:
+        - Thought
+      summary: Create a thought entry
+      operationId: createThought
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - content
+              properties:
+                title:
+                  type: string
+                  nullable: true
+                content:
+                  type: string
+                importance:
+                  type: integer
+                  minimum: 1
+                  maximum: 10
+                  nullable: true
+                confidence:
+                  type: integer
+                  minimum: 1
+                  maximum: 10
+                  nullable: true
+      responses:
+        '201':
+          description: Thought created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      node:
+                        $ref: '#/components/schemas/Node'
+                      thought:
+                        type: object
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/thoughts/{id}:
+    get:
+      tags:
+        - Thought
+      summary: Get a thought by ID
+      operationId: getThought
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Thought details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      node:
+                        $ref: '#/components/schemas/Node'
+                      thought:
+                        type: object
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      tags:
+        - Thought
+      summary: Update a thought
+      operationId: updateThought
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  nullable: true
+                content:
+                  type: string
+                  nullable: true
+                importance:
+                  type: integer
+                  minimum: 1
+                  maximum: 10
+                  nullable: true
+                confidence:
+                  type: integer
+                  minimum: 1
+                  maximum: 10
+                  nullable: true
+      responses:
+        '200':
+          description: Thought updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      node:
+                        $ref: '#/components/schemas/Node'
+                      thought:
+                        type: object
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      tags:
+        - Thought
+      summary: Soft delete a thought
+      operationId: deleteThought
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Thought deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/memories:
+    get:
+      tags:
+        - Memory
+      summary: List memories
+      operationId: getMemories
+      parameters:
+        - name: from_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: to_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Paginated list of memorys
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedResponse'
+    post:
+      tags:
+        - Memory
+      summary: Create a memory entry
+      operationId: createMemory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - content
+              properties:
+                title:
+                  type: string
+                  nullable: true
+                content:
+                  type: string
+                event_date:
+                  type: string
+                  format: date
+                  nullable: true
+                confidence:
+                  type: integer
+                  minimum: 1
+                  maximum: 10
+                  nullable: true
+      responses:
+        '201':
+          description: Memory created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      node:
+                        $ref: '#/components/schemas/Node'
+                      memory:
+                        type: object
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/memories/{id}:
+    get:
+      tags:
+        - Memory
+      summary: Get a memory by ID
+      operationId: getMemory
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Memory details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      node:
+                        $ref: '#/components/schemas/Node'
+                      memory:
+                        type: object
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      tags:
+        - Memory
+      summary: Update a memory
+      operationId: updateMemory
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  nullable: true
+                content:
+                  type: string
+                  nullable: true
+                event_date:
+                  type: string
+                  format: date
+                  nullable: true
+                confidence:
+                  type: integer
+                  minimum: 1
+                  maximum: 10
+                  nullable: true
+      responses:
+        '200':
+          description: Memory updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      node:
+                        $ref: '#/components/schemas/Node'
+                      memory:
+                        type: object
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      tags:
+        - Memory
+      summary: Soft delete a memory
+      operationId: deleteMemory
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Memory deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/plans:
+    get:
+      tags:
+        - Plan
+      summary: List plans
+      operationId: getPlans
+      parameters:
+        - name: completed
+          in: query
+          schema:
+            type: boolean
+        - name: overdue
+          in: query
+          schema:
+            type: boolean
+        - name: from
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: to
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Paginated list of plans
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedResponse'
+    post:
+      tags:
+        - Plan
+      summary: Create a plan entry
+      operationId: createPlan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - description
+              properties:
+                title:
+                  type: string
+                  nullable: true
+                description:
+                  type: string
+                deadline:
+                  type: string
+                  format: date-time
+                  nullable: true
+                priority:
+                  type: integer
+                  minimum: 1
+                  maximum: 10
+                  nullable: true
+      responses:
+        '201':
+          description: Plan created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      node:
+                        $ref: '#/components/schemas/Node'
+                      plan:
+                        type: object
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/plans/{id}:
+    get:
+      tags:
+        - Plan
+      summary: Get a plan by ID
+      operationId: getPlan
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Plan details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      node:
+                        $ref: '#/components/schemas/Node'
+                      plan:
+                        type: object
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      tags:
+        - Plan
+      summary: Update a plan
+      operationId: updatePlan
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  nullable: true
+                description:
+                  type: string
+                  nullable: true
+                deadline:
+                  type: string
+                  format: date-time
+                  nullable: true
+                priority:
+                  type: integer
+                  minimum: 1
+                  maximum: 10
+                  nullable: true
+                completed:
+                  type: boolean
+                  nullable: true
+      responses:
+        '200':
+          description: Plan updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      node:
+                        $ref: '#/components/schemas/Node'
+                      plan:
+                        type: object
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      tags:
+        - Plan
+      summary: Soft delete a plan
+      operationId: deletePlan
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Plan deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/actions:
+    get:
+      tags:
+        - Action
+      summary: List actions
+      operationId: getActionss
+      parameters:
+        - name: from
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: to
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Paginated list of actions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedResponse'
+    post:
+      tags:
+        - Action
+      summary: Create a action entry
+      operationId: createAction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              properties:
+                title:
+                  type: string
+                  nullable: true
+                description:
+                  type: string
+                  nullable: true
+                activity_id:
+                  type: integer
+                  nullable: true
+                started_at:
+                  type: string
+                  format: date-time
+                  nullable: true
+                finished_at:
+                  type: string
+                  format: date-time
+                  nullable: true
+      responses:
+        '201':
+          description: Action created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      node:
+                        $ref: '#/components/schemas/Node'
+                      action:
+                        type: object
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/actions/{id}:
+    get:
+      tags:
+        - Action
+      summary: Get a action by ID
+      operationId: getAction
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Action details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      node:
+                        $ref: '#/components/schemas/Node'
+                      action:
+                        type: object
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      tags:
+        - Action
+      summary: Update a action
+      operationId: updateAction
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  nullable: true
+                description:
+                  type: string
+                  nullable: true
+                activity_id:
+                  type: integer
+                  nullable: true
+                started_at:
+                  type: string
+                  format: date-time
+                  nullable: true
+                finished_at:
+                  type: string
+                  format: date-time
+                  nullable: true
+      responses:
+        '200':
+          description: Action updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      node:
+                        $ref: '#/components/schemas/Node'
+                      action:
+                        type: object
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      tags:
+        - Action
+      summary: Soft delete a action
+      operationId: deleteAction
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Action deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/people:
+    get:
+      tags:
+        - People
+      summary: List people
+      operationId: getPeople
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: relationship
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Paginated list of people
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedResponse'
+    post:
+      tags:
+        - People
+      summary: Create a person entry
+      operationId: createPerson
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - full_name
+              properties:
+                full_name:
+                  type: string
+                nickname:
+                  type: string
+                  nullable: true
+                birth_date:
+                  type: string
+                  format: date
+                  nullable: true
+                relationship:
+                  type: string
+                  nullable: true
+                notes:
+                  type: string
+                  nullable: true
+      responses:
+        '201':
+          description: Person created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      node:
+                        $ref: '#/components/schemas/Node'
+                      person:
+                        type: object
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/people/{id}:
+    get:
+      tags:
+        - People
+      summary: Get a person by ID
+      operationId: getPerson
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Person details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      node:
+                        $ref: '#/components/schemas/Node'
+                      person:
+                        type: object
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      tags:
+        - People
+      summary: Update a person
+      operationId: updatePerson
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                full_name:
+                  type: string
+                  nullable: true
+                nickname:
+                  type: string
+                  nullable: true
+                birth_date:
+                  type: string
+                  format: date
+                  nullable: true
+                relationship:
+                  type: string
+                  nullable: true
+                notes:
+                  type: string
+                  nullable: true
+      responses:
+        '200':
+          description: Person updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      node:
+                        $ref: '#/components/schemas/Node'
+                      person:
+                        type: object
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      tags:
+        - People
+      summary: Soft delete a person
+      operationId: deletePerson
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Person deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/people/most-mentioned:
+    get:
+      tags:
+        - People
+      summary: Get most mentioned people
+      operationId: getMostMentioned
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Most mentioned people
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedResponse'
+
+  /api/v1/people/{id}/contacts:
+    get:
+      tags:
+        - People
+      summary: Get connected people for a person
+      operationId: getPersonContacts
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Connected people from edges
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      type: object
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/emotions:
+    get:
+      tags:
+        - Emotions
+      summary: Get all emotions (Berkeley model)
+      operationId: getEmotions
+      security: []
+      responses:
+        '200':
+          description: List of all emotions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Emotion'
+
+  /api/v1/emotions/category/{category}:
+    get:
+      tags:
+        - Emotions
+      summary: Get emotions by category
+      operationId: getEmotionsByCategory
+      security: []
+      parameters:
+        - name: category
+          in: path
+          required: true
+          schema:
+            type: string
+            enum:
+              - positive
+              - negative
+              - neutral
+      responses:
+        '200':
+          description: Emotions in the specified category
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Emotion'
+
+  /api/v1/emotions/node/{nodeId}:
+    get:
+      tags:
+        - Emotions
+      summary: Get emotions for a node
+      operationId: getNodeEmotions
+      parameters:
+        - name: nodeId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of node-emotion associations
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/NodeEmotion'
+    put:
+      tags:
+        - Emotions
+      summary: Set emotions for a node
+      operationId: setNodeEmotions
+      parameters:
+        - name: nodeId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - emotions
+              properties:
+                emotions:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - emotion_id
+                      - intensity
+                    properties:
+                      emotion_id:
+                        type: integer
+                      intensity:
+                        type: integer
+                        minimum: 1
+                        maximum: 10
+      responses:
+        '200':
+          description: Emotions set successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      tags:
+        - Emotions
+      summary: Remove all emotions from a node
+      operationId: deleteNodeEmotions
+      parameters:
+        - name: nodeId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Emotions removed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+
+  /api/v1/emotions/stats:
+    get:
+      tags:
+        - Emotions
+      summary: Get emotion statistics
+      operationId: getEmotionStats
+      responses:
+        '200':
+          description: Emotion statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                      byCategory:
+                        type: object
+                        properties:
+                          positive:
+                            type: integer
+                          negative:
+                            type: integer
+                          neutral:
+                            type: integer
+
+  /api/v1/emotions/most-frequent:
+    get:
+      tags:
+        - Emotions
+      summary: Get most frequently assigned emotions
+      operationId: getMostFrequentEmotions
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Most frequent emotions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        emotion:
+                          $ref: '#/components/schemas/Emotion'
+                        count:
+                          type: integer
+
+  /api/v1/emotions/distribution:
+    get:
+      tags:
+        - Emotions
+      summary: Get emotion distribution over time
+      operationId: getEmotionDistribution
+      parameters:
+        - name: granularity
+          in: query
+          schema:
+            type: string
+            enum:
+              - day
+              - week
+              - month
+      responses:
+        '200':
+          description: Emotion distribution
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        date:
+                          type: string
+                          format: date
+                        distribution:
+                          type: array
+                          items:
+                            type: object
+
+  /api/v1/tags:
+    get:
+      tags:
+        - Tags
+      summary: List tags
+      operationId: getTags
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Paginated list of tags
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedResponse'
+    post:
+      tags:
+        - Tags
+      summary: Create a tag
+      operationId: createTag
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+      responses:
+        '201':
+          description: Tag created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/Tag'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Duplicate tag
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/tags/{id}:
+    get:
+      tags:
+        - Tags
+      summary: Get a tag by ID
+      operationId: getTag
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Tag details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/Tag'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      tags:
+        - Tags
+      summary: Update a tag
+      operationId: updateTag
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+      responses:
+        '200':
+          description: Tag updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/Tag'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      tags:
+        - Tags
+      summary: Delete a tag
+      operationId: deleteTag
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Tag deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/tags/find-or-create:
+    post:
+      tags:
+        - Tags
+      summary: Find existing tag or create new one
+      operationId: findOrCreateTag
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+      responses:
+        '200':
+          description: Tag found or created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/Tag'
+
+  /api/v1/tags/{id}/nodes:
+    get:
+      tags:
+        - Tags
+      summary: Get nodes with this tag
+      operationId: getTagNodes
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Nodes with this tag
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Node'
+
+  /api/v1/tags/node/{nodeId}:
+    get:
+      tags:
+        - Tags
+      summary: Get tags for a node
+      operationId: getNodeTags
+      parameters:
+        - name: nodeId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Tags for the node
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Tag'
+    put:
+      tags:
+        - Tags
+      summary: Set tags for a node
+      operationId: setNodeTags
+      parameters:
+        - name: nodeId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - tag_ids
+              properties:
+                tag_ids:
+                  type: array
+                  items:
+                    type: integer
+      responses:
+        '200':
+          description: Tags set successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+
+  /api/v1/tags/most-used:
+    get:
+      tags:
+        - Tags
+      summary: Get most used tags
+      operationId: getMostUsedTags
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Most used tags with counts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        tag:
+                          $ref: '#/components/schemas/Tag'
+                        count:
+                          type: integer
+
+  /api/v1/tags/unused:
+    get:
+      tags:
+        - Tags
+      summary: Get tags not assigned to any node
+      operationId: getUnusedTags
+      responses:
+        '200':
+          description: Unused tags
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Tag'
+  /api/v1/measurements/node/{nodeId}:
+    post:
+      tags:
+        - Measurements
+      summary: Add a measurement to a node
+      operationId: createMeasurement
+      parameters:
+        - name: nodeId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - measurement_id
+              properties:
+                measurement_id:
+                  type: integer
+                value_integer:
+                  type: integer
+                  nullable: true
+                value_decimal:
+                  type: number
+                  nullable: true
+                value_boolean:
+                  type: boolean
+                  nullable: true
+                value_text:
+                  type: string
+                  nullable: true
+                unit:
+                  type: string
+                  nullable: true
+      responses:
+        '201':
+          description: Measurement created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/NodeMeasurement'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    get:
+      tags:
+        - Measurements
+      summary: Get measurements for a node
+      operationId: getMeasurements
+      parameters:
+        - name: nodeId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Measurements for the node
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/NodeMeasurement'
+    delete:
+      tags:
+        - Measurements
+      summary: Remove all measurements from a node
+      operationId: deleteMeasurements
+      parameters:
+        - name: nodeId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Measurements removed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+
+  /api/v1/ai/analysis/{nodeId}:
+    post:
+      tags:
+        - AI
+      summary: Request AI analysis for a node
+      operationId: createAIAnalysis
+      parameters:
+        - name: nodeId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                analysis_type:
+                  type: string
+                  nullable: true
+      responses:
+        '201':
+          description: AI analysis requested
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/AIAnalysis'
+    get:
+      tags:
+        - AI
+      summary: Get AI analyses for a node
+      operationId: getAIAnalyses
+      parameters:
+        - name: nodeId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: AI analyses for the node
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AIAnalysis'
+
+  /api/v1/ai/image/{nodeId}:
+    post:
+      tags:
+        - AI
+      summary: Request AI image generation for a node
+      operationId: createAIImage
+      parameters:
+        - name: nodeId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                prompt:
+                  type: string
+                  nullable: true
+      responses:
+        '201':
+          description: AI image generation requested
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/AIImage'
+    get:
+      tags:
+        - AI
+      summary: Get AI images for a node
+      operationId: getAIImages
+      parameters:
+        - name: nodeId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: AI images for the node
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AIImage'
+
+  /api/v1/analytics/profile:
+    get:
+      tags:
+        - Analytics
+      summary: Get user profile analytics
+      operationId: getAnalyticsProfile
+      responses:
+        '200':
+          description: User profile analytics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+
+  /api/v1/analytics/stats:
+    get:
+      tags:
+        - Analytics
+      summary: Get graph statistics
+      operationId: getAnalyticsStats
+      responses:
+        '200':
+          description: Graph statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      totalNodes:
+                        type: integer
+                      byType:
+                        type: object
+                        properties:
+                          dreams:
+                            type: integer
+                          thoughts:
+                            type: integer
+                          memories:
+                            type: integer
+                          plans:
+                            type: integer
+                          actions:
+                            type: integer
+                          people:
+                            type: integer
+                      totalEdges:
+                        type: integer
+
+  /api/v1/analytics/entries-by-month:
+    get:
+      tags:
+        - Analytics
+      summary: Get entries count by month
+      operationId: getEntriesByMonth
+      parameters:
+        - name: months
+          in: query
+          schema:
+            type: integer
+            default: 12
+      responses:
+        '200':
+          description: Entries by month
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        month:
+                          type: string
+                        count:
+                          type: integer
+
+  /api/v1/analytics/emotion-distribution:
+    get:
+      tags:
+        - Analytics
+      summary: Get overall emotion distribution
+      operationId: getEmotionDistributionAnalytics
+      responses:
+        '200':
+          description: Emotion distribution
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      positive:
+                        type: integer
+                      negative:
+                        type: integer
+                      neutral:
+                        type: integer
+                      byEmotion:
+                        type: array
+                        items:
+                          type: object
+
+  /api/v1/analytics/emotion-timeline:
+    get:
+      tags:
+        - Analytics
+      summary: Get emotion timeline
+      operationId: getEmotionTimeline
+      parameters:
+        - name: granularity
+          in: query
+          schema:
+            type: string
+            enum:
+              - day
+              - week
+              - month
+      responses:
+        '200':
+          description: Emotion timeline
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        date:
+                          type: string
+                          format: date
+
+  /api/v1/analytics/activity-heatmap:
+    get:
+      tags:
+        - Analytics
+      summary: Get activity heatmap data
+      operationId: getActivityHeatmap
+      parameters:
+        - name: year
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Activity heatmap data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        date:
+                          type: string
+                          format: date
+                        count:
+                          type: integer
+
+  /api/v1/analytics/streaks:
+    get:
+      tags:
+        - Analytics
+      summary: Get activity streaks
+      operationId: getStreaks
+      responses:
+        '200':
+          description: Activity streaks
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      currentStreak:
+                        type: integer
+                      longestStreak:
+                        type: integer
+
+  /api/v1/analytics/node-connections:
+    get:
+      tags:
+        - Analytics
+      summary: Get node connection types
+      operationId: getNodeConnections
+      responses:
+        '200':
+          description: Node connection types
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        fromType:
+                          type: string
+                        toType:
+                          type: string
+                        count:
+                          type: integer
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: string
+        details:
+          type: array
+          items:
+            type: object
+
+    PaginatedResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            data:
+              type: array
+              items:
+                type: object
+            pagination:
+              type: object
+              properties:
+                page:
+                  type: integer
+                limit:
+                  type: integer
+                total:
+                  type: integer
+                totalPages:
+                  type: integer
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        login:
+          type: string
+
+    Node:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        user_id:
+          type: integer
+        node_type_id:
+          type: integer
+        node_type_code:
+          type: string
+        node_type_name:
+          type: string
+        title:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        deleted_at:
+          type: string
+          format: date-time
+          nullable: true
+
+    Edge:
+      type: object
+      properties:
+        id:
+          type: integer
+        from_node_id:
+          type: string
+          format: uuid
+        to_node_id:
+          type: string
+          format: uuid
+        edge_type_id:
+          type: integer
+        edge_type_code:
+          type: string
+        edge_type_name:
+          type: string
+        confidence:
+          type: number
+          nullable: true
+        weight:
+          type: number
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        notes:
+          type: string
+          nullable: true
+
+    NodeType:
+      type: object
+      properties:
+        id:
+          type: integer
+        code:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+
+    EdgeType:
+      type: object
+      properties:
+        id:
+          type: integer
+        code:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+
+    NodeTypeCode:
+      type: string
+      enum: [dream, thought, memory, plan, action, person, place, book, project, conversation, movie, course, website, music, article]
+
+    Emotion:
+      type: object
+      properties:
+        id:
+          type: integer
+        code:
+          type: string
+        name_ru:
+          type: string
+        name_en:
+          type: string
+        category:
+          type: string
+          enum: [positive, negative, neutral]
+
+    NodeEmotion:
+      type: object
+      properties:
+        id:
+          type: integer
+        node_id:
+          type: string
+          format: uuid
+        emotion_id:
+          type: integer
+        intensity:
+          type: integer
+          minimum: 1
+          maximum: 10
+        created_at:
+          type: string
+          format: date-time
+
+    Tag:
+      type: object
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        name:
+          type: string
+
+    NodeMeasurement:
+      type: object
+      properties:
+        id:
+          type: integer
+        node_id:
+          type: string
+          format: uuid
+        measurement_id:
+          type: integer
+        value_integer:
+          type: integer
+          nullable: true
+        value_decimal:
+          type: number
+          nullable: true
+        value_boolean:
+          type: boolean
+          nullable: true
+        value_text:
+          type: string
+          nullable: true
+        unit:
+          type: string
+          nullable: true
+        measured_at:
+          type: string
+          format: date-time
+
+    AIAnalysis:
+      type: object
+      properties:
+        id:
+          type: integer
+        node_id:
+          type: string
+          format: uuid
+        analysis_type:
+          type: string
+        ai_model:
+          type: string
+          nullable: true
+        prompt:
+          type: string
+          nullable: true
+        result:
+          type: string
+        metadata:
+          type: object
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+
+    AIImage:
+      type: object
+      properties:
+        id:
+          type: integer
+        node_id:
+          type: string
+          format: uuid
+        image_url:
+          type: string
+        prompt:
+          type: string
+          nullable: true
+        metadata:
+          type: object
+          nullable: true
+        ai_model:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time

@@ -1,0 +1,13 @@
+book:
+  language: en
+  toc:
+    collapse_other_toggles: true
+
+gitspec:
+  extension: lite
+  title: AIM Life Graph
+
+  intro_title: Getting Started
+  changelog_title: Changelog
+  glossary_title: Glossary
+  contributors_title: GitBook

@@ -25,7 +25,8 @@
     "db:test:down": "docker compose -f docker-compose.test.yml down",
     "db:test:reset": "npm run db:test:down && npm run db:test:up",
     "db:test:setup": "psql -U postgres -c 'CREATE DATABASE dream_journal_test;'",
-    "db:test:drop": "psql -U postgres -c 'DROP DATABASE IF EXISTS dream_journal_test;'"
+    "db:test:drop": "psql -U postgres -c 'DROP DATABASE IF EXISTS dream_journal_test;'",
+    "swagger-serve": "node -e \"const y=require('yaml');const f=require('fs');const s=y.parse(f.readFileSync('swagger.yaml','utf8'));console.log('Paths:',Object.keys(s.paths).length);console.log('Ops:',Object.values(s.paths).reduce((a,p)=>a+Object.keys(p).length,0));\""
   },
   "keywords": [
     "journal",
@@ -47,7 +48,9 @@
     "ioredis": "^5.11.1",
     "jsonwebtoken": "^9.0.3",
     "pg": "^8.16.3",
+    "swagger-ui-express": "^5.0.1",
     "winston": "^3.19.0",
+    "yaml": "^2.9.0",
     "zod": "^4.0.0"
   },
   "devDependencies": {
@@ -61,6 +64,7 @@
     "@types/node": "^20.10.6",
     "@types/pg": "^8.10.7",
     "@types/supertest": "^6.0.3",
+    "@types/swagger-ui-express": "^4.1.8",
     "@typescript-eslint/eslint-plugin": "^8.63.0",
     "@typescript-eslint/parser": "^8.63.0",
     "eslint": "^10.6.0",
