@@ -1,73 +1,90 @@
-
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import PlatformContext from './PlatformContext';
 import { NavigationProvider } from './PlatformNavigator';
 
 const PlatformProvider = ({ children }) => {
   const [platform, setPlatform] = useState('web');
-  
+  const [telegramUser, setTelegramUser] = useState(null);
+  const [utils, setUtils] = useState({
+    hapticFeedback: (type) => {},
+    showAlert: (message) => alert(message),
+    expand: () => {},
+  });
 
   const platformConfig = {
     web: {
       layout: 'MainLayout',
       styles: {},
-      navigation: 'stack'
+      navigation: 'stack',
     },
     telegram: {
       layout: 'TelegramLayout',
       styles: {
-        backgroundColor: 'var(--tg-theme-bg-color, #ffffff)',
-        textColor: 'var(--tg-theme-text-color, #000000)',
-        buttonColor: 'var(--tg-theme-button-color, #2481cc)'
+        backgroundColor: 'var(--tg-theme-bg-color, #fff)',
+        textColor: 'var(--tg-theme-text-color, #000)',
+        buttonColor: 'var(--tg-theme-button-color, #2481cc)',
       },
-      navigation: 'bottom-tabs'
+      navigation: 'bottom-tabs',
     },
     native: {
       layout: 'NativeLayout',
       styles: {},
-      navigation: 'native-stack'
-    }
+      navigation: 'native-stack',
+    },
   };
-  
+
   useEffect(() => {
-    // Функция определения платформы
     const detectPlatform = () => {
-      // 1. Проверка Telegram Web App
-      if (window.Telegram?.WebApp?.initData || 
-          window.Telegram?.WebApp?.initDataUnsafe?.user) {
+      if (window.Telegram?.WebApp?.initData) {
         console.log('Обнаружен Telegram Web App');
         return 'telegram';
       }
-      
-      // 2. Проверка по URL параметрам
+
       if (window.location.search.includes('tgWebApp') ||
           window.location.hash.includes('tgWebApp')) {
         console.log('Обнаружен Telegram по URL параметрам');
         return 'telegram';
       }
-      
-      // 3. Проверка User Agent
+
       const userAgent = navigator.userAgent.toLowerCase();
       if (userAgent.includes('telegram')) {
         console.log('Обнаружен Telegram по User Agent');
         return 'telegram';
       }
-      
-      // 4. По умолчанию web
+
       console.log('Платформа по умолчанию: web');
       return 'web';
     };
-    
+
     const detectedPlatform = detectPlatform();
     console.log('PlatformProvider: определена платформа =', detectedPlatform);
-    console.log('User Agent:', navigator.userAgent);
     setPlatform(detectedPlatform);
+
+    if (detectedPlatform === 'telegram' && window.Telegram?.WebApp) {
+      const tg = window.Telegram.WebApp;
+      setTelegramUser(tg.initDataUnsafe?.user || null);
+      setUtils({
+        hapticFeedback: (type) => {
+          try {
+            tg.HapticFeedback?.notificationOccurred?.(type) ||
+              tg.HapticFeedback?.impactOccurred?.('light');
+          } catch (e) {
+            console.warn('hapticFeedback error:', e);
+          }
+        },
+        showAlert: (message) => tg.showAlert?.(message) || alert(message),
+        expand: () => tg.expand?.(),
+      });
+      tg.ready?.();
+      tg.expand?.();
+    }
   }, []);
-  
+
   const config = platformConfig[platform] || platformConfig.web;
-  
+  const isTelegram = platform === 'telegram';
+
   return (
-    <PlatformContext.Provider value={{ platform, config }}>
+    <PlatformContext.Provider value={{ platform, config, telegramUser, utils, isTelegram }}>
       <NavigationProvider>
         {children}
       </NavigationProvider>

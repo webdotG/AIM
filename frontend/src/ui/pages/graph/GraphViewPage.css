@@ -1,0 +1,24 @@
+.graph-page {
+  padding: var(--spacing-md, 16px);
+}
+
+.graph-page__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs, 4px);
+}
+
+.graph-page-card {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md, 16px);
+}
+
+.graph-page__icon {
+  font-size: 24px;
+}
+
+.graph-page__title {
+  flex: 1;
+  font-weight: var(--font-weight-medium, 500);
+}

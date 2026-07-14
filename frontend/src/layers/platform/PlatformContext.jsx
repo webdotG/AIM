@@ -5,8 +5,15 @@ const PlatformContext = createContext({
   config: {
     layout: 'MainLayout',
     styles: {},
-    navigation: 'stack'
-  }
+    navigation: 'stack',
+  },
+  telegramUser: null,
+  utils: {
+    hapticFeedback: (type) => {},
+    showAlert: (message) => alert(message),
+    expand: () => {},
+  },
+  isTelegram: false,
 });
 
 export default PlatformContext;
