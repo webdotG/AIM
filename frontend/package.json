@@ -2,7 +2,7 @@
   "name": "frontend",
   "version": "1.0.0",
   "private": true,
-  "main": "src/main.jsx",
+  "main": "app/_layout.js",
   "scripts": {
     "start": "expo start",
     "dev": "expo start --web",

@@ -1,16 +1,6 @@
-import { Platform, View, StyleSheet } from 'react-native';
-import { usePlatform } from '@/layers/platform';
-import WebRouter from '@/platforms/web/router';
-import TelegramRouter from '@/platforms/telegram/router';
+import { Slot } from 'expo-router';
 
-const PlatformRouter = () => {
-  const { isTelegram } = usePlatform();
-
-  if (isTelegram) {
-    return <TelegramRouter />;
-  }
-
-  return <WebRouter />;
-};
-
-export default PlatformRouter;
+export default function PlatformRouter() {
+  // Expo Router handles all routing automatically
+  return <Slot />;
+}

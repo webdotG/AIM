@@ -6,12 +6,12 @@ export default function HCaptcha({
   onError,
   onExpire,
   theme = 'light',
-  isDevMode = import.meta.env.DEV
+  isDevMode = __DEV__
 }) {
   const captchaRef = useRef(null);
   const wrapperRef = useRef(null);
   
-  const siteKey = import.meta.env.VITE_HCAPTCHA_SITE_KEY || '10000000-ffff-ffff-ffff-000000000001';
+  const siteKey = process.env.EXPO_PUBLIC_HCAPTCHA_SITE_KEY || '10000000-ffff-ffff-ffff-000000000001';
 
   // Хук для стилизации внутренних элементов hCaptcha
   useEffect(() => {
