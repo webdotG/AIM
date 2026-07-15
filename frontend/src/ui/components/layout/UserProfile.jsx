@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/layers/language';
 import { useAuthStore } from '@/store';
 import Button from '@/ui/components/common/Button/Button';
-import './UserProfile.css';
 
 const UserProfile = () => {
   const { t } = useLanguage();

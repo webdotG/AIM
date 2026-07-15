@@ -1,20 +1,17 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
+import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { useNodeStore } from '@/store/StoreContext';
+import { useNavigator } from '@/shared/platform/useNavigator';
 import Card from '@/shared/components/Card/Card';
 import Badge from '@/shared/components/Badge/Badge';
 import EmptyState from '@/shared/components/EmptyState/EmptyState';
-import Spinner from '@/shared/components/Spinner/Spinner';
 import TabBar from '@/shared/components/TabBar/TabBar';
-import { useNavigator } from '@/shared/platform/useNavigator';
-import './GraphViewPage.css';
+import Spinner from '@/shared/components/Spinner/Spinner';
 
 const GraphViewPage = observer(() => {
   const { navigate } = useNavigator();
   const nodeStore = useNodeStore();
-  const nodes = nodeStore.nodes;
-  const [tab, setTab] = useState('list');
-  const [selectedNode, setSelectedNode] = useState(null);
 
   useEffect(() => {
     nodeStore.fetchNodes();
@@ -27,12 +24,13 @@ const GraphViewPage = observer(() => {
 
   if (nodeStore.isLoading) {
     return (
-      <div className="loading-center">
+      <View style={styles.loadingCenter}>
         <Spinner size="large" />
-      </div>
+      </View>
     );
   }
 
+  const nodes = nodeStore.nodes;
   if (nodes.length === 0) {
     return (
       <EmptyState
@@ -46,25 +44,37 @@ const GraphViewPage = observer(() => {
   }
 
   return (
-    <div className="graph-page">
-      <TabBar tabs={tabs} onChange={(k) => setTab(k)} />
+    <View style={styles.container}>
+      <TabBar tabs={tabs} />
 
-      <div className="graph-page__list">
+      <ScrollView style={styles.list}>
         {nodes.map((n) => (
           <Card
             key={n.id}
             variant="clickable"
-            className="graph-page-card"
-            onClick={() => navigate(`/nodes/${n.id}`)}
+            onPress={() => navigate(`/nodes/${n.id}`)}
+            style={styles.card}
           >
-            <span className="graph-page__icon">{n.icon()}</span>
-            <span className="graph-page__title">{n.displayTitle()}</span>
-            <Badge>{n.edges?.length ?? 0} связей</Badge>
+            <View style={styles.cardRow}>
+              <Text style={styles.icon}>{n.icon()}</Text>
+              <Text style={styles.title}>{n.displayTitle()}</Text>
+              <Badge>{n.edges?.length ?? 0} связей</Badge>
+            </View>
           </Card>
         ))}
-      </div>
-    </div>
+      </ScrollView>
+    </View>
   );
+});
+
+const styles = StyleSheet.create({
+  container: { flex: 1, padding: 16 },
+  loadingCenter: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  list: { marginTop: 8 },
+  card: { marginVertical: 4 },
+  cardRow: { flexDirection: 'row', alignItems: 'center' },
+  icon: { fontSize: 24, marginRight: 12 },
+  title: { flex: 1, fontSize: 14, fontWeight: '500' },
 });
 
 export default GraphViewPage;

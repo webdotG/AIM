@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import clsx from 'clsx';
-import './TabBar.css';
 
 export default function TabBar({ tabs, defaultTab = 0, onChange, className = '' }) {
   const [active, setActive] = useState(defaultTab);

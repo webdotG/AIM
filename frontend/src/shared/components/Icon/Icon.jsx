@@ -1,5 +1,4 @@
 import clsx from 'clsx';
-import './Icon.css';
 
 export default function Icon({ name, size = 24, color, className = '', ...props }) {
   const classes = clsx('icon', `icon--${size}`, className);

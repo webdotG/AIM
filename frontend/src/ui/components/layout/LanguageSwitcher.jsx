@@ -1,8 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useLanguage } from '@/layers/language';
 // import './Switcher.css';
-import './Header.css';
-
 
 const AVAILABLE_LANGUAGES = [
   { code: 'ru', label: 'Русский', shortLabel: 'RU' },

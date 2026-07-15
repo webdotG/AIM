@@ -16,7 +16,6 @@ import GraphSettings from './features/GraphSettings';
 import AISettings from './features/AISettings';
 import Input from '../common/Input/Input';
 import Button from '../common/Button/Button';
-import './NodeEditor.css';
 
 const NodeEditor = observer(() => {
   const nodeStore = useNodeStore();

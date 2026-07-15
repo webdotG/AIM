@@ -1,5 +1,4 @@
 import React from 'react';
-import './PasswordStrengthIndicator.css';
 import { useLanguage } from '@/layers/language';
 
 export default function PasswordStrengthIndicator({ 

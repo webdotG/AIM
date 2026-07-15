@@ -2,7 +2,6 @@ import SearchBar from './SearchBar';
 import ThemeSwitcher from './ThemeSwitcher';
 import LanguageSwitcher from './LanguageSwitcher';
 import UserProfile from './UserProfile';
-import './Header.css';
 
 const Header = () => {
   return (

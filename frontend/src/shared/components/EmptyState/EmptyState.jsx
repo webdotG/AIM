@@ -1,5 +1,3 @@
-import './EmptyState.css';
-
 export default function EmptyState({
   icon = '📭',
   title = 'Нет данных',

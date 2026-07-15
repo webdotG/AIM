@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/layers/language';
 import { usePlatform } from '@/layers/platform';
 import { useTheme } from '@/layers/theme';
-import './SearchBar.css';
 
 const SEARCH_CATEGORIES = {
   ALL: 'all',

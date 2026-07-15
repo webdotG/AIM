@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import { useLanguage } from '@/layers/language';
 import Modal from '@/ui/components/common/Modal/Modal';
 import Button from '@/ui/components/common/Button/Button';
-import './BackupCodeModal.css';
 
 export default function BackupCodeModal({ 
   isOpen,

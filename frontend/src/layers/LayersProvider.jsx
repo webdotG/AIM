@@ -1,14 +1,17 @@
-
-import PlatformProvider from './platform/PlatformProvider';
-import { ThemeProvider } from './theme/ThemeProvider';
-import LanguageProvider from './language/LanguageProvider';
+import { View, StyleSheet } from 'react-native';
+import PlatformProvider from './platform/PlatformProvider.jsx';
+import { LanguageProvider } from './language';
+import { ThemeProvider } from './theme';
+import SecurityProvider from './security';
 
 export const LayersProvider = ({ children }) => {
   return (
     <PlatformProvider>
       <LanguageProvider>
         <ThemeProvider>
-          {children}
+          <SecurityProvider>
+            {children}
+          </SecurityProvider>
         </ThemeProvider>
       </LanguageProvider>
     </PlatformProvider>

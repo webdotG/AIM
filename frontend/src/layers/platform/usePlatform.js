@@ -1,10 +1,10 @@
-import { useContext } from 'react';
-import PlatformContext from './PlatformContext';
+import { Platform, View, Text, StyleSheet } from 'react-native';
 
 export const usePlatform = () => {
-  const context = useContext(PlatformContext);
-  if (!context) {
-    throw new Error('usePlatform must be used within PlatformProvider');
-  }
-  return context;
+  return {
+    platform: Platform.OS,
+    isWeb: Platform.OS === 'web',
+    isMobile: Platform.OS === 'ios' || Platform.OS === 'android',
+    isTelegram: !!(globalThis.Telegram?.WebApp?.initDataUnsafe?.user || Platform.OS === 'web'),
+  };
 };

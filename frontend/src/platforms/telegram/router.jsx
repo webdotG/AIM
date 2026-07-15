@@ -1,7 +1,5 @@
-import { observer } from 'mobx-react-lite';
-import { useStores } from '@/store/StoreContext';
+import { Platform, View, StyleSheet } from 'react-native';
 import { useNavigation } from '@/layers/platform';
-import TelegramLayout from '../../ui/layouts/TelegramLayout';
 import AuthPage from '@/ui/pages/auth/AuthPage';
 import CreateNodePage from '@/ui/pages/nodes/CreateNodePage';
 import NodeListPage from '@/ui/pages/nodes/NodeListPage';
@@ -10,8 +8,9 @@ import GraphViewPage from '@/ui/pages/graph/GraphViewPage';
 import PeoplePage from '@/ui/pages/people/PeoplePage';
 import AnalyticsPage from '@/ui/pages/analytics/AnalyticsPage';
 import SettingsPage from '@/ui/pages/settings/SettingsPage';
+import TelegramLayout from '../../ui/layouts/TelegramLayout.jsx';
 
-const RouterContent = observer(() => {
+const RouterContent = () => {
   const nav = useNavigation();
   const { screen, params } = nav.currentRoute || { screen: 'list', params: {} };
 
@@ -32,20 +31,14 @@ const RouterContent = observer(() => {
     default:
       return <NodeListPage />;
   }
-});
+};
 
-const TelegramRouter = observer(() => {
-  const { authStore } = useStores();
-
-  if (!authStore.isAuthenticated) {
-    return <AuthPage />;
-  }
-
+const TelegramRouter = () => {
   return (
     <TelegramLayout>
       <RouterContent />
     </TelegramLayout>
   );
-});
+};
 
 export default TelegramRouter;

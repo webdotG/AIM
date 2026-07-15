@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import Input from '../../common/Input/Input';
 import PasswordStrengthIndicator from '../PasswordStrengthIndicator/PasswordStrengthIndicator';
 import { useAuthStore } from '@/store';
-import './PasswordInput.css';
 import { useLanguage } from '@/layers/language';
 
 function useDebounce(value, delay) {

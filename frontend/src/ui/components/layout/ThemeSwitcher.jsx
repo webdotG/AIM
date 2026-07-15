@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useTheme } from '@/layers/theme';
 import { useLanguage } from '@/layers/language';
 // import './Switcher.css';
-import './Header.css';
 
 const ThemeSwitcher = () => {
   const { theme, setTheme, themes: availableThemes } = useTheme();

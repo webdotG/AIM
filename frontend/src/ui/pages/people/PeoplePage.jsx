@@ -1,23 +1,23 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
+import { View, Text, TextInput, ScrollView, StyleSheet } from 'react-native';
 import { useNodeStore } from '@/store/StoreContext';
+import { useNavigator } from '@/shared/platform/useNavigator';
 import Card from '@/shared/components/Card/Card';
 import Badge from '@/shared/components/Badge/Badge';
 import EmptyState from '@/shared/components/EmptyState/EmptyState';
 import Spinner from '@/shared/components/Spinner/Spinner';
-import Input from '@/ui/components/common/Input/Input';
-import { useNavigator } from '@/shared/platform/useNavigator';
-import './PeoplePage.css';
 
 const PeoplePage = observer(() => {
   const { navigate } = useNavigator();
   const nodeStore = useNodeStore();
-  const people = nodeStore.nodes.filter((n) => n.nodeTypeCode === 'person');
   const [search, setSearch] = useState('');
 
   useEffect(() => {
     nodeStore.fetchPeople();
   }, []);
+
+  const people = nodeStore.nodes.filter((n) => n.nodeTypeCode === 'person');
 
   const filtered = search
     ? people.filter((p) => p.title?.toLowerCase().includes(search.toLowerCase()))
@@ -25,9 +25,9 @@ const PeoplePage = observer(() => {
 
   if (nodeStore.isLoading) {
     return (
-      <div className="loading-center">
+      <View style={styles.loadingCenter}>
         <Spinner size="large" />
-      </div>
+      </View>
     );
   }
 
@@ -44,30 +44,48 @@ const PeoplePage = observer(() => {
   }
 
   return (
-    <div className="people-page">
-      <Input
+    <View style={styles.container}>
+      <TextInput
+        style={styles.search}
         placeholder="Поиск..."
         value={search}
-        onChange={setSearch}
-        className="people-page__search"
+        onChangeText={setSearch}
       />
 
-      <div className="people-page__list">
+      <ScrollView style={styles.list}>
         {filtered.map((p) => (
           <Card
             key={p.id}
             variant="clickable"
-            className="people-page-card"
-            onClick={() => navigate(`/nodes/${p.id}`)}
+            onPress={() => navigate(`/nodes/${p.id}`)}
           >
-            <span className="people-page__icon">{p.icon()}</span>
-            <span className="people-page__title">{p.displayTitle()}</span>
-            <Badge>{p.emotions?.length ?? 0} эмоций</Badge>
+            <View style={styles.cardRow}>
+              <Text style={styles.icon}>{p.icon()}</Text>
+              <Text style={styles.title}>{p.displayTitle()}</Text>
+              <Badge>{p.emotions?.length ?? 0} эмоций</Badge>
+            </View>
           </Card>
         ))}
-      </div>
-    </div>
+      </ScrollView>
+    </View>
   );
+});
+
+const styles = StyleSheet.create({
+  container: { flex: 1, padding: 16 },
+  loadingCenter: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  search: {
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    borderRadius: 8,
+    marginBottom: 12,
+    fontSize: 14,
+  },
+  list: { marginTop: 8 },
+  cardRow: { flexDirection: 'row', alignItems: 'center' },
+  icon: { fontSize: 24, marginRight: 12 },
+  title: { flex: 1, fontSize: 14, fontWeight: '500' },
 });
 
 export default PeoplePage;

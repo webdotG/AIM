@@ -1,12 +1,12 @@
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
+import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { useAnalyticsStore } from '@/store/StoreContext';
+import { useNavigator } from '@/shared/platform/useNavigator';
 import Card from '@/shared/components/Card/Card';
 import Badge from '@/shared/components/Badge/Badge';
 import EmptyState from '@/shared/components/EmptyState/EmptyState';
 import Spinner from '@/shared/components/Spinner/Spinner';
-import { useNavigator } from '@/shared/platform/useNavigator';
-import './AnalyticsPage.css';
 
 const AnalyticsPage = observer(() => {
   const { navigate } = useNavigator();
@@ -20,9 +20,9 @@ const AnalyticsPage = observer(() => {
 
   if (analyticsStore.isLoading) {
     return (
-      <div className="loading-center">
+      <View style={styles.loadingCenter}>
         <Spinner size="large" />
-      </div>
+      </View>
     );
   }
 
@@ -43,40 +43,104 @@ const AnalyticsPage = observer(() => {
   }
 
   return (
-    <div className="analytics-page">
-      <div className="analytics-page__stats">
+    <View style={styles.container}>
+      <View style={styles.grid}>
         <StatCard label="Всего узлов" value={stats?.totalEntries ?? '—'} />
         <StatCard label="Связей" value={stats?.totalEdges ?? '—'} />
         <StatCard label="Эмоций" value={stats?.totalEmotions ?? '—'} />
         <StatCard label="Тегов" value={stats?.totalTags ?? '—'} />
-      </div>
+      </View>
 
       {emDist?.length > 0 && (
-        <div className="analytics-page__emotions">
-          <h2 className="analytics-page__heading">Эмоции</h2>
+        <View style={styles.section}>
+          <Text style={styles.heading}>Эмоции</Text>
           {emDist.map((e, i) => (
-            <div key={i} className="analytics-page__emotion-row">
-              <span className="analytics-page__emotion-name">{e.name ?? ''}</span>
-              <div className="analytics-page__emotion-bar">
-                <div
-                  className="analytics-page__emotion-fill"
-                  style={{ width: `${e.count ? e.count : 0}%` }}
+            <View key={i} style={styles.emotionRow}>
+              <Text style={styles.emotionName}>{e.name ?? ''}</Text>
+              <View style={styles.emotionBar}>
+                <View
+                  style={[
+                    styles.emotionFill,
+                    { width: `${e.count ? e.count : 0}%` },
+                  ]}
                 />
-              </div>
-              <span className="analytics-page__emotion-count">{e.count ?? 0}</span>
-            </div>
+              </View>
+              <Text style={styles.emotionCount}>{e.count ?? 0}</Text>
+            </View>
           ))}
-        </div>
+        </View>
       )}
-    </div>
+    </View>
   );
 });
 
 const StatCard = ({ label, value }) => (
-  <Card variant="clickable" className="analytics-page__stat-card">
-    <span className="analytics-page__stat-value">{value}</span>
-    <span className="analytics-page__stat-label">{label}</span>
+  <Card style={styles.statCard}>
+    <Text style={styles.statValue}>{value}</Text>
+    <Text style={styles.statLabel}>{label}</Text>
   </Card>
 );
+
+const styles = StyleSheet.create({
+  container: { flex: 1, padding: 16 },
+  loadingCenter: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+  },
+  statCard: {
+    width: '48%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
+    marginBottom: 8,
+  },
+  statValue: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#0066ff',
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: 13,
+    color: '#888',
+  },
+  section: { marginTop: 16 },
+  heading: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 12,
+  },
+  emotionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  emotionName: {
+    width: 80,
+    fontSize: 13,
+    textAlign: 'right',
+    marginRight: 8,
+  },
+  emotionBar: {
+    flex: 1,
+    height: 8,
+    backgroundColor: '#e0e0e0',
+    borderRadius: 4,
+  },
+  emotionFill: {
+    height: '100%',
+    backgroundColor: '#0066ff',
+    borderRadius: 4,
+  },
+  emotionCount: {
+    fontSize: 13,
+    marginLeft: 8,
+    minWidth: 30,
+    textAlign: 'right',
+  },
+});
 
 export default AnalyticsPage;

@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import { useLanguage } from '@/layers/language';
-import './Modal.css';
 
 function Modal({
   isOpen,

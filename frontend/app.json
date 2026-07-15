@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "name": "AIM",
+    "slug": "aim",
+    "version": "1.0.0",
+    "web": {
+      "bundler": "metro",
+      "output": "static"
+    },
+    "plugins": ["expo-router"]
+  }
+}

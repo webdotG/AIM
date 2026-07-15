@@ -1,5 +1,4 @@
 import clsx from 'clsx';
-import './Badge.css';
 
 export default function Badge({
   children,

@@ -1,6 +1,5 @@
 import React from 'react';
 import { useLanguage } from '@/layers/language';
-import './ErrorBoundary.css';
 
 class ErrorBoundary extends React.Component {
   constructor(props) {

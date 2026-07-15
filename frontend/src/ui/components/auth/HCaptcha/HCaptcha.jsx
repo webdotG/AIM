@@ -1,6 +1,5 @@
 import React, { useRef, useCallback, useEffect } from 'react';
 import HCaptchaComponent from '@hcaptcha/react-hcaptcha';
-import './HCaptcha.css';
 
 export default function HCaptcha({ 
   onVerify, 

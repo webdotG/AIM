@@ -3,7 +3,6 @@ import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useLanguage } from '@/layers/language';
 import { useTagsStore } from '@/store/StoreContext';
-import './TagsPicker.css';
 
 const TagsPicker = observer(({ 
   // Режим 1: Автономный (для переиспользования)
