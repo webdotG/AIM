@@ -1,87 +1,84 @@
 import React from 'react';
-import { useLanguage } from '@/layers/language';
+import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { useNavigator } from '@/shared/platform/useNavigator';
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { hasError: false, error: null, errorInfo: null };
+    this.state = { hasError: false, error: null };
   }
 
   static getDerivedStateFromError(error) {
-    return { hasError: true };
+    return { hasError: true, error };
   }
 
   componentDidCatch(error, errorInfo) {
-    this.setState({
-      error: error,
-      errorInfo: errorInfo
-    });
-    
-    // Можно отправить ошибку в сервис мониторинга
-    console.error('ErrorBoundary caught an error:', error, errorInfo);
+    console.error('ErrorBoundary caught:', error, errorInfo);
   }
 
   render() {
     if (this.state.hasError) {
       return <ErrorFallback error={this.state.error} />;
     }
-
     return this.props.children;
   }
 }
 
-// Компонент для отображения ошибки
-const ErrorFallback = ({ error }) => {
-  const { t } = useLanguage();
+function ErrorFallback({ error }) {
+  const { navigate } = useNavigator();
   
-  const handleReload = () => {
-    window.location.reload();
+  const handleGoHome = () => {
+    navigate('/');
   };
 
-  const handleGoHome = () => {
-    window.location.href = '/';
+  const handleReload = () => {
+    if (Platform.OS === 'web') {
+      window.location.reload();
+    }
   };
 
   return (
-    <div className="error-boundary">
-      <div className="error-content">
-        <div className="error-icon">⚠️</div>
-        <h1 className="error-title">{t('common.error')}</h1>
-        <p className="error-message">
-          {error?.message || t('common.somethingWentWrong')}
-        </p>
-        <div className="error-actions">
-          <button className="error-button primary" onClick={handleReload}>
-            {t('common.reload')}
-          </button>
-          <button className="error-button secondary" onClick={handleGoHome}>
-            {t('common.goHome')}
-          </button>
-        </div>
-      </div>
-    </div>
+    <View style={s.container}>
+      <Text style={s.icon}>⚠️</Text>
+      <Text style={s.title}>Что-то пошло не так</Text>
+      <Text style={s.message}>
+        {error?.message || 'Произошла ошибка'}
+      </Text>
+      <Pressable style={s.button} onPress={handleGoHome}>
+        <Text style={s.buttonText}>← На главную</Text>
+      </Pressable>
+      <Pressable style={[s.button, s.buttonSecondary]} onPress={handleReload}>
+        <Text style={s.buttonTextSecondary}>Перезагрузить</Text>
+      </Pressable>
+    </View>
   );
-};
+}
 
-// Хук для использования Error Boundary
-export const useErrorBoundary = () => {
-  const [error, setError] = React.useState(null);
-
-  const handleError = (error) => {
-    console.error('Error caught by useErrorBoundary:', error);
-    setError(error);
-  };
-
-  const clearError = () => {
-    setError(null);
-  };
-
-  return {
-    error,
-    handleError,
-    clearError,
-    ErrorBoundaryComponent: error ? () => <ErrorFallback error={error} /> : null
-  };
-};
+const s = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fff',
+  },
+  icon: { fontSize: 48, marginBottom: 16 },
+  title: { fontSize: 20, fontWeight: 'bold', marginBottom: 8 },
+  message: { fontSize: 14, color: '#888', textAlign: 'center', marginBottom: 24 },
+  button: {
+    backgroundColor: '#0066ff',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    marginBottom: 12,
+    width: '100%',
+    alignItems: 'center',
+  },
+  buttonSecondary: {
+    backgroundColor: '#e0e0e0',
+  },
+  buttonText: { color: '#fff', fontSize: 16, fontWeight: '500' },
+  buttonTextSecondary: { color: '#000', fontSize: 16, fontWeight: '500' },
+});
 
 export default ErrorBoundary;

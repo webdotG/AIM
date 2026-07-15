@@ -1,28 +1,21 @@
-import { useState } from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TextInput, Pressable, StyleSheet } from 'react-native';
 import { useAuthStore } from '@/store/StoreContext';
 import { useTheme } from '@/layers/theme';
 import { useLanguage } from '@/layers/language';
-import Input from '@/ui/components/common/Input/Input';
-import Button from '@/ui/components/common/Button/Button';
-import Loader from '@/ui/components/common/Loader/Loader';
-import PasswordInput from '@/ui/components/auth/PasswordInput/PasswordInput';
-import HCaptcha from '@/ui/components/auth/HCaptcha/HCaptcha';
-import BackupCodeModal from '@/ui/components/auth/BackupCodeModal/BackupCodeModal';
+import Button from '@/ui/components/common/Button/Button.jsx';
+import Loader from '@/ui/components/common/Loader/Loader.jsx';
+import HCaptcha from '@/ui/components/auth/HCaptcha/HCaptcha.jsx';
 import { useNavigator } from '@/shared/platform/useNavigator';
 
 export default function AuthPage() {
   const [mode, setMode] = useState('login');
   const [login, setLogin] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPass, setConfirmPass] = useState('');
-  const [backupCode, setBackupCode] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [hcaptchaToken, setHcaptchaToken] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [passwordStrength, setPasswordStrength] = useState(null);
-  const [showBackup, setShowBackup] = useState(false);
-  const [genBackupCode, setGenBackupCode] = useState('');
 
   const { theme } = useTheme();
   const { t } = useLanguage();
@@ -32,43 +25,47 @@ export default function AuthPage() {
   const handleSubmit = async () => {
     setLoading(true);
     setError('');
-    if (!hcaptchaToken) { setError('hCaptcha required'); setLoading(false); return; }
+    
+    if (!hcaptchaToken) {
+      setError('hCaptcha required');
+      setLoading(false);
+      return;
+    }
+    
     try {
-      if (mode === 'register') {
-        if (password !== confirmPass) { setError('Passwords do not match'); setLoading(false); return; }
-
-        if (passwordStrength && !passwordStrength.isStrong) { setError('Password not strong'); setLoading(false); return; }
-        const result = await authStore.register({ login, password, hcaptchaToken });
-        if (result.backupCode) { setGenBackupCode(result.backupCode); setShowBackup(true); }
-        else navigate('/');
-      } else if (mode === 'login') {
+      if (mode === 'login') {
         await authStore.login({ login, password, hcaptchaToken });
         navigate('/');
+      } else if (mode === 'register') {
+        if (password !== confirmPassword) {
+          setError('Passwords do not match');
+          setLoading(false);
+          return;
+        }
+        await authStore.register({ login, password, hcaptchaToken });
+        navigate('/');
       } else if (mode === 'recover') {
-        const result = await authStore.recover({ backupCode, newPassword: password, hcaptchaToken });
-        if (result.backupCode) { setGenBackupCode(result.backupCode); setShowBackup(true); }
-        else navigate('/auth');
+        await authStore.recover({ backupCode: login, newPassword: password, hcaptchaToken });
+        navigate('/');
       }
-    } catch (err) { setError(err.message || 'Error'); }
-    finally { setLoading(false); }
+    } catch (err) {
+      console.error('Auth error:', err);
+      setError(err?.message || (mode === 'login' ? 'Login failed' : 'Operation failed'));
+    } finally {
+      setLoading(false);
+    }
   };
 
-  if (loading) return <Loader />;
-
-  if (showBackup) {
-    return (
-      <BackupCodeModal
-        isOpen={true}
-        onClose={() => { setShowBackup(false); setGenBackupCode(''); setMode('login'); setPassword(''); setConfirmPass(''); setLogin(''); }}
-        backupCode={genBackupCode}
-        title="Backup code"
-        warning="Save this code"
-      />
-    );
+  if (loading) {
+    return <Loader />;
   }
 
-  const title = mode === 'login' ? 'Login' : mode === 'register' ? 'Register' : 'Recover';
-  const subtitle = mode === 'login' ? 'Welcome back' : mode === 'register' ? 'Create account' : 'Reset password';
+  const title = mode === 'login' ? 'Войти' : mode === 'register' ? 'Регистрация' : 'Восстановление';
+  const subtitle = mode === 'login' 
+    ? 'Введите свои данные' 
+    : mode === 'register' 
+    ? 'Создайте аккаунт' 
+    : 'Введите код восстановления';
 
   return (
     <View style={s.container}>
@@ -76,13 +73,74 @@ export default function AuthPage() {
         <Text style={s.title}>{title}</Text>
         <Text style={s.subtitle}>{subtitle}</Text>
       </View>
-      <Input label="Login" value={login} onChange={setLogin} required />
-      <Input label="Password" type="password" value={password} onChange={setPassword} required />
-      <HCaptcha onVerify={(token) => setHcaptchaToken(token)} onError={() => setError('Captcha error')} onExpire={() => setHcaptchaToken('')} theme={theme} />
-      <Button variant="primary" fullWidth disabled={!hcaptchaToken} onPress={handleSubmit}>{title}</Button>
+
+      {error && <Text style={s.error}>{error}</Text>}
+
+      <View style={s.form}>
+        <TextInput
+          style={s.input}
+          placeholder="Логин"
+          value={login}
+          onChangeText={setLogin}
+          autoCapitalize="none"
+        />
+
+        <TextInput
+          style={s.input}
+          placeholder="Пароль"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          autoCapitalize="none"
+        />
+
+        {mode === 'register' && (
+          <TextInput
+            style={s.input}
+            placeholder="Повторите пароль"
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+            secureTextEntry
+            autoCapitalize="none"
+          />
+        )}
+
+        <HCaptcha
+          onVerify={setHcaptchaToken}
+          onError={() => setError('Captcha error')}
+          onExpire={() => setHcaptchaToken('')}
+          theme={theme}
+        />
+
+        <Button variant="primary" fullWidth disabled={!hcaptchaToken} onPress={handleSubmit}>
+          {title}
+        </Button>
+      </View>
+
       <View style={s.footer}>
-        {mode === 'login' && <Pressable onPress={() => setMode('recover')}><Text style={s.link}>Recover password</Text></Pressable>}
-        {mode === 'recover' && <Pressable onPress={() => { setMode('login'); setPassword(''); setBackupCode(''); }}><Text style={s.link}>Back to login</Text></Pressable>}
+        {mode === 'login' && (
+          <>
+            <Pressable onPress={() => { setMode('register'); setError(''); }}>
+              <Text style={s.link}>Регистрация</Text>
+            </Pressable>
+            <Pressable onPress={() => { setMode('recover'); setError(''); }}>
+              <Text style={s.link}>Восстановить</Text>
+            </Pressable>
+          </>
+        )}
+
+        {(mode === 'register' || mode === 'recover') && (
+          <Pressable onPress={() => {
+            setMode('login');
+            setError('');
+            setLogin('');
+            setPassword('');
+            setConfirmPassword('');
+            setHcaptchaToken('');
+          }}>
+            <Text style={s.link}>← Назад к входу</Text>
+          </Pressable>
+        )}
       </View>
     </View>
   );
@@ -91,11 +149,12 @@ export default function AuthPage() {
 const s = StyleSheet.create({
   container: { flex: 1, padding: 16, backgroundColor: '#fff' },
   header: { marginBottom: 20 },
-  title: { fontSize: 20, fontWeight: 'bold', marginBottom: 8 },
+  title: { fontSize: 24, fontWeight: 'bold', marginBottom: 8 },
   subtitle: { fontSize: 14, color: '#888', marginBottom: 16 },
   form: { marginBottom: 16 },
   error: { backgroundColor: '#feebeb', borderRadius: 6, padding: 12, marginBottom: 12 },
   errorText: { color: 'red', fontSize: 13 },
+  input: { padding: 12, borderWidth: 1, borderColor: '#e0e0e0', borderRadius: 8, marginBottom: 12, fontSize: 14 },
   footer: { flexDirection: 'row', marginTop: 16 },
   link: { color: '#0066ff', fontSize: 14, marginVertical: 8 },
 });

@@ -1,6 +1,11 @@
 import React from 'react';
-import NodeListPage from '../src/ui/pages/nodes/NodeListPage.jsx';
+import ErrorBoundary from '../src/ui/components/common/ErrorBoundary/ErrorBoundary';
+import NodeListPage from '../src/ui/pages/nodes/NodeListPage';
 
 export default function Index() {
-  return <NodeListPage />;
+  return (
+    <ErrorBoundary>
+      <NodeListPage />
+    </ErrorBoundary>
+  );
 }

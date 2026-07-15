@@ -1,34 +1,43 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { useAnalyticsStore } from '@/store/StoreContext';
 import { useNavigator } from '@/shared/platform/useNavigator';
-import Card from '@/shared/components/Card/Card';
-import Badge from '@/shared/components/Badge/Badge';
-import EmptyState from '@/shared/components/EmptyState/EmptyState';
-import Spinner from '@/shared/components/Spinner/Spinner';
+import Card from '@/shared/components/Card.jsx';
+import Badge from '@/shared/components/Badge.jsx';
+import EmptyState from '@/shared/components/EmptyState.jsx';
+import Spinner from '@/shared/components/Spinner.jsx';
+import ErrorState from '@/shared/components/ErrorState.jsx';
 
 const AnalyticsPage = observer(() => {
   const { navigate } = useNavigator();
   const analyticsStore = useAnalyticsStore();
 
-  useEffect(() => {
-    analyticsStore.fetchStats();
-    analyticsStore.fetchEmotionDistribution();
-    analyticsStore.fetchProfile();
-  }, []);
+  useEffect(() => { loadData(); }, []);
+
+  async function loadData() {
+    try {
+      await Promise.all([
+        analyticsStore.fetchStats(),
+        analyticsStore.fetchEmotionDistribution(),
+        analyticsStore.fetchProfile(),
+      ]);
+    } catch (err) {
+      console.error('Analytics load error:', err);
+    }
+  }
 
   if (analyticsStore.isLoading) {
-    return (
-      <View style={styles.loadingCenter}>
-        <Spinner size="large" />
-      </View>
-    );
+    return <View style={s.center}><Spinner size="large" /></View>;
+  }
+
+  if (analyticsStore.error) {
+    return <ErrorState title="Ошибка загрузки аналитики" description={analyticsStore.error} onRetry={loadData} />;
   }
 
   const stats = analyticsStore.stats;
   const profile = analyticsStore.profile;
-  const emDist = analyticsStore.emotionDistribution;
+  const emDist = analyticsStore.emotionDistribution || [];
 
   if (!stats && !profile) {
     return (
@@ -43,29 +52,24 @@ const AnalyticsPage = observer(() => {
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.grid}>
+    <View style={s.container}>
+      <View style={s.grid}>
         <StatCard label="Всего узлов" value={stats?.totalEntries ?? '—'} />
         <StatCard label="Связей" value={stats?.totalEdges ?? '—'} />
         <StatCard label="Эмоций" value={stats?.totalEmotions ?? '—'} />
         <StatCard label="Тегов" value={stats?.totalTags ?? '—'} />
       </View>
 
-      {emDist?.length > 0 && (
-        <View style={styles.section}>
-          <Text style={styles.heading}>Эмоции</Text>
+      {emDist.length > 0 && (
+        <View style={s.section}>
+          <Text style={s.heading}>Эмоции</Text>
           {emDist.map((e, i) => (
-            <View key={i} style={styles.emotionRow}>
-              <Text style={styles.emotionName}>{e.name ?? ''}</Text>
-              <View style={styles.emotionBar}>
-                <View
-                  style={[
-                    styles.emotionFill,
-                    { width: `${e.count ? e.count : 0}%` },
-                  ]}
-                />
+            <View key={i} style={s.emotionRow}>
+              <Text style={s.name}>{e?.name ?? ''}</Text>
+              <View style={s.bar}>
+                <View style={[s.fill, { width: `${e?.count ?? 0}%` }]} />
               </View>
-              <Text style={styles.emotionCount}>{e.count ?? 0}</Text>
+              <Text style={s.count}>{e?.count ?? 0}</Text>
             </View>
           ))}
         </View>
@@ -75,72 +79,26 @@ const AnalyticsPage = observer(() => {
 });
 
 const StatCard = ({ label, value }) => (
-  <Card style={styles.statCard}>
-    <Text style={styles.statValue}>{value}</Text>
-    <Text style={styles.statLabel}>{label}</Text>
+  <Card style={s.stat}>
+    <Text style={s.statValue}>{value}</Text>
+    <Text style={s.statLabel}>{label}</Text>
   </Card>
 );
 
-const styles = StyleSheet.create({
+const s = StyleSheet.create({
   container: { flex: 1, padding: 16 },
-  loadingCenter: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    marginBottom: 20,
-  },
-  statCard: {
-    width: '48%',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 24,
-    marginBottom: 8,
-  },
-  statValue: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#0066ff',
-    marginBottom: 4,
-  },
-  statLabel: {
-    fontSize: 13,
-    color: '#888',
-  },
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginBottom: 20 },
+  stat: { width: '48%', alignItems: 'center', justifyContent: 'center', padding: 24, marginBottom: 8 },
+  statValue: { fontSize: 28, fontWeight: 'bold', color: '#0066ff', marginBottom: 4 },
+  statLabel: { fontSize: 13, color: '#888' },
   section: { marginTop: 16 },
-  heading: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 12,
-  },
-  emotionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  emotionName: {
-    width: 80,
-    fontSize: 13,
-    textAlign: 'right',
-    marginRight: 8,
-  },
-  emotionBar: {
-    flex: 1,
-    height: 8,
-    backgroundColor: '#e0e0e0',
-    borderRadius: 4,
-  },
-  emotionFill: {
-    height: '100%',
-    backgroundColor: '#0066ff',
-    borderRadius: 4,
-  },
-  emotionCount: {
-    fontSize: 13,
-    marginLeft: 8,
-    minWidth: 30,
-    textAlign: 'right',
-  },
+  heading: { fontSize: 18, fontWeight: 'bold', marginBottom: 12 },
+  emotionRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
+  name: { width: 80, fontSize: 13, textAlign: 'right', marginRight: 8 },
+  bar: { flex: 1, height: 8, backgroundColor: '#e0e0e0', borderRadius: 4 },
+  fill: { height: '100%', backgroundColor: '#0066ff', borderRadius: 4 },
+  count: { fontSize: 13, marginLeft: 8, minWidth: 30, textAlign: 'right' },
 });
 
 export default AnalyticsPage;

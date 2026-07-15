@@ -1,8 +1,8 @@
-import { useState, useCallback, useEffect, observer } from 'react';
+import { useState } from 'react';
 import { View, Text, TextInput, StyleSheet } from 'react-native';
 import { useNodeStore, useEmotionsStore, useTagsStore, useAIStore } from '@/store/StoreContext';
-import Button from '@/ui/components/common/Button/Button';
-import TabBar from '@/shared/components/TabBar/TabBar';
+import Button from '@/ui/components/common/Button/Button.jsx';
+import TabBar from '@/shared/components/TabBar.jsx';
 
 const typeTabs = [
   { key: 'dream', label: '💭 Сон' },
@@ -35,27 +35,29 @@ export default function CreateNodePage() {
     if (!title.trim()) validationErrors.title = 'Введите заголовок';
     if (!content.trim()) validationErrors.content = 'Введите содержимое';
     if (Object.keys(validationErrors).length > 0) { setErrors(validationErrors); return; }
+    
     setErrors({});
     try {
       await nodeStore.createNode({ title: title.trim(), content: content.trim(), type: nodeType });
       setTitle(''); setContent(''); setNodeType('dream');
       emotionsStore.clearSelection(); tagsStore.clearSelection(); aiStore.clearCache();
-    } catch (error) {
-      setErrors({ form: error.message || 'Ошибка создания узла' });
+    } catch (err) {
+      console.error('Create node error:', err);
+      setErrors({ form: err?.message || 'Ошибка создания' });
     }
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.heading}>Создать узел</Text>
+    <View style={s.container}>
+      <Text style={s.heading}>Создать узел</Text>
       <TabBar tabs={typeTabs} onChange={(key) => setNodeType(key)} />
-      {errors.form && <Text style={styles.error}>{errors.form}</Text>}
-      <View style={styles.form}>
-        <TextInput style={styles.input} placeholder="Заголовок..." value={title} onChangeText={setTitle} />
-        <Text style={styles.typeLabel}>Тип: {typeLabels[nodeType]}</Text>
-        <TextInput style={styles.textarea} placeholder="Содержимое..." value={content} onChangeText={setContent} multiline numberOfLines={6} />
-        {errors.title && <Text style={styles.error}>{errors.title}</Text>}
-        {errors.content && <Text style={styles.error}>{errors.content}</Text>}
+      {errors.form && <Text style={s.error}>{errors.form}</Text>}
+      <View style={s.form}>
+        <TextInput style={s.input} placeholder="Заголовок..." value={title} onChangeText={setTitle} />
+        <Text style={s.typeLabel}>Тип: {typeLabels[nodeType]}</Text>
+        <TextInput style={s.textarea} placeholder="Содержимое..." value={content} onChangeText={setContent} multiline numberOfLines={6} />
+        {errors.title && <Text style={s.error}>{errors.title}</Text>}
+        {errors.content && <Text style={s.error}>{errors.content}</Text>}
       </View>
       <Button variant="primary" disabled={nodeStore.isLoading} onPress={handleSubmit}>
         {nodeStore.isLoading ? 'Сохранение...' : 'Сохранить'}
@@ -64,7 +66,7 @@ export default function CreateNodePage() {
   );
 }
 
-const styles = StyleSheet.create({
+const s = StyleSheet.create({
   container: { flex: 1, padding: 16 },
   heading: { fontSize: 20, fontWeight: 'bold', marginBottom: 12 },
   form: { marginTop: 12 },
